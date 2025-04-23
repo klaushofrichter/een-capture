@@ -57,11 +57,15 @@ export const handleAuthCallback = async (code) => {
     console.log('Token response data:', {
       access_token: data.access_token,
       token_type: data.token_type,
-      expires_in: data.expires_in
+      expires_in: data.expires_in,
+      httpsBaseUrl: data.httpsBaseUrl
     })
 
     const authStore = useAuthStore()
     authStore.setToken(data.access_token)
+    if (data.httpsBaseUrl) {
+      authStore.setHttpsBaseUrl(data.httpsBaseUrl)
+    }
     
     return true
   } catch (error) {

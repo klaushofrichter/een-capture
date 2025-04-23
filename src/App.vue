@@ -5,27 +5,39 @@
         <div class="flex justify-between h-16">
           <div class="flex">
             <div class="flex-shrink-0 flex items-center">
-              <span class="text-xl font-bold text-primary-600">EEN Login</span>
+              <span class="text-xl font-bold text-primary-600">{{ APP_NAME }}</span>
             </div>
             <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
               <router-link
                 to="/home"
-                class="border-primary-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                active-class="border-primary-500 text-gray-900"
+                class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                :class="[
+                  route.path === '/home'
+                    ? 'border-primary-500 text-gray-900'
+                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                ]"
               >
                 Home
               </router-link>
               <router-link
                 to="/about"
-                class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                active-class="border-primary-500 text-gray-900"
+                class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                :class="[
+                  route.path === '/about'
+                    ? 'border-primary-500 text-gray-900'
+                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                ]"
               >
                 About
               </router-link>
               <router-link
                 to="/settings"
-                class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                active-class="border-primary-500 text-gray-900"
+                class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                :class="[
+                  route.path === '/settings'
+                    ? 'border-primary-500 text-gray-900'
+                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                ]"
               >
                 Settings
               </router-link>
@@ -94,22 +106,34 @@
         <div class="pt-2 pb-3 space-y-1">
           <router-link
             to="/home"
-            class="border-primary-500 text-primary-600 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
-            active-class="bg-primary-50 border-primary-500 text-primary-700"
+            class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+            :class="[
+              route.path === '/home'
+                ? 'bg-primary-50 border-primary-500 text-primary-700'
+                : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
+            ]"
           >
             Home
           </router-link>
           <router-link
             to="/about"
-            class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
-            active-class="bg-primary-50 border-primary-500 text-primary-700"
+            class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+            :class="[
+              route.path === '/about'
+                ? 'bg-primary-50 border-primary-500 text-primary-700'
+                : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
+            ]"
           >
             About
           </router-link>
           <router-link
             to="/settings"
-            class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
-            active-class="bg-primary-50 border-primary-500 text-primary-700"
+            class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+            :class="[
+              route.path === '/settings'
+                ? 'bg-primary-50 border-primary-500 text-primary-700'
+                : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
+            ]"
           >
             Settings
           </router-link>
@@ -131,6 +155,7 @@
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
+import { APP_NAME } from './constants'
 
 const route = useRoute()
 const router = useRouter()
