@@ -1,6 +1,7 @@
 # Prompts
 
-This file catures some of the prompts that are used to build the application. 
+This file catures some of the prompts that are used to build the application, plus 
+some commentary.
 
 ## Initial Prompt for Claude-3.7-Sonnet Agent Mode
 
@@ -43,3 +44,13 @@ The login page should have a login link, which leads to the EEN OAuth panel. Oth
 There is no content visible when launching the application. Make sure that the Login page is shown when opening the application
 
 The Login page shows no content. Make sure that the Login page is not protected to be viewed without authentication
+
+## Implement callback
+Implement the callback server for OAuth. The callback URL returned from the OAuth server is @http://127.0.0.1:3333 with the parameter ?code=efsdfsdfsfawfgwaggagwra
+
+## fix auth server url
+The authorization server is not @https://login.eagleeyenetworks.com/  but https://auth.eagleeyenetworks.com/   please fix that in auth.js
+
+## fix the scope
+The Oauth scope is this: scope=vms.all
+

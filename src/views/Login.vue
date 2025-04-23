@@ -23,6 +23,8 @@ const route = useRoute()
 const authStore = useAuthStore()
 
 const handleLogin = () => {
+  console.log(`handleLogin`)
+  console.log(`getAuthUrl: ${getAuthUrl()}`)
   window.location.href = getAuthUrl()
 }
 
