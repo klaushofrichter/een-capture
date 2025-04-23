@@ -9,12 +9,20 @@ export const useAuthStore = defineStore('auth', () => {
 
   function setToken(newToken) {
     token.value = newToken
-    localStorage.setItem('auth_token', newToken)
+    if (newToken) {
+      localStorage.setItem('auth_token', newToken)
+    } else {
+      localStorage.removeItem('auth_token')
+    }
   }
 
   function setUser(userData) {
     user.value = userData
-    localStorage.setItem('user_data', JSON.stringify(userData))
+    if (userData) {
+      localStorage.setItem('user_data', JSON.stringify(userData))
+    } else {
+      localStorage.removeItem('user_data')
+    }
   }
 
   function logout() {
@@ -27,9 +35,15 @@ export const useAuthStore = defineStore('auth', () => {
   function initialize() {
     const storedToken = localStorage.getItem('auth_token')
     const storedUser = localStorage.getItem('user_data')
-    if (storedToken) token.value = storedToken
-    if (storedUser) user.value = JSON.parse(storedUser)
+    if (storedToken) {
+      token.value = storedToken
+    }
+    if (storedUser) {
+      user.value = JSON.parse(storedUser)
+    }
   }
+
+  initialize()
 
   return {
     token,
@@ -37,7 +51,6 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     setToken,
     setUser,
-    logout,
-    initialize
+    logout
   }
 }) 
