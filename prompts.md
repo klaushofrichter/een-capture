@@ -34,3 +34,12 @@ fix the warning
 
 ## followup: login and navigation menu
 The login page should not show the navigation menu
+
+## Fix that the home page is the login page
+Create a page that is the "Login Page", and move the content from the "Home" page to the new "Login" page. The login page is the landing page for login, it should not be in the navigation menu. After login, the application shows the Home page, with some "Welcome" text. The Home page should be part of the Navigation.
+
+The login page should have a login link, which leads to the EEN OAuth panel. Other than that it should be empty. All pages other than the login page should require authentication. 
+
+There is no content visible when launching the application. Make sure that the Login page is shown when opening the application
+
+The Login page shows no content. Make sure that the Login page is not protected to be viewed without authentication
