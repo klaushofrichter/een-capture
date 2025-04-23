@@ -6,13 +6,17 @@ const CLIENT_SECRET = import.meta.env.VITE_EEN_CLIENT_SECRET
 const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI
 
 export const getAuthUrl = () => {
+  console.log(`CLIENT_ID: ${CLIENT_ID}`)
+  console.log(`CLIENT_SECRET: ${CLIENT_SECRET}`)
+  console.log(`REDIRECT_URI: ${REDIRECT_URI}`)
+  
   const params = new URLSearchParams({
     client_id: CLIENT_ID,
     response_type: 'code',
     redirect_uri: REDIRECT_URI,
-    scope: 'openid profile email'
+    scope: 'vms.all'
   })
-
+  console.log(`https://login.eagleeyenetworks.com/oauth2/authorize?${params.toString()}`)
   return `https://login.eagleeyenetworks.com/oauth2/authorize?${params.toString()}`
 }
 
