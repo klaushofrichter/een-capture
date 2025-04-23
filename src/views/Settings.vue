@@ -4,69 +4,32 @@
       <div class="bg-white shadow overflow-hidden sm:rounded-lg">
         <div class="px-4 py-5 sm:px-6">
           <h3 class="text-lg leading-6 font-medium text-gray-900">
-            User Profile
+            Settings
           </h3>
           <p class="mt-1 max-w-2xl text-sm text-gray-500">
-            Your Eagle Eye Networks account information
+            Manage your application settings and preferences
           </p>
         </div>
         <div class="border-t border-gray-200">
-          <dl>
-            <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">
-                Name
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                {{ user?.name || 'Not available' }}
-              </dd>
+          <div class="px-4 py-5 sm:p-6">
+            <div class="grid grid-cols-1 gap-6">
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <h4 class="text-sm font-medium text-gray-900">API Configuration</h4>
+                <div class="mt-4 text-sm text-gray-600">
+                  <p>API Base URL: {{ authStore.httpsBaseUrl?.hostname || 'Not configured' }}</p>
+                  <p class="mt-2">API Port: {{ authStore.httpsBaseUrl?.port || 'Not configured' }}</p>
+                </div>
+              </div>
             </div>
-            <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">
-                Email
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                {{ user?.email || 'Not available' }}
-              </dd>
-            </div>
-            <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">
-                Account ID
-              </dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                {{ user?.sub || 'Not available' }}
-              </dd>
-            </div>
-          </dl>
+          </div>
         </div>
-      </div>
-
-      <div class="mt-8 flex justify-end">
-        <button
-          @click="handleLogout"
-          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-        >
-          <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd" />
-          </svg>
-          Logout
-        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 
-const router = useRouter()
 const authStore = useAuthStore()
-
-const user = computed(() => authStore.user)
-
-const handleLogout = async () => {
-  await authStore.logout()
-  router.push('/')
-}
 </script> 
