@@ -47,7 +47,7 @@
                   <dd class="mt-1 text-sm text-gray-900">{{ userProfile.id || 'N/A' }}</dd>
                 </div>
               </dl>
-              
+
               <!-- Credentials Section -->
               <div class="mt-6 border-t border-gray-200 pt-6">
                 <h4 class="text-lg font-medium text-gray-900 mb-4">Credentials</h4>
