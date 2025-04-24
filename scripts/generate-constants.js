@@ -11,4 +11,4 @@ export const APP_NAME = '${packageJson.name}'
 export const APP_VERSION = '${packageJson.version}'
 `
 
-writeFileSync(join(__dirname, '../src/constants.js'), constantsContent) 
+writeFileSync(join(__dirname, '../src/constants.js'), constantsContent)

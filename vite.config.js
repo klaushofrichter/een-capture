@@ -26,7 +26,7 @@ export default defineConfig({
       '/api': {
         target: 'https://login.eagleeyenetworks.com',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
+        rewrite: path => path.replace(/^\/api/, '')
       }
     }
   },
