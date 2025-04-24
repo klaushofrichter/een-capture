@@ -9,6 +9,12 @@ const routes = [
     meta: { requiresAuth: false }
   },
   {
+    path: '/direct',
+    name: 'Direct',
+    component: () => import('../views/Direct.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
     path: '/home',
     name: 'Home',
     component: () => import('../views/Home.vue'),

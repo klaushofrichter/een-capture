@@ -184,7 +184,7 @@ const router = useRouter()
 const authStore = useAuthStore()
 const isMobileMenuOpen = ref(false)
 
-const isLoginPage = computed(() => route.path === '/')
+const isLoginPage = computed(() => route.path === '/' || route.path === '/direct')
 const appName = computed(() => packageJson.displayName)
 
 const handleLogout = () => {
