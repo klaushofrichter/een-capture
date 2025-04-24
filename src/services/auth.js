@@ -38,7 +38,9 @@ async function getToken(code) {
     }
   } catch (error) {
     if (error.response) {
-      throw new Error(`Failed to get access token: ${error.response.status} ${error.response.statusText}`)
+      throw new Error(
+        `Failed to get access token: ${error.response.status} ${error.response.statusText}`
+      )
     }
     throw error
   }
@@ -63,12 +65,15 @@ export const refreshToken = async () => {
     if (!refreshToken) return false
 
     const api = createAuthApi()
-    const response = await api.post('/oauth2/token', new URLSearchParams({
-      grant_type: 'refresh_token',
-      refresh_token: refreshToken,
-      client_id: CLIENT_ID,
-      client_secret: CLIENT_SECRET
-    }))
+    const response = await api.post(
+      '/oauth2/token',
+      new URLSearchParams({
+        grant_type: 'refresh_token',
+        refresh_token: refreshToken,
+        client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET
+      })
+    )
 
     const authStore = useAuthStore()
     authStore.setToken(response.data.access_token)

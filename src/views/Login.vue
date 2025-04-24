@@ -35,7 +35,7 @@ import packageJson from '../../package.json'
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
-const appName = computed(() => packageJson.name)
+const appName = computed(() => packageJson.displayName)
 const appVersion = computed(() => packageJson.version)
 
 const handleLogin = () => {

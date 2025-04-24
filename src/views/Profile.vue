@@ -66,7 +66,7 @@ const loading = ref(false)
 const error = ref(null)
 
 const userProfile = computed(() => authStore.userProfile)
-const pageTitle = computed(() => `${packageJson.name} - Profile`)
+const pageTitle = computed(() => `${packageJson.displayName} - Profile`)
 
 async function fetchUserProfile() {
   if (!authStore.baseUrl || !authStore.token) {

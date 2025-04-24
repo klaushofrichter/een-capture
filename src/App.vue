@@ -185,7 +185,7 @@ const authStore = useAuthStore()
 const isMobileMenuOpen = ref(false)
 
 const isLoginPage = computed(() => route.path === '/')
-const appName = computed(() => packageJson.name)
+const appName = computed(() => packageJson.displayName)
 
 const handleLogout = () => {
   authStore.logout()
