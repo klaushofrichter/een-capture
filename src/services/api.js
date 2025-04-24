@@ -1,24 +1,29 @@
 import axios from 'axios'
+import { useAuthStore } from '../stores/auth'
 
-const api = axios.create({
-  baseURL: '/api',
-  headers: {
-    'Content-Type': 'application/json'
-  }
-})
-
-// Add a request interceptor to add the auth token to requests
-api.interceptors.request.use(
-  config => {
-    const token = localStorage.getItem('auth_token')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
+export const createAuthApi = () => {
+  return axios.create({
+    baseURL: 'https://auth.eagleeyenetworks.com',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
     }
-    return config
-  },
-  error => {
-    return Promise.reject(error)
-  }
-)
+  })
+}
 
-export default api
+export const createApiInstance = () => {
+  const authStore = useAuthStore()
+
+  if (!authStore.baseUrl) {
+    throw new Error('Base URL is not available')
+  }
+
+  const instance = axios.create({
+    baseURL: authStore.baseUrl,
+    headers: {
+      Accept: 'application/json',
+      Authorization: `Bearer ${authStore.token}`
+    }
+  })
+
+  return instance
+}
