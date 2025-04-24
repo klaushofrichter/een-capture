@@ -95,7 +95,9 @@
 
                   <!-- Token Expiration -->
                   <div class="mt-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Token Expiration</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                      >Token Expiration</label
+                    >
                     <div class="flex items-center space-x-2">
                       <div class="flex-1">
                         <input
@@ -106,11 +108,12 @@
                       </div>
                       <div class="w-24">
                         <div class="w-full bg-gray-200 rounded-full h-2.5">
-                          <div 
+                          <div
                             class="h-2.5 rounded-full transition-all duration-1000"
                             :class="{
                               'bg-green-500': tokenExpirationPercentage > 50,
-                              'bg-yellow-500': tokenExpirationPercentage <= 50 && tokenExpirationPercentage > 25,
+                              'bg-yellow-500':
+                                tokenExpirationPercentage <= 50 && tokenExpirationPercentage > 25,
                               'bg-red-500': tokenExpirationPercentage <= 25
                             }"
                             :style="{ width: `${tokenExpirationPercentage}%` }"
@@ -122,7 +125,9 @@
 
                   <!-- Refresh Token Status -->
                   <div class="mt-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Refresh Token</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                      >Refresh Token</label
+                    >
                     <div class="flex items-center space-x-4">
                       <div class="flex-1">
                         <input
@@ -138,7 +143,9 @@
                         class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <span v-if="isRefreshing" class="mr-2">
-                          <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          <div
+                            class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"
+                          ></div>
                         </span>
                         {{ isRefreshing ? 'Refreshing...' : 'Refresh' }}
                       </button>
@@ -185,10 +192,10 @@ const tokenExpirationText = computed(() => {
   forceUpdate.value
   const remaining = authStore.getTokenTimeRemaining()
   if (!remaining) return 'No token'
-  
+
   const hours = Math.floor(remaining / 3600000)
   const minutes = Math.floor((remaining % 3600000) / 60000)
-  
+
   if (hours >= 2) {
     return `more than ${hours} hours remaining`
   } else {
@@ -240,7 +247,7 @@ function toggleAndCopyToken() {
 
 async function handleRefresh() {
   if (isRefreshing.value) return
-  
+
   isRefreshing.value = true
   try {
     const success = await refreshToken()
@@ -258,7 +265,7 @@ async function handleRefresh() {
 onMounted(() => {
   document.title = pageTitle.value
   fetchUserProfile()
-  
+
   // Update expiration time every second
   expirationInterval = setInterval(() => {
     forceUpdate.value++

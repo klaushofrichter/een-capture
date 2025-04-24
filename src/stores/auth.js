@@ -21,7 +21,7 @@ export const useAuthStore = defineStore('auth', () => {
     if (newToken) {
       localStorage.setItem('auth_token', newToken)
       // Set expiration time based on expires_in value
-      const expirationTime = Date.now() + (expiresIn * 1000) // Convert seconds to milliseconds
+      const expirationTime = Date.now() + expiresIn * 1000 // Convert seconds to milliseconds
       tokenExpiration.value = expirationTime
       localStorage.setItem('token_expiration', expirationTime.toString())
     } else {
