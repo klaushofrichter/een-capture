@@ -190,4 +190,4 @@ const handleLogout = () => {
   authStore.logout()
   router.push('/')
 }
-</script> 
+</script>

@@ -19,4 +19,4 @@ app.use(pinia)
 app.use(router)
 
 // Mount the app
-app.mount('#app') 
+app.mount('#app')

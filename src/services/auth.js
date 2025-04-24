@@ -12,7 +12,7 @@ export const getAuthUrl = () => {
     client_id: CLIENT_ID,
     redirect_uri: REDIRECT_URI,
     response_type: 'code',
-    scope: 'vms.all',
+    scope: 'vms.all'
   })
   const url = `${AUTH_URL}?${params.toString()}`
   console.log('Authorization URL:', url)
@@ -25,15 +25,15 @@ async function getToken(code) {
     code,
     client_id: CLIENT_ID,
     client_secret: CLIENT_SECRET,
-    redirect_uri: REDIRECT_URI,
+    redirect_uri: REDIRECT_URI
   })
 
   const response = await fetch(TOKEN_URL, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Type': 'application/x-www-form-urlencoded'
     },
-    body: tokenParams,
+    body: tokenParams
   })
 
   if (!response.ok) {
@@ -48,7 +48,7 @@ async function getToken(code) {
   }
 }
 
-export const handleAuthCallback = async (code) => {
+export const handleAuthCallback = async code => {
   const authStore = useAuthStore()
   try {
     const { token, httpsBaseUrl } = await getToken(code)
@@ -69,7 +69,7 @@ export const refreshToken = async () => {
     const response = await fetch(TOKEN_URL, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Type': 'application/x-www-form-urlencoded'
       },
       body: new URLSearchParams({
         grant_type: 'refresh_token',
@@ -95,4 +95,4 @@ export const refreshToken = async () => {
     console.error('Token refresh error:', error)
     return false
   }
-} 
+}
