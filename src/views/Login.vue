@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+  <div v-if="!isProcessingCallback" class="min-h-screen flex flex-col items-center justify-center bg-gray-50">
     <div class="text-center">
       <h2 class="text-2xl font-bold text-gray-900 mb-4">Welcome to {{ appName }}</h2>
       <button
@@ -23,10 +23,17 @@
       </a>
     </div>
   </div>
+  <div v-else class="min-h-screen flex items-center justify-center bg-gray-50">
+    <!-- Loading state while processing callback -->
+    <div class="flex items-center space-x-2">
+      <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600"></div>
+      <span class="text-gray-600">Logging in...</span>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { onMounted, computed } from 'vue'
+import { onMounted, computed, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { getAuthUrl, handleAuthCallback } from '../services/auth'
 import { useAuthStore } from '../stores/auth'
@@ -37,6 +44,7 @@ const route = useRoute()
 const authStore = useAuthStore()
 const appName = computed(() => packageJson.displayName)
 const appVersion = computed(() => packageJson.version)
+const isProcessingCallback = ref(false)
 
 const handleLogin = () => {
   console.log(`handleLogin`)
@@ -44,15 +52,25 @@ const handleLogin = () => {
   window.location.href = getAuthUrl()
 }
 
+// Check for OAuth code before mounting component
+const hasOAuthCode = computed(() => !!route.query.code)
+
 onMounted(async () => {
   // Check if we're returning from OAuth callback
   const code = route.query.code
   if (code) {
-    const success = await handleAuthCallback(code)
-    if (success) {
-      router.push('/home')
+    isProcessingCallback.value = true
+    try {
+      const success = await handleAuthCallback(code)
+      if (success) {
+        router.push('/home')
+      }
+    } catch (error) {
+      console.error('Error processing callback:', error)
+      isProcessingCallback.value = false
     }
+  } else {
+    document.title = `${appName.value} - Login`
   }
-  document.title = `${appName.value} - Login`
 })
 </script>
