@@ -40,7 +40,7 @@ import { useAuthStore } from '../stores/auth'
 import packageJson from '../../package.json'
 
 const authStore = useAuthStore()
-const appName = computed(() => packageJson.name)
+const appName = computed(() => packageJson.displayName)
 
 onMounted(() => {
   document.title = `${appName.value} - Home`

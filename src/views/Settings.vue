@@ -43,7 +43,7 @@
 import { onMounted, computed } from 'vue'
 import packageJson from '../../package.json'
 
-const appName = computed(() => packageJson.name)
+const appName = computed(() => packageJson.displayName)
 const appVersion = computed(() => packageJson.version)
 
 onMounted(() => {

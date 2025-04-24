@@ -15,7 +15,7 @@ app.use(createPinia())
 app.use(router)
 
 // Set the document title
-document.title = packageJson.name
+document.title = packageJson.displayName
 
 // Mount the app
 app.mount('#app')
