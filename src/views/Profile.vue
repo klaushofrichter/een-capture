@@ -51,23 +51,46 @@
               <!-- Credentials Section -->
               <div class="mt-6 border-t border-gray-200 pt-6">
                 <h4 class="text-lg font-medium text-gray-900 mb-4">Credentials</h4>
-                <div class="flex items-center space-x-4">
-                  <div class="flex-1">
+                <div class="space-y-4">
+                  <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Access Token</label>
-                    <input
-                      :type="showToken ? 'text' : 'password'"
-                      :value="authStore.token"
-                      readonly
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                    />
+                    <div class="flex items-center space-x-4">
+                      <div class="flex-1">
+                        <input
+                          :type="showToken ? 'text' : 'password'"
+                          :value="authStore.token"
+                          readonly
+                          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                        />
+                      </div>
+                      <div class="flex space-x-2">
+                        <button
+                          @click="toggleAndCopyToken"
+                          class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                        >
+                          {{ showToken ? 'Hide' : 'Show & Copy' }}
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                  <div class="flex space-x-2">
-                    <button
-                      @click="toggleAndCopyToken"
-                      class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-                    >
-                      {{ showToken ? 'Hide' : 'Show & Copy' }}
-                    </button>
+
+                  <div class="grid grid-cols-8 gap-4">
+                    <div class="col-span-6">
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Base URL</label>
+                      <input
+                        :value="authStore.hostname"
+                        readonly
+                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                      />
+                    </div>
+                    <div class="col-span-2">
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Port</label>
+                      <input
+                        :value="authStore.port"
+                        readonly
+                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
