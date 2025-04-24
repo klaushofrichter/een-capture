@@ -4,9 +4,15 @@ import { ref, computed } from 'vue'
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(null)
   const user = ref(null)
-  const httpsBaseUrl = ref(null)
+  const hostname = ref(null)
+  const port = ref(null)
+  const userProfile = ref(null)
 
   const isAuthenticated = computed(() => !!token.value)
+  const baseUrl = computed(() => {
+    if (!hostname.value) return null
+    return `https://${hostname.value}${port.value ? `:${port.value}` : ''}`
+  })
 
   function setToken(newToken) {
     token.value = newToken
@@ -17,12 +23,21 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  function setHttpsBaseUrl(baseUrl) {
-    httpsBaseUrl.value = baseUrl
-    if (baseUrl) {
-      localStorage.setItem('https_base_url', JSON.stringify(baseUrl))
+  function setBaseUrl(urlData) {
+    if (urlData && typeof urlData === 'object') {
+      hostname.value = urlData.hostname
+      port.value = urlData.port
+      localStorage.setItem('hostname', urlData.hostname)
+      if (urlData.port) {
+        localStorage.setItem('port', String(urlData.port))
+      } else {
+        localStorage.removeItem('port')
+      }
     } else {
-      localStorage.removeItem('https_base_url')
+      hostname.value = null
+      port.value = null
+      localStorage.removeItem('hostname')
+      localStorage.removeItem('port')
     }
   }
 
@@ -35,19 +50,27 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  function setUserProfile(profile) {
+    userProfile.value = profile
+  }
+
   function logout() {
     token.value = null
     user.value = null
-    httpsBaseUrl.value = null
+    hostname.value = null
+    port.value = null
+    userProfile.value = null
     localStorage.removeItem('auth_token')
     localStorage.removeItem('user_data')
-    localStorage.removeItem('https_base_url')
+    localStorage.removeItem('hostname')
+    localStorage.removeItem('port')
   }
 
   function initialize() {
     const storedToken = localStorage.getItem('auth_token')
     const storedUser = localStorage.getItem('user_data')
-    const storedBaseUrl = localStorage.getItem('https_base_url')
+    const storedHostname = localStorage.getItem('hostname')
+    const storedPort = localStorage.getItem('port')
     
     if (storedToken) {
       token.value = storedToken
@@ -55,21 +78,30 @@ export const useAuthStore = defineStore('auth', () => {
     if (storedUser) {
       user.value = JSON.parse(storedUser)
     }
-    if (storedBaseUrl) {
-      httpsBaseUrl.value = JSON.parse(storedBaseUrl)
+    if (storedHostname) {
+      hostname.value = storedHostname
+      if (storedPort) {
+        port.value = Number(storedPort)
+      }
     }
   }
 
+  // Initialize the store
   initialize()
 
   return {
     token,
     user,
-    httpsBaseUrl,
+    hostname,
+    port,
+    userProfile,
     isAuthenticated,
+    baseUrl,
     setToken,
     setUser,
-    setHttpsBaseUrl,
-    logout
+    setBaseUrl,
+    setUserProfile,
+    logout,
+    initialize
   }
 }) 

@@ -19,58 +19,45 @@ export const getAuthUrl = () => {
   return url
 }
 
+async function getToken(code) {
+  const tokenParams = new URLSearchParams({
+    grant_type: 'authorization_code',
+    code,
+    client_id: CLIENT_ID,
+    client_secret: CLIENT_SECRET,
+    redirect_uri: REDIRECT_URI,
+  })
+
+  const response = await fetch(TOKEN_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: tokenParams,
+  })
+
+  if (!response.ok) {
+    const errorText = await response.text()
+    throw new Error(`Failed to get access token: ${response.status} ${response.statusText}`)
+  }
+
+  const data = await response.json()
+  return {
+    token: data.access_token,
+    httpsBaseUrl: data.httpsBaseUrl
+  }
+}
+
 export const handleAuthCallback = async (code) => {
+  const authStore = useAuthStore()
   try {
-    console.log('Starting token exchange with code:', code)
-    
-    const tokenParams = new URLSearchParams({
-      grant_type: 'authorization_code',
-      code,
-      client_id: CLIENT_ID,
-      client_secret: CLIENT_SECRET,
-      redirect_uri: REDIRECT_URI,
-    })
-    
-    console.log('Token request params:', tokenParams.toString())
-
-    const response = await fetch(TOKEN_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: tokenParams,
-    })
-
-    console.log('Token response status:', response.status)
-    
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('Token exchange failed:', {
-        status: response.status,
-        statusText: response.statusText,
-        error: errorText
-      })
-      throw new Error(`Failed to get access token: ${response.status} ${response.statusText}`)
-    }
-
-    const data = await response.json()
-    console.log('Token response data:', {
-      access_token: data.access_token,
-      token_type: data.token_type,
-      expires_in: data.expires_in,
-      httpsBaseUrl: data.httpsBaseUrl
-    })
-
-    const authStore = useAuthStore()
-    authStore.setToken(data.access_token)
-    if (data.httpsBaseUrl) {
-      authStore.setHttpsBaseUrl(data.httpsBaseUrl)
-    }
-    
-    return true
+    const { token, httpsBaseUrl } = await getToken(code)
+    authStore.setToken(token)
+    authStore.setBaseUrl(httpsBaseUrl)
+    return { token, httpsBaseUrl }
   } catch (error) {
     console.error('Authentication error:', error)
-    return false
+    throw error
   }
 }
 
@@ -79,16 +66,29 @@ export const refreshToken = async () => {
     const refreshToken = localStorage.getItem('refresh_token')
     if (!refreshToken) return false
 
-    const response = await api.post('/oauth2/token', {
-      grant_type: 'refresh_token',
-      refresh_token: refreshToken,
-      client_id: CLIENT_ID,
-      client_secret: CLIENT_SECRET
+    const response = await fetch(TOKEN_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        grant_type: 'refresh_token',
+        refresh_token: refreshToken,
+        client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET
+      })
     })
 
-    const { access_token } = response.data
+    if (!response.ok) {
+      throw new Error(`Failed to refresh token: ${response.status} ${response.statusText}`)
+    }
+
+    const data = await response.json()
     const authStore = useAuthStore()
-    authStore.setToken(access_token)
+    authStore.setToken(data.access_token)
+    if (data.httpsBaseUrl) {
+      authStore.setBaseUrl(data.httpsBaseUrl)
+    }
 
     return true
   } catch (error) {
