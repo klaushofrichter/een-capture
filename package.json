@@ -1,12 +1,11 @@
 {
-  "name": "EEN Login",
-  "version": "1.0.4",
+  "name": "EEN Login App",
+  "version": "1.0.5",
   "private": true,
   "type": "module",
   "scripts": {
-    "generate-constants": "node scripts/generate-constants.js",
-    "dev": "npm run generate-constants && vite",
-    "build": "npm run generate-constants && vite build",
+    "dev": "vite",
+    "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
     "format": "prettier --write src/",

@@ -4,19 +4,18 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
-import { APP_NAME } from './constants'
-
-// Set the document title
-document.title = APP_NAME
+import packageJson from '../package.json'
 
 const app = createApp(App)
 
 // Initialize Pinia store
-const pinia = createPinia()
-app.use(pinia)
+app.use(createPinia())
 
 // Initialize router
 app.use(router)
+
+// Set the document title
+document.title = packageJson.name
 
 // Mount the app
 app.mount('#app')

@@ -5,7 +5,7 @@
         <div class="flex justify-between h-16">
           <div class="flex">
             <div class="flex-shrink-0 flex items-center">
-              <span class="text-xl font-bold text-primary-600">{{ APP_NAME }}</span>
+              <span class="text-xl font-bold text-primary-600">{{ appName }}</span>
             </div>
             <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
               <router-link
@@ -177,7 +177,7 @@
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
-import { APP_NAME } from './constants'
+import packageJson from '../package.json'
 
 const route = useRoute()
 const router = useRouter()
@@ -185,6 +185,7 @@ const authStore = useAuthStore()
 const isMobileMenuOpen = ref(false)
 
 const isLoginPage = computed(() => route.path === '/')
+const appName = computed(() => packageJson.name)
 
 const handleLogout = () => {
   authStore.logout()

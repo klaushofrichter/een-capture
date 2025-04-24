@@ -59,14 +59,14 @@
 import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { userService } from '../services/user'
-import { APP_NAME } from '../constants'
+import packageJson from '../../package.json'
 
 const authStore = useAuthStore()
 const loading = ref(false)
 const error = ref(null)
 
 const userProfile = computed(() => authStore.userProfile)
-const pageTitle = computed(() => `${APP_NAME} - Profile`)
+const pageTitle = computed(() => `${packageJson.name} - Profile`)
 
 async function fetchUserProfile() {
   if (!authStore.baseUrl || !authStore.token) {
