@@ -54,16 +54,80 @@ export const useAuthStore = defineStore('auth', () => {
     userProfile.value = profile
   }
 
-  function logout() {
+  // Temporary storage for credentials during logout
+  let tempCredentials = null
+  let logoutInterval = null
+
+  async function logout(onDelay) {
+    // Store current credentials temporarily
+    tempCredentials = {
+      token: token.value,
+      user: user.value,
+      hostname: hostname.value,
+      port: port.value,
+      userProfile: userProfile.value
+    }
+
+    // Clear store values
     token.value = null
     user.value = null
     hostname.value = null
     port.value = null
     userProfile.value = null
-    localStorage.removeItem('auth_token')
-    localStorage.removeItem('user_data')
-    localStorage.removeItem('hostname')
-    localStorage.removeItem('port')
+
+    // Clear all localStorage items synchronously
+    localStorage.clear()
+
+    // Wait eight seconds to ensure cleanup is complete
+    if (onDelay) {
+      await new Promise(resolve => {
+        const startTime = Date.now()
+        logoutInterval = setInterval(() => {
+          const elapsed = Date.now() - startTime
+          const remaining = Math.max(0, 8000 - elapsed)
+          onDelay(remaining)
+          if (remaining === 0) {
+            clearInterval(logoutInterval)
+            logoutInterval = null
+            resolve()
+          }
+        }, 50)
+      })
+    } else {
+      await new Promise(resolve => setTimeout(resolve, 8000))
+    }
+
+    // Clear temporary credentials after successful logout
+    tempCredentials = null
+
+    // Force a full page reload to clear any cached state
+    window.location.href = '/'
+  }
+
+  function cancelLogout() {
+    if (tempCredentials) {
+      // Clear the interval if it exists
+      if (logoutInterval) {
+        clearInterval(logoutInterval)
+        logoutInterval = null
+      }
+
+      // Restore store values
+      token.value = tempCredentials.token
+      user.value = tempCredentials.user
+      hostname.value = tempCredentials.hostname
+      port.value = tempCredentials.port
+      userProfile.value = tempCredentials.userProfile
+
+      // Restore localStorage
+      if (token.value) localStorage.setItem('auth_token', token.value)
+      if (user.value) localStorage.setItem('user_data', JSON.stringify(user.value))
+      if (hostname.value) localStorage.setItem('hostname', hostname.value)
+      if (port.value) localStorage.setItem('port', String(port.value))
+
+      // Clear temporary credentials
+      tempCredentials = null
+    }
   }
 
   function initialize() {
@@ -102,6 +166,7 @@ export const useAuthStore = defineStore('auth', () => {
     setBaseUrl,
     setUserProfile,
     logout,
+    cancelLogout,
     initialize
   }
 })
