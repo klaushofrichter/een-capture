@@ -3,7 +3,7 @@
     <div class="max-w-3xl mx-auto">
       <div class="bg-white shadow overflow-hidden sm:rounded-lg">
         <div class="px-4 py-5 sm:px-6">
-          <h3 class="text-lg leading-6 font-medium text-gray-900">Welcome to {{ APP_NAME }}</h3>
+          <h3 class="text-lg leading-6 font-medium text-gray-900">Welcome to {{ appName }}</h3>
           <p class="mt-1 max-w-2xl text-sm text-gray-500">
             You have successfully logged in to your Eagle Eye Networks account
           </p>
@@ -35,9 +35,14 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { onMounted, computed } from 'vue'
 import { useAuthStore } from '../stores/auth'
-import { APP_NAME } from '../constants'
+import packageJson from '../../package.json'
 
 const authStore = useAuthStore()
+const appName = computed(() => packageJson.name)
+
+onMounted(() => {
+  document.title = `${appName.value} - Home`
+})
 </script>

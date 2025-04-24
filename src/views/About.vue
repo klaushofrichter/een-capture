@@ -3,7 +3,7 @@
     <div class="max-w-3xl mx-auto">
       <div class="bg-white shadow overflow-hidden sm:rounded-lg">
         <div class="px-4 py-5 sm:px-6">
-          <h3 class="text-lg leading-6 font-medium text-gray-900">About {{ APP_NAME }}</h3>
+          <h3 class="text-lg leading-6 font-medium text-gray-900">About {{ appName }}</h3>
           <p class="mt-1 max-w-2xl text-sm text-gray-500">
             A secure authentication application for Eagle Eye Networks
           </p>
@@ -119,5 +119,12 @@
 </template>
 
 <script setup>
-import { APP_NAME } from '../constants'
+import { onMounted, computed } from 'vue'
+import packageJson from '../../package.json'
+
+const appName = computed(() => packageJson.name)
+
+onMounted(() => {
+  document.title = `${appName.value} - About`
+})
 </script>
