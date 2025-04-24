@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { fileURLToPath, URL } from 'node:url'
+import { fileURLToPath, URL } from 'url'
 
 export default defineConfig({
   plugins: [vue()],
@@ -22,7 +22,17 @@ export default defineConfig({
         target: 'https://api.eagleeyenetworks.com',
         changeOrigin: true,
         secure: false
+      },
+      '/api': {
+        target: 'https://login.eagleeyenetworks.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
       }
     }
+  },
+  build: {
+    rollupOptions: {
+      external: ['fs', 'path', 'url']
+    }
   }
-}) 
+})

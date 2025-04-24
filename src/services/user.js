@@ -3,7 +3,7 @@ import { useAuthStore } from '../stores/auth'
 
 const createAxiosInstance = () => {
   const authStore = useAuthStore()
-  
+
   if (!authStore.baseUrl) {
     throw new Error('Base URL is not available')
   }
@@ -11,8 +11,8 @@ const createAxiosInstance = () => {
   return axios.create({
     baseURL: authStore.baseUrl,
     headers: {
-      'Accept': 'application/json',
-      'Authorization': `Bearer ${authStore.token}`
+      Accept: 'application/json',
+      Authorization: `Bearer ${authStore.token}`
     }
   })
 }
@@ -30,4 +30,4 @@ export const userService = {
       throw error
     }
   }
-} 
+}

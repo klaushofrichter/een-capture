@@ -71,7 +71,7 @@ export const useAuthStore = defineStore('auth', () => {
     const storedUser = localStorage.getItem('user_data')
     const storedHostname = localStorage.getItem('hostname')
     const storedPort = localStorage.getItem('port')
-    
+
     if (storedToken) {
       token.value = storedToken
     }
@@ -104,4 +104,4 @@ export const useAuthStore = defineStore('auth', () => {
     logout,
     initialize
   }
-}) 
+})

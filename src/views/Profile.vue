@@ -3,9 +3,7 @@
     <div class="max-w-3xl mx-auto">
       <div class="bg-white shadow overflow-hidden sm:rounded-lg">
         <div class="px-4 py-5 sm:px-6">
-          <h3 class="text-lg leading-6 font-medium text-gray-900">
-            User Profile
-          </h3>
+          <h3 class="text-lg leading-6 font-medium text-gray-900">User Profile</h3>
           <p class="mt-1 max-w-2xl text-sm text-gray-500">
             Your Eagle Eye Networks account information
           </p>
@@ -13,13 +11,15 @@
         <div class="border-t border-gray-200">
           <div class="px-4 py-5 sm:p-6">
             <div v-if="loading" class="text-center py-4">
-              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
+              <div
+                class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"
+              ></div>
               <p class="mt-2 text-sm text-gray-500">Loading profile...</p>
             </div>
             <div v-else-if="error" class="text-center py-4">
               <p class="text-sm text-red-600">{{ error }}</p>
-              <button 
-                @click="fetchUserProfile" 
+              <button
+                @click="fetchUserProfile"
                 class="mt-2 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
               >
                 Retry
@@ -59,12 +59,14 @@
 import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { userService } from '../services/user'
+import { APP_NAME } from '../constants'
 
 const authStore = useAuthStore()
 const loading = ref(false)
 const error = ref(null)
 
 const userProfile = computed(() => authStore.userProfile)
+const pageTitle = computed(() => `${APP_NAME} - Profile`)
 
 async function fetchUserProfile() {
   if (!authStore.baseUrl || !authStore.token) {
@@ -96,6 +98,7 @@ async function fetchUserProfile() {
 }
 
 onMounted(() => {
+  document.title = pageTitle.value
   fetchUserProfile()
 })
-</script> 
+</script>
