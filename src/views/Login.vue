@@ -1,5 +1,8 @@
 <template>
-  <div v-if="!isProcessingCallback" class="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+  <div
+    v-if="!isProcessingCallback"
+    class="min-h-screen flex flex-col items-center justify-center bg-gray-50"
+  >
     <div class="text-center">
       <h2 class="text-2xl font-bold text-gray-900 mb-4">Welcome to {{ appName }}</h2>
       <button
