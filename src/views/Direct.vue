@@ -40,9 +40,7 @@
               </div>
 
               <div class="col-span-2">
-                <label for="port" class="block text-sm font-medium text-gray-700">
-                  Port
-                </label>
+                <label for="port" class="block text-sm font-medium text-gray-700"> Port </label>
                 <div class="mt-1">
                   <input
                     id="port"
@@ -148,13 +146,13 @@ async function handleSubmit() {
       hostname: baseUrl.value,
       port: port.value
     })
-    
+
     // Then set the token
     authStore.setToken(token.value)
-    
+
     // Then try to fetch the user profile to verify the token
     const userData = await userService.getUserProfile()
-    
+
     // If successful, store the user data and proceed
     authStore.setUserProfile({
       id: userData.id,
@@ -162,7 +160,7 @@ async function handleSubmit() {
       lastName: userData.lastName,
       email: userData.email
     })
-    
+
     router.push('/home')
   } catch (err) {
     error.value = err.message || 'Invalid credentials'

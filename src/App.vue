@@ -1,12 +1,21 @@
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- Goodbye Panel -->
-    <div v-if="isLoggingOut" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
+    <div
+      v-if="isLoggingOut"
+      class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50"
+    >
       <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4 text-center">
         <h2 class="text-2xl font-bold text-gray-900 mb-4">Goodbye!</h2>
-        <p class="text-gray-600 mb-4">Thank you for using {{ appName }}. You will be logged out in {{ Math.ceil(logoutRemaining / 1000) }} seconds.</p>
+        <p class="text-gray-600 mb-4">
+          Thank you for using {{ appName }}. You will be logged out in
+          {{ Math.ceil(logoutRemaining / 1000) }} seconds.
+        </p>
         <div class="w-full bg-gray-200 rounded-full h-2.5 mb-6">
-          <div class="bg-primary-600 h-2.5 rounded-full" :style="{ width: `${(logoutRemaining / 8000) * 100}%` }"></div>
+          <div
+            class="bg-primary-600 h-2.5 rounded-full"
+            :style="{ width: `${(logoutRemaining / 8000) * 100}%` }"
+          ></div>
         </div>
         <button
           @click="handleCancelLogout"
@@ -208,7 +217,7 @@ const appName = computed(() => packageJson.displayName)
 
 const handleLogout = async () => {
   isLoggingOut.value = true
-  await authStore.logout((remaining) => {
+  await authStore.logout(remaining => {
     logoutRemaining.value = remaining
   })
 }
