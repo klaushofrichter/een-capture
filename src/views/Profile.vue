@@ -52,6 +52,25 @@
               <div class="mt-6 border-t border-gray-200 pt-6">
                 <h4 class="text-lg font-medium text-gray-900 mb-4">Credentials</h4>
                 <div class="space-y-4">
+                  <div class="grid grid-cols-8 gap-4">
+                    <div class="col-span-6">
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Base URL</label>
+                      <input
+                        :value="authStore.hostname"
+                        readonly
+                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                      />
+                    </div>
+                    <div class="col-span-2">
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Port</label>
+                      <input
+                        :value="authStore.port"
+                        readonly
+                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                      />
+                    </div>
+                  </div>
+
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Access Token</label>
                     <div class="flex items-center space-x-4">
@@ -74,22 +93,55 @@
                     </div>
                   </div>
 
-                  <div class="grid grid-cols-8 gap-4">
-                    <div class="col-span-6">
-                      <label class="block text-sm font-medium text-gray-700 mb-1">Base URL</label>
-                      <input
-                        :value="authStore.hostname"
-                        readonly
-                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                      />
+                  <!-- Token Expiration -->
+                  <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Token Expiration</label>
+                    <div class="flex items-center space-x-2">
+                      <div class="flex-1">
+                        <input
+                          :value="tokenExpirationText"
+                          readonly
+                          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                        />
+                      </div>
+                      <div class="w-24">
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                          <div 
+                            class="h-2.5 rounded-full transition-all duration-1000"
+                            :class="{
+                              'bg-green-500': tokenExpirationPercentage > 50,
+                              'bg-yellow-500': tokenExpirationPercentage <= 50 && tokenExpirationPercentage > 25,
+                              'bg-red-500': tokenExpirationPercentage <= 25
+                            }"
+                            :style="{ width: `${tokenExpirationPercentage}%` }"
+                          ></div>
+                        </div>
+                      </div>
                     </div>
-                    <div class="col-span-2">
-                      <label class="block text-sm font-medium text-gray-700 mb-1">Port</label>
-                      <input
-                        :value="authStore.port"
-                        readonly
-                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                      />
+                  </div>
+
+                  <!-- Refresh Token Status -->
+                  <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Refresh Token</label>
+                    <div class="flex items-center space-x-4">
+                      <div class="flex-1">
+                        <input
+                          :value="hasRefreshToken ? 'Available' : 'Not Available'"
+                          readonly
+                          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                        />
+                      </div>
+                      <button
+                        v-if="hasRefreshToken"
+                        @click="handleRefresh"
+                        :disabled="isRefreshing"
+                        class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <span v-if="isRefreshing" class="mr-2">
+                          <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        </span>
+                        {{ isRefreshing ? 'Refreshing...' : 'Refresh' }}
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -103,18 +155,46 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onUnmounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { userService } from '../services/user'
+import { refreshToken } from '../services/auth'
 import packageJson from '../../package.json'
 
 const authStore = useAuthStore()
 const loading = ref(false)
 const error = ref(null)
 const showToken = ref(false)
+let expirationInterval = null
+const forceUpdate = ref(0)
+const isRefreshing = ref(false)
 
 const userProfile = computed(() => authStore.userProfile)
 const pageTitle = computed(() => `${packageJson.displayName} - Profile`)
+const hasRefreshToken = computed(() => !!localStorage.getItem('refresh_token'))
+
+const tokenExpirationPercentage = computed(() => {
+  forceUpdate.value
+  const remaining = authStore.getTokenTimeRemaining()
+  if (!remaining) return 0
+  const percentage = Math.round((remaining / 3600000) * 100)
+  return Math.min(100, Math.max(0, percentage))
+})
+
+const tokenExpirationText = computed(() => {
+  forceUpdate.value
+  const remaining = authStore.getTokenTimeRemaining()
+  if (!remaining) return 'No token'
+  
+  const hours = Math.floor(remaining / 3600000)
+  const minutes = Math.floor((remaining % 3600000) / 60000)
+  
+  if (hours >= 2) {
+    return `more than ${hours} hours remaining`
+  } else {
+    return `${minutes} minutes remaining`
+  }
+})
 
 async function fetchUserProfile() {
   if (!authStore.baseUrl || !authStore.token) {
@@ -158,8 +238,36 @@ function toggleAndCopyToken() {
   }
 }
 
+async function handleRefresh() {
+  if (isRefreshing.value) return
+  
+  isRefreshing.value = true
+  try {
+    const success = await refreshToken()
+    if (success) {
+      // Force update the token expiration display
+      forceUpdate.value++
+    }
+  } catch (error) {
+    console.error('Failed to refresh token:', error)
+  } finally {
+    isRefreshing.value = false
+  }
+}
+
 onMounted(() => {
   document.title = pageTitle.value
   fetchUserProfile()
+  
+  // Update expiration time every second
+  expirationInterval = setInterval(() => {
+    forceUpdate.value++
+  }, 1000)
+})
+
+onUnmounted(() => {
+  if (expirationInterval) {
+    clearInterval(expirationInterval)
+  }
 })
 </script>

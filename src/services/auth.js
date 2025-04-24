@@ -34,6 +34,8 @@ async function getToken(code) {
     const response = await api.post('/oauth2/token', tokenParams)
     return {
       token: response.data.access_token,
+      refreshToken: response.data.refresh_token,
+      expiresIn: response.data.expires_in,
       httpsBaseUrl: response.data.httpsBaseUrl
     }
   } catch (error) {
@@ -49,8 +51,9 @@ async function getToken(code) {
 export const handleAuthCallback = async code => {
   const authStore = useAuthStore()
   try {
-    const { token, httpsBaseUrl } = await getToken(code)
-    authStore.setToken(token)
+    const { token, refreshToken, expiresIn, httpsBaseUrl } = await getToken(code)
+    authStore.setToken(token, expiresIn)
+    authStore.setRefreshToken(refreshToken)
     authStore.setBaseUrl(httpsBaseUrl)
     return { token, httpsBaseUrl }
   } catch (error) {
@@ -60,8 +63,9 @@ export const handleAuthCallback = async code => {
 }
 
 export const refreshToken = async () => {
+  const authStore = useAuthStore()
   try {
-    const refreshToken = localStorage.getItem('refresh_token')
+    const refreshToken = authStore.refreshToken
     if (!refreshToken) return false
 
     const api = createAuthApi()
@@ -75,8 +79,8 @@ export const refreshToken = async () => {
       })
     )
 
-    const authStore = useAuthStore()
-    authStore.setToken(response.data.access_token)
+    authStore.setToken(response.data.access_token, response.data.expires_in)
+    authStore.setRefreshToken(response.data.refresh_token)
     if (response.data.httpsBaseUrl) {
       authStore.setBaseUrl(response.data.httpsBaseUrl)
     }
