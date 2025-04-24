@@ -1,4 +1,5 @@
 import { useAuthStore } from '../stores/auth'
+import { createAuthApi } from './api'
 
 const CLIENT_ID = import.meta.env.VITE_EEN_CLIENT_ID
 const CLIENT_SECRET = import.meta.env.VITE_EEN_CLIENT_SECRET
@@ -28,23 +29,18 @@ async function getToken(code) {
     redirect_uri: REDIRECT_URI
   })
 
-  const response = await fetch(TOKEN_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-    body: tokenParams
-  })
-
-  if (!response.ok) {
-    const errorText = await response.text()
-    throw new Error(`Failed to get access token: ${response.status} ${response.statusText}`)
-  }
-
-  const data = await response.json()
-  return {
-    token: data.access_token,
-    httpsBaseUrl: data.httpsBaseUrl
+  try {
+    const api = createAuthApi()
+    const response = await api.post('/oauth2/token', tokenParams)
+    return {
+      token: response.data.access_token,
+      httpsBaseUrl: response.data.httpsBaseUrl
+    }
+  } catch (error) {
+    if (error.response) {
+      throw new Error(`Failed to get access token: ${error.response.status} ${error.response.statusText}`)
+    }
+    throw error
   }
 }
 
@@ -66,28 +62,18 @@ export const refreshToken = async () => {
     const refreshToken = localStorage.getItem('refresh_token')
     if (!refreshToken) return false
 
-    const response = await fetch(TOKEN_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: new URLSearchParams({
-        grant_type: 'refresh_token',
-        refresh_token: refreshToken,
-        client_id: CLIENT_ID,
-        client_secret: CLIENT_SECRET
-      })
-    })
+    const api = createAuthApi()
+    const response = await api.post('/oauth2/token', new URLSearchParams({
+      grant_type: 'refresh_token',
+      refresh_token: refreshToken,
+      client_id: CLIENT_ID,
+      client_secret: CLIENT_SECRET
+    }))
 
-    if (!response.ok) {
-      throw new Error(`Failed to refresh token: ${response.status} ${response.statusText}`)
-    }
-
-    const data = await response.json()
     const authStore = useAuthStore()
-    authStore.setToken(data.access_token)
-    if (data.httpsBaseUrl) {
-      authStore.setBaseUrl(data.httpsBaseUrl)
+    authStore.setToken(response.data.access_token)
+    if (response.data.httpsBaseUrl) {
+      authStore.setBaseUrl(response.data.httpsBaseUrl)
     }
 
     return true
