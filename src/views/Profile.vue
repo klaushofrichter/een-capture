@@ -47,6 +47,30 @@
                   <dd class="mt-1 text-sm text-gray-900">{{ userProfile.id || 'N/A' }}</dd>
                 </div>
               </dl>
+              
+              <!-- Credentials Section -->
+              <div class="mt-6 border-t border-gray-200 pt-6">
+                <h4 class="text-lg font-medium text-gray-900 mb-4">Credentials</h4>
+                <div class="flex items-center space-x-4">
+                  <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Access Token</label>
+                    <input
+                      :type="showToken ? 'text' : 'password'"
+                      :value="authStore.token"
+                      readonly
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                    />
+                  </div>
+                  <div class="flex space-x-2">
+                    <button
+                      @click="toggleAndCopyToken"
+                      class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                    >
+                      {{ showToken ? 'Hide' : 'Show & Copy' }}
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -64,6 +88,7 @@ import packageJson from '../../package.json'
 const authStore = useAuthStore()
 const loading = ref(false)
 const error = ref(null)
+const showToken = ref(false)
 
 const userProfile = computed(() => authStore.userProfile)
 const pageTitle = computed(() => `${packageJson.displayName} - Profile`)
@@ -94,6 +119,19 @@ async function fetchUserProfile() {
     error.value = err.message || 'Failed to load profile'
   } finally {
     loading.value = false
+  }
+}
+
+function copyToken() {
+  if (authStore.token) {
+    navigator.clipboard.writeText(authStore.token)
+  }
+}
+
+function toggleAndCopyToken() {
+  showToken.value = !showToken.value
+  if (showToken.value) {
+    copyToken()
   }
 }
 
