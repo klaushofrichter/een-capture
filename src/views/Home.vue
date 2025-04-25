@@ -15,6 +15,11 @@
                 <h4 class="text-sm font-medium text-gray-900">Quick Links</h4>
                 <ul class="mt-2 text-sm text-gray-600 space-y-2">
                   <li>
+                    <router-link to="/profile" class="text-primary-600 hover:text-primary-500">
+                      Profile
+                    </router-link>
+                  </li>
+                  <li>
                     <router-link to="/settings" class="text-primary-600 hover:text-primary-500">
                       Settings
                     </router-link>
