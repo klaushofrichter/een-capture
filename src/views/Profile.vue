@@ -106,7 +106,7 @@
                           class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                         />
                       </div>
-                      <div class="w-24">
+                      <div v-if="tokenExpirationText !== 'Token expiration date is unknown'" class="w-24">
                         <div class="w-full bg-gray-200 rounded-full h-2.5">
                           <div
                             class="h-2.5 rounded-full transition-all duration-1000"
@@ -131,7 +131,7 @@
                     <div class="flex items-center space-x-4">
                       <div class="flex-1">
                         <input
-                          :value="hasRefreshToken ? 'Available' : 'Not Available'"
+                          :value="hasRefreshToken ? 'Available' : 'No Refresh Token available'"
                           readonly
                           class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                         />
@@ -183,7 +183,8 @@ const hasRefreshToken = computed(() => !!localStorage.getItem('refresh_token'))
 const tokenExpirationPercentage = computed(() => {
   forceUpdate.value
   const remaining = authStore.getTokenTimeRemaining()
-  if (!remaining) return 0
+  if (remaining === null || remaining === undefined) return 50 // Show as half-full when unknown
+  if (remaining <= 0) return 0
   const percentage = Math.round((remaining / 3600000) * 100)
   return Math.min(100, Math.max(0, percentage))
 })
@@ -191,7 +192,8 @@ const tokenExpirationPercentage = computed(() => {
 const tokenExpirationText = computed(() => {
   forceUpdate.value
   const remaining = authStore.getTokenTimeRemaining()
-  if (!remaining) return 'No token'
+  if (remaining === null || remaining === undefined) return 'Token expiration date is unknown'
+  if (remaining <= 0) return 'Token expired'
 
   const hours = Math.floor(remaining / 3600000)
   const minutes = Math.floor((remaining % 3600000) / 60000)
