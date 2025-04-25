@@ -5,8 +5,6 @@ const CLIENT_ID = import.meta.env.VITE_EEN_CLIENT_ID
 const CLIENT_SECRET = import.meta.env.VITE_EEN_CLIENT_SECRET
 const REDIRECT_URI = 'http://127.0.0.1:3333'
 const AUTH_URL = 'https://auth.eagleeyenetworks.com/oauth2/authorize'
-const TOKEN_URL = 'https://auth.eagleeyenetworks.com/oauth2/token'
-const API_URL = 'https://api.eagleeyenetworks.com/g/aaa/api/v3.0'
 
 export const getAuthUrl = () => {
   const params = new URLSearchParams({
@@ -31,7 +29,9 @@ async function getToken(code) {
 
   try {
     const api = createAuthApi()
+    console.log('Token request params:', tokenParams.toString())
     const response = await api.post('/oauth2/token', tokenParams)
+    console.log('Token response:', response.data)
     return {
       token: response.data.access_token,
       refreshToken: response.data.refresh_token,
