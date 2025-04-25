@@ -33,7 +33,9 @@ export default {
           const sessionId = crypto.randomUUID()
 
           // the refreshtoken is put into the store with the sessionId as key
-          await env.EEN_LOGIN.put(sessionId, tokens.refresh_token)
+          // NOTE: We should add an expiration time based on the expire__in value. 
+          //       Time to live is in seconds: 
+          await env.EEN_LOGIN.put(sessionId, tokens.refresh_token, {expirationTtl: expire__in})
 
           // the proxy sets a session cookie and returns the access token to the frontend
           // NOTE: we should return other data as well: expire__in, baseurl, port
