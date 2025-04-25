@@ -1,10 +1,13 @@
 name = "een-login"
 main = "./src/index.js" # Or your main worker file
-
 compatibility_date = "2025-04-01" # Or a more recent date
 
 [vars]
-# Other environment variables
+#
+# the secrets below are not here, but entered directly into the Cloudflare console
+#CLIENT_ID = "your_actual_client_id"
+#CLIENT_SECRET = "your_actual_client_secret"
+#REDIRECT_URI = "your_redirect_uri" # Example of another common variable
 
 [[kv_namespaces]]
 binding = "EEN_LOGIN" 
