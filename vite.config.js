@@ -22,7 +22,9 @@ export default defineConfig({
             console.log(`[Proxy] OAuth request: ${req.method} ${req.url}`)
           })
           proxy.on('proxyRes', (proxyRes, req, res) => {
-            console.log(`[Proxy] OAuth response: ${proxyRes.statusCode} for ${req.method} ${req.url}`)
+            console.log(
+              `[Proxy] OAuth response: ${proxyRes.statusCode} for ${req.method} ${req.url}`
+            )
           })
         }
       },
@@ -48,7 +50,9 @@ export default defineConfig({
             console.log(`[Proxy] Login API request: ${req.method} ${req.url}`)
           })
           proxy.on('proxyRes', (proxyRes, req, res) => {
-            console.log(`[Proxy] Login API response: ${proxyRes.statusCode} for ${req.method} ${req.url}`)
+            console.log(
+              `[Proxy] Login API response: ${proxyRes.statusCode} for ${req.method} ${req.url}`
+            )
           })
         }
       }
