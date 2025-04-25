@@ -9,22 +9,25 @@ export default {
     
     // this is where the proxy gets called by the frontend with the "code" that enables the 
     // proxy to get the actual tokens. 
-    if (url.pathname === '/oauth/callback') {
-      const code = url.searchParams.get('code')
-      if (code) {
+    if (url.pathname === '/oauth2/token') {
+      const code = url.searchParams.get('code');
+      const redirectUri=url.searchParams.get('redirect_uri');
+      if ((code) && (redirect_uri)) {
         try {
 
-          // the proxy uses the "code" to get the tokens 
-          const tokenResponse = await fetch('YOUR_AUTH_SERVER_TOKEN_ENDPOINT', {
+          // the proxy uses the "code" to get the tokens from EEN
+          
+          const tokenResponse = await fetch('https://auth.eagleeyenetworks.com/oauth2/token', {
             method: 'POST',
             headers: {
+              'accept: application/json',
               'Content-Type': 'application/x-www-form-urlencoded',
-              Authorization: `Basic ${btoa(`${env.CLIENT_ID}:${env.CLIENT_SECRET}`)}`
+              Authorization: `Basic ${btoa(`${env.CLIENT_ID}:${env.CLIENT_SECRET}`)}` // these come from ENV? 
             },
             body: new URLSearchParams({
               grant_type: 'authorization_code',
               code,
-              redirect_uri: 'YOUR_REDIRECT_URI'
+              redirect_uri: redirect_uri
             })
           })
           const tokens = await tokenResponse.json()
