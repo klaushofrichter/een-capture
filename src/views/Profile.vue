@@ -106,7 +106,10 @@
                           class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                         />
                       </div>
-                      <div v-if="tokenExpirationText !== 'Token expiration date is unknown'" class="w-24">
+                      <div
+                        v-if="tokenExpirationText !== 'Token expiration date is unknown'"
+                        class="w-24"
+                      >
                         <div class="w-full bg-gray-200 rounded-full h-2.5">
                           <div
                             class="h-2.5 rounded-full transition-all duration-1000"
