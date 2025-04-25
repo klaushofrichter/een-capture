@@ -33,7 +33,7 @@ export default {
           const sessionId = crypto.randomUUID()
 
           // the refreshtoken is put into the store with the sessionId as key
-          await env.MY_KV_NAMESPACE.put(sessionId, tokens.refresh_token)
+          await env.EEN_LOGIN.put(sessionId, tokens.refresh_token)
 
           // the proxy sets a session cookie and returns the access token to the frontend
           // NOTE: we should return other data as well: expire__in, baseurl, port
@@ -64,7 +64,7 @@ export default {
       if (sessionId) {
 
         // this is where the session ID is used to find the refresh token
-        const refreshToken = await env.MY_KV_NAMESPACE.get(sessionId)
+        const refreshToken = await env.EEN_LOGIN.get(sessionId)
         if (refreshToken) {
           try {
 
