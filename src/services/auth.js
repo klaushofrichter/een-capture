@@ -1,9 +1,9 @@
 import { useAuthStore } from '../stores/auth'
 import { createAuthApi } from './api'
 
-const CLIENT_ID = import.meta.env.VITE_EEN_CLIENT_ID
-const CLIENT_SECRET = import.meta.env.VITE_EEN_CLIENT_SECRET
-const REDIRECT_URI = 'http://127.0.0.1:3333'
+//const CLIENT_ID = import.meta.env.VITE_EEN_CLIENT_ID
+//const CLIENT_SECRET = import.meta.env.VITE_EEN_CLIENT_SECRET
+const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI
 const AUTH_URL = 'https://auth.eagleeyenetworks.com/oauth2/authorize'
 
 export const getAuthUrl = () => {
@@ -22,19 +22,19 @@ async function getToken(code) {
   const tokenParams = new URLSearchParams({
     grant_type: 'authorization_code',
     code,
-    client_id: CLIENT_ID,
-    client_secret: CLIENT_SECRET,
+    //client_id: CLIENT_ID,
+    //client_secret: CLIENT_SECRET,
     redirect_uri: REDIRECT_URI
   })
 
   try {
     const api = createAuthApi()
     console.log('Token request params:', tokenParams.toString())
-    const response = await api.post('/oauth2/token', tokenParams)
+    const response = await api.post('/oauth2/token', tokenParams)  // this is calling the proxy with the code
     console.log('Token response:', response.data)
     return {
       token: response.data.access_token,
-      refreshToken: response.data.refresh_token,
+      refreshToken: response.data.refresh_token, // this is to be removed 
       expiresIn: response.data.expires_in,
       httpsBaseUrl: response.data.httpsBaseUrl
     }
