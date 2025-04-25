@@ -1,13 +1,20 @@
 // wrangler.toml configuration for environment variables and KV binding
 
 export default {
+
+  // this is the request from the Frontend coming in
   async fetch(request, env, ctx) {
     const url = new URL(request.url)
-
+    console.log("proxy got called with %s", url);
+    
+    // this is where the proxy gets called by the frontend with the "code" that enables the 
+    // proxy to get the actual tokens. 
     if (url.pathname === '/oauth/callback') {
       const code = url.searchParams.get('code')
       if (code) {
         try {
+
+          // the proxy uses the "code" to get the tokens 
           const tokenResponse = await fetch('YOUR_AUTH_SERVER_TOKEN_ENDPOINT', {
             method: 'POST',
             headers: {
@@ -21,10 +28,15 @@ export default {
             })
           })
           const tokens = await tokenResponse.json()
+
+          // the proxy generates a session ID to identify the refresh token for the session
           const sessionId = crypto.randomUUID()
+
+          // the refreshtoken is put into the store with the sessionId as key
           await env.MY_KV_NAMESPACE.put(sessionId, tokens.refresh_token)
 
-          // Set an HTTP-only cookie with the session ID
+          // the proxy sets a session cookie and returns the access token to the frontend
+          // NOTE: we should return other data as well: expire__in, baseurl, port
           const response = new Response(JSON.stringify({ accessToken: tokens.access_token }), {
             headers: {
               'Content-Type': 'application/json',
@@ -41,6 +53,8 @@ export default {
       }
     }
 
+    // this is where the frontend asks the proxy to use the refresh token to generate a new access token
+    // The session Id is in the header - frontend needs to make sure it is provided 
     if (url.pathname === '/refresh') {
       const sessionId = request.headers
         .get('Cookie')
@@ -48,22 +62,30 @@ export default {
         .find(cookie => cookie.startsWith('sessionId='))
         ?.split('=')[1]
       if (sessionId) {
+
+        // this is where the session ID is used to find the refresh token
         const refreshToken = await env.MY_KV_NAMESPACE.get(sessionId)
         if (refreshToken) {
           try {
+
+            // this is the een service that generates a new access token, and new refresh token
             const refreshResponse = await fetch('YOUR_AUTH_SERVER_TOKEN_ENDPOINT', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 Authorization: `Basic ${btoa(`${env.CLIENT_ID}:${env.CLIENT_SECRET}`)}`
               },
-              body: new URLSearchParams({
+              body: new URLSearchParams({  
                 grant_type: 'refresh_token',
                 refresh_token: refreshToken,
                 client_id: env.CLIENT_ID // May be required
               })
             })
             const newTokens = await refreshResponse.json()
+
+            // this is the response to the Frontend
+            // NOTE: possibly returning more data, such as expire__in
+            // NOTE: possibly replace the stored refersh token with a new one?
             return new Response(JSON.stringify({ accessToken: newTokens.access_token }), {
               headers: { 'Content-Type': 'application/json' }
             })
