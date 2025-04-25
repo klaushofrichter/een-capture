@@ -1,0 +1,11 @@
+name = "een-login"
+main = "./src/index.js" # Or your main worker file
+
+compatibility_date = "2025-04-01" # Or a more recent date
+
+[vars]
+# Other environment variables
+
+[[kv_namespaces]]
+binding = "EEN-LOGIN" 
+id = "9575a36968644f8db08aa2f0d4a99fc1" 

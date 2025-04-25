@@ -16,17 +16,41 @@ export default defineConfig({
       '/oauth2': {
         target: 'https://auth.eagleeyenetworks.com',
         changeOrigin: true,
-        secure: false
+        secure: false,
+        configure: (proxy, options) => {
+          proxy.on('proxyReq', (proxyReq, req, res) => {
+            console.log(`[Proxy] OAuth request: ${req.method} ${req.url}`)
+          })
+          proxy.on('proxyRes', (proxyRes, req, res) => {
+            console.log(`[Proxy] OAuth response: ${proxyRes.statusCode} for ${req.method} ${req.url}`)
+          })
+        }
       },
       '/g/aaa/api': {
         target: 'https://api.eagleeyenetworks.com',
         changeOrigin: true,
-        secure: false
+        secure: false,
+        configure: (proxy, options) => {
+          proxy.on('proxyReq', (proxyReq, req, res) => {
+            console.log(`[Proxy] API request: ${req.method} ${req.url}`)
+          })
+          proxy.on('proxyRes', (proxyRes, req, res) => {
+            console.log(`[Proxy] API response: ${proxyRes.statusCode} for ${req.method} ${req.url}`)
+          })
+        }
       },
       '/api': {
         target: 'https://login.eagleeyenetworks.com',
         changeOrigin: true,
-        rewrite: path => path.replace(/^\/api/, '')
+        rewrite: path => path.replace(/^\/api/, ''),
+        configure: (proxy, options) => {
+          proxy.on('proxyReq', (proxyReq, req, res) => {
+            console.log(`[Proxy] Login API request: ${req.method} ${req.url}`)
+          })
+          proxy.on('proxyRes', (proxyRes, req, res) => {
+            console.log(`[Proxy] Login API response: ${proxyRes.statusCode} for ${req.method} ${req.url}`)
+          })
+        }
       }
     }
   },
