@@ -1,8 +1,8 @@
 import { useAuthStore } from '../stores/auth'
 import { createAuthApi } from './api'
 
-//const CLIENT_ID = import.meta.env.VITE_EEN_CLIENT_ID
-//const CLIENT_SECRET = import.meta.env.VITE_EEN_CLIENT_SECRET
+const CLIENT_ID = import.meta.env.VITE_EEN_CLIENT_ID
+const CLIENT_SECRET = import.meta.env.VITE_EEN_CLIENT_SECRET
 const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI
 const AUTH_URL = 'https://auth.eagleeyenetworks.com/oauth2/authorize'
 
@@ -34,7 +34,7 @@ async function getToken(code) {
     console.log('Token response:', response.data)
     return {
       token: response.data.access_token,
-      refreshToken: response.data.refresh_token, // this is to be removed 
+      //refreshToken: response.data.refresh_token, // this is to be removed 
       expiresIn: response.data.expires_in,
       httpsBaseUrl: response.data.httpsBaseUrl
     }

@@ -2,6 +2,9 @@ name = "een-login"
 main = "./src/index.js" # Or your main worker file
 compatibility_date = "2025-04-01" # Or a more recent date
 
+[observability.logs]
+enabled = true
+
 [vars]
 #
 # the secrets below are not here, but entered directly into the Cloudflare console
