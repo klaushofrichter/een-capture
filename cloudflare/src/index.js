@@ -3,6 +3,30 @@
 export default {
   // this is the request from the Frontend coming in
   async fetch(request, env, ctx) {
+
+    const origin = request.headers.get('Origin')
+
+    // Handle CORS preflight request
+    if (request.method === 'OPTIONS') {
+      if (origin) {
+
+        console.log('origin: ', origin)
+        const corsHeaders = {
+          'Access-Control-Allow-Origin': '*', // Or a specific origin
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization', // Add any other allowed headers
+          'Access-Control-Allow-Credentials': 'true', // If you need to send/receive cookies or auth headers
+          'Access-Control-Max-Age': '86400' // 24 hours
+        }
+        return new Response(null, {
+          status: 204, // No Content
+          headers: corsHeaders
+        })
+      } else {
+        return new Response(null, { status: 403 }) // Forbidden if no origin
+      }
+    }
+
     const url = new URL(request.url)
     console.log('proxy got called with ', url)
 
@@ -41,8 +65,8 @@ export default {
           console.log('expires_in: ', expires_in)
 
           //console.log('expires_in: ', expires_in)
-          //const refresh_token = tokens.refresh_token
-          //console.log('refresh_token: ', refresh_token);
+          const refresh_token = tokens.refresh_token
+          console.log('refresh_token: ', refresh_token);
           //const access_token = tokens.access_token
           //console.log('access_token: ', access_token);
 
@@ -57,15 +81,22 @@ export default {
             JSON.stringify({
               accessToken: tokens.access_token,
               expiresIn: tokens.expires_in,
-              httpsBaseUrl: tokens.httpsBaseUrl
+              httpsBaseUrl: tokens.httpsBaseUrl,
+              sessionId: sessionId
             }),
             {
               headers: {
                 'Content-Type': 'application/json',
-                'Set-Cookie': `sessionId=${sessionId}; Path=/; HttpOnly; Secure; SameSite=Lax`
+                'Access-Control-Allow-Origin': '*', // Or a specific origin
+                'Access-Control-Allow-Credentials': 'true' // If you need to send/receive cookies or auth headers
               }
             }
           )
+
+          // Set the Set-Cookie header directly on the response.headers object
+          //response.headers.append('Set-Cookie', `sessionId=${sessionId}; Path=/; HttpOnly; Secure; SameSite=Lax`)
+          response.headers.append('Set-Cookie', `sessionId=${sessionId}; Path=/; HttpOnly; SameSite=Lax`); // Keep Lax for now
+
           console.log('response: ', response)
           return response
         } catch (error) {
@@ -81,11 +112,16 @@ export default {
     // this is where the frontend asks the proxy to use the refresh token to generate a new access token
     // The session Id is in the header - frontend needs to make sure it is provided
     if (url.pathname === '/refresh') {
-      const sessionId = request.headers
+      console.log('refresh: request: ', request)
+      var sessionId = request.headers
         .get('Cookie')
         ?.split('; ')
         .find(cookie => cookie.startsWith('sessionId='))
         ?.split('=')[1]
+      if (!sessionId) {
+        console.log('refresh: sessionId cookie missing as cookie, trying to get it from the URL`')
+        sessionId = url.searchParams.get('sessionId')
+      }
       if (sessionId) {
         // this is where the session ID is used to find the refresh token
         console.log('refresh: sessionId: ', sessionId)
@@ -110,7 +146,8 @@ export default {
             console.log('newTokens from refresh: ', newTokens);
 
             // store the refresh token in the store
-            await env.EEN_LOGIN.put(sessionId, newTokens.refresh_token, { expirationTtl: newTokens.expires_in })
+            await env.EEN_LOGIN.put(sessionId, newTokens.refresh_token, 
+              { expirationTtl: newTokens.expires_in })
             console.log('new refresh token stored in the store')
             
             // this is the response to the Frontend

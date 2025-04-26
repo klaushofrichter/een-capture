@@ -6,8 +6,7 @@ export const createAuthApi = () => {
   return axios.create({
     baseURL: 'https://een-login.swiftsensors.workers.dev',
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Access-Control-Allow-Origin': '*'
+      'Content-Type': 'application/x-www-form-urlencoded'
     }
   })
 }

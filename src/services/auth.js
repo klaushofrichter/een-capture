@@ -31,7 +31,8 @@ async function getToken(code) {
     return {
       token: response.data.accessToken,
       expiresIn: response.data.expiresIn,
-      httpsBaseUrl: response.data.httpsBaseUrl
+      httpsBaseUrl: response.data.httpsBaseUrl,
+      sessionId: response.data.sessionId
     }
   } catch (error) {
     console.log('Error after token request /oauth2/token:', error)
@@ -49,15 +50,17 @@ export const handleAuthCallback = async code => {
   try {
 
     // we pass the code to the proxy to get the tokens
-    const { token, expiresIn, httpsBaseUrl } = await getToken(code);
+    const { token, expiresIn, httpsBaseUrl, sessionId } = await getToken(code);
     console.log('callback: token: ', token);
     console.log('callback: expiresIn: ', expiresIn);
-    console.log('callback: httpsBaseUrl: ', httpsBaseUrl);
+    console.log('callback: httpsBaseUrl: ', httpsBaseUrl)
+    console.log('callback: sessionId: ', sessionId)
 
     const authStore = useAuthStore()
     authStore.setToken(token, expiresIn)
     authStore.setBaseUrl(httpsBaseUrl)
     authStore.setRefreshToken('present') // this marks that the refresh token is present at the proxy
+    authStore.setSessionId(sessionId)
     return { token, httpsBaseUrl }
   } catch (error) {
     console.error('Authentication error:', error)
@@ -73,7 +76,7 @@ export const refreshToken = async () => {
     if (!refreshToken) return false  // there is no refresh token in the store
 
     const api = createAuthApi()
-    const response = await api.post('/refresh')  // we need to pass the session ID somehow
+    const response = await api.post('/refresh', null, { credentials: 'include' })  // we need to pass the session ID somehow
 
     console.log('refresh: response: ', response.data)
 
