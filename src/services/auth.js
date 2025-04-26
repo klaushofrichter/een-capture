@@ -39,6 +39,7 @@ async function getToken(code) {
       httpsBaseUrl: response.data.httpsBaseUrl
     }
   } catch (error) {
+    console.log('Error after token request /oauth2/token:', error)
     if (error.response) {
       throw new Error(
         `Failed to get access token: ${error.response.status} ${error.response.statusText}`

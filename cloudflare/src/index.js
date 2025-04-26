@@ -5,9 +5,6 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url)
     console.log('proxy got called with ', url)
-    console.log('request headers: ', request.headers)
-    console.log('request body: ', request.body)
-    console.log('env: ', env)
 
     // this is where the proxy gets called by the frontend with the "code" that enables the
     // proxy to get the actual tokens.
@@ -19,7 +16,8 @@ export default {
       if (code && redirectUri) {
         try {
           // the proxy uses the "code" to get the tokens from EEN
-          console.log('fetching token from EEN with code %s and redirect_uri %s', code, redirectUri)
+          console.log('fetching token from EEN with code and redirectUri ', code, redirectUri)
+          console.log('env.CLIENT_ID: ', env.CLIENT_ID)
           const tokenResponse = await fetch('https://auth.eagleeyenetworks.com/oauth2/token', {
             method: 'POST',
             headers: {
@@ -29,34 +27,50 @@ export default {
             },
             body: new URLSearchParams({
               grant_type: 'authorization_code',
-              code,
+              code: code,
+              scope: 'vms-all',
               redirect_uri: redirectUri
             })
           })
           const tokens = await tokenResponse.json()
-          console.log('token response from EEN: %s', tokens)
-          // the proxy generates a session ID to identify the refresh token for the session
+          console.log("tokens message from een: ", tokens);
+            // the proxy generates a session ID to identify the refresh token for the session
           const sessionId = crypto.randomUUID()
+          console.log('sessionId: ', sessionId)
+
+          //const expires_in = tokens.expires_in
+          //console.log('expires_in: ', expires_in)
+          //const refresh_token = tokens.refresh_token
+          //console.log('refresh_token: ', refresh_token);
+          //const access_token = tokens.access_token
+          //console.log('access_token: ', access_token);
 
           // the refreshtoken is put into the store with the sessionId as key
           // NOTE: We should add an expiration time based on the expire__in value.
           //       Time to live is in seconds:
-          await env.EEN_LOGIN.put(sessionId, tokens.refresh_token, { expirationTtl: expire__in })
+          await env.EEN_LOGIN.put(sessionId, tokens.refresh_token, { expirationTtl: expires_in })
 
           // the proxy sets a session cookie and returns the access token to the frontend
           // NOTE: we should return other data as well: expire__in, baseurl, port
-          const response = new Response(JSON.stringify({ accessToken: tokens.access_token }), {
+          const response = new Response(JSON.stringify(
+            { accessToken: tokens.access_token,
+              expiresIn: tokens.expires_in,
+              httpsBaseUrl: tokens.httpsBaseUrl
+            }), {
             headers: {
               'Content-Type': 'application/json',
               'Set-Cookie': `sessionId=${sessionId}; Path=/; HttpOnly; Secure; SameSite=Lax`
             }
           })
-          return response
+          console.log('response: ', response)
+          return response;
+
         } catch (error) {
           console.error('Token exchange error:', error)
           return new Response('Token exchange failed', { status: 500 })
         }
       } else {
+        console.log('Authorization code missing')
         return new Response('Authorization code missing', { status: 400 })
       }
     }
