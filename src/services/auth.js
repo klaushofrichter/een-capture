@@ -29,12 +29,12 @@ async function getToken(code) {
 
   try {
     const api = createAuthApi()
-    console.log('Token request params:', tokenParams.toString())
-    const response = await api.post('/oauth2/token', tokenParams)  // this is calling the proxy with the code
+    console.log('Token request params:', tokenParams)
+    const response = await api.post('/oauth2/token?' + tokenParams) // this is calling the proxy with the code
     console.log('Token response:', response.data)
     return {
       token: response.data.access_token,
-      //refreshToken: response.data.refresh_token, // this is to be removed 
+      //refreshToken: response.data.refresh_token, // this is to be removed
       expiresIn: response.data.expires_in,
       httpsBaseUrl: response.data.httpsBaseUrl
     }
