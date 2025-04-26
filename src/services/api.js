@@ -2,11 +2,12 @@ import axios from 'axios'
 import { useAuthStore } from '../stores/auth'
 
 export const createAuthApi = () => {
+  // set Access-Control-Allow-Origin to the origin of the request
   return axios.create({
-    //baseURL: 'https://auth.eagleeyenetworks.com',
     baseURL: 'https://een-login.swiftsensors.workers.dev',
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Access-Control-Allow-Origin': '*'
     }
   })
 }

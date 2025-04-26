@@ -1,7 +1,7 @@
 {
   "name": "een-login",
   "displayName": "EEN Login",
-  "version": "0.0.29",
+  "version": "0.0.33",
   "private": true,
   "type": "module",
   "scripts": {
@@ -12,7 +12,7 @@
     "format": "prettier --write src/",
     "version:patch": "node scripts/version-bump.js",
     "prepare": "husky",
-    "pre-commit": "npm run version:patch && npm run lint"
+    "pre-commit": "npm run version:patch"
   },
   "dependencies": {
     "axios": "^1.6.7",

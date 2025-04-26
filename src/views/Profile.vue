@@ -255,9 +255,10 @@ async function handleRefresh() {
 
   isRefreshing.value = true
   try {
-    const success = await refreshToken()
+    const success = await refreshToken()  // this calls the proxy to get the refresh token
     if (success) {
       // Force update the token expiration display
+      console.log('handleRefresh: success')
       forceUpdate.value++
     }
   } catch (error) {
