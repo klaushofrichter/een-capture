@@ -5,7 +5,7 @@ export default {
   // this is the request from the Frontend coming in
   async fetch(request, env, ctx) {
     const url = new URL(request.url)
-    console.log("proxy got called with %s", url);
+    console.log("proxy got called with ", url);
     
     // this is where the proxy gets called by the frontend with the "code" that enables the 
     // proxy to get the actual tokens. 
@@ -16,13 +16,13 @@ export default {
         try {
 
           // the proxy uses the "code" to get the tokens from EEN
-          
+          console.log("fetching token from EEN with code %s and redirect_uri %s", code, redirect_uri);
           const tokenResponse = await fetch('https://auth.eagleeyenetworks.com/oauth2/token', {
             method: 'POST',
             headers: {
-              'accept: application/json',
+              'accept': 'application/json',
               'Content-Type': 'application/x-www-form-urlencoded',
-              Authorization: `Basic ${btoa(`${env.CLIENT_ID}:${env.CLIENT_SECRET}`)}` // these come from ENV? 
+              'Authorization': `Basic ${btoa(`${env.CLIENT_ID}:${env.CLIENT_SECRET}`)}` // these come from ENV? 
             },
             body: new URLSearchParams({
               grant_type: 'authorization_code',
@@ -31,7 +31,7 @@ export default {
             })
           })
           const tokens = await tokenResponse.json()
-
+          console.log("token response from EEN: %s", tokens);
           // the proxy generates a session ID to identify the refresh token for the session
           const sessionId = crypto.randomUUID()
 
