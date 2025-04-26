@@ -33,12 +33,13 @@ export default {
             })
           })
           const tokens = await tokenResponse.json()
-          console.log("tokens message from een: ", tokens);
-            // the proxy generates a session ID to identify the refresh token for the session
-          const sessionId = crypto.randomUUID()
+          console.log('tokens message from een: ', tokens)
+          // the proxy generates a session ID to identify the refresh token for the session
+          const sessionId = crypto.randomUUID();
+          const expires_in = tokens.expires_in;
           console.log('sessionId: ', sessionId)
+          console.log('expires_in: ', expires_in)
 
-          //const expires_in = tokens.expires_in
           //console.log('expires_in: ', expires_in)
           //const refresh_token = tokens.refresh_token
           //console.log('refresh_token: ', refresh_token);
@@ -51,20 +52,22 @@ export default {
           await env.EEN_LOGIN.put(sessionId, tokens.refresh_token, { expirationTtl: expires_in })
 
           // the proxy sets a session cookie and returns the access token to the frontend
-          // NOTE: we should return other data as well: expire__in, baseurl, port
-          const response = new Response(JSON.stringify(
-            { accessToken: tokens.access_token,
+          console.log('tokens.expires_in: ', tokens.expires_in)
+          const response = new Response(
+            JSON.stringify({
+              accessToken: tokens.access_token,
               expiresIn: tokens.expires_in,
               httpsBaseUrl: tokens.httpsBaseUrl
-            }), {
-            headers: {
-              'Content-Type': 'application/json',
-              'Set-Cookie': `sessionId=${sessionId}; Path=/; HttpOnly; Secure; SameSite=Lax`
+            }),
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                'Set-Cookie': `sessionId=${sessionId}; Path=/; HttpOnly; Secure; SameSite=Lax`
+              }
             }
-          })
+          )
           console.log('response: ', response)
-          return response;
-
+          return response
         } catch (error) {
           console.error('Token exchange error:', error)
           return new Response('Token exchange failed', { status: 500 })
@@ -85,28 +88,36 @@ export default {
         ?.split('=')[1]
       if (sessionId) {
         // this is where the session ID is used to find the refresh token
+        console.log('refresh: sessionId: ', sessionId)
         const refreshToken = await env.EEN_LOGIN.get(sessionId)
         if (refreshToken) {
           try {
             // this is the een service that generates a new access token, and new refresh token
-            const refreshResponse = await fetch('YOUR_AUTH_SERVER_TOKEN_ENDPOINT', {
+            const refreshResponse = await fetch('/oauth2/token', {
               method: 'POST',
               headers: {
+                'accept': 'application/json',
                 'Content-Type': 'application/x-www-form-urlencoded',
                 Authorization: `Basic ${btoa(`${env.CLIENT_ID}:${env.CLIENT_SECRET}`)}`
               },
               body: new URLSearchParams({
                 grant_type: 'refresh_token',
                 refresh_token: refreshToken,
-                client_id: env.CLIENT_ID // May be required
+                scope: 'vms.all'
               })
             })
             const newTokens = await refreshResponse.json()
+            console.log('newTokens from refresh: ', newTokens);
 
+            // store the refresh token in the store
+            await env.EEN_LOGIN.put(sessionId, newTokens.refresh_token, { expirationTtl: newTokens.expires_in })
+            console.log('new refresh token stored in the store')
+            
             // this is the response to the Frontend
-            // NOTE: possibly returning more data, such as expire__in
-            // NOTE: possibly replace the stored refersh token with a new one?
-            return new Response(JSON.stringify({ accessToken: newTokens.access_token }), {
+            // NOTE: do we need to return the sessionId?
+            return new Response(JSON.stringify(
+                { accessToken: newTokens.access_token, 
+                  expiresIn: newTokens.expires_in }), {
               headers: { 'Content-Type': 'application/json' }
             })
           } catch (error) {
@@ -118,6 +129,7 @@ export default {
           return new Response('Invalid session', { status: 401 })
         }
       } else {
+        console.log('refresh: sessionId cookie missing')
         return new Response('Session ID cookie missing', { status: 401 })
       }
     }
