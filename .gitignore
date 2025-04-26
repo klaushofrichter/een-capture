@@ -158,11 +158,3 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
-
-# Cloudflare
-cloudflare/wrangler.toml
-cloudflare/src/index.js
-cloudflare/src/index.js.map
-cloudflare/src/index.js.map.gz
-cloudflare/src/index.js.map.gz.br
-cloudflare/src/index.js.map.gz.br.br
