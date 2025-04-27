@@ -37,13 +37,13 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Start Vite server
-        run: |
-          npm run preview &
-          echo "Waiting for server to start..."
-          while ! nc -z 127.0.0.1 3333; do
-            sleep 1
-          done
+#      - name: Start Vite server
+#        run: |
+#          npm run preview &
+#          echo "Waiting for server to start..."
+#          while ! nc -z 127.0.0.1 3333; do
+#            sleep 1
+#          done
 
       - name: Run Playwright tests
         run: npx playwright test
