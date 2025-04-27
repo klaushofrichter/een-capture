@@ -15,5 +15,15 @@ module.exports = {
     'no-unused-vars': 'warn',
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off'
-  }
+  },
+  overrides: [
+    {
+      files: ['tests/**/*.js', 'playwright.config.js'],
+      env: {
+        node: true,
+        'playwright/globals': true
+      },
+      extends: ['plugin:playwright/recommended']
+    }
+  ]
 }
