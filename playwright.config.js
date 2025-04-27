@@ -10,8 +10,9 @@ export default defineConfig({
   use: {
     baseURL: 'http://127.0.0.1:3333',
     trace: 'on-first-retry',
-    video: 'on-first-retry'
+    video: 'on'
   },
+  outputDir: './test-results/',
   projects: [
     {
       name: 'chromium',

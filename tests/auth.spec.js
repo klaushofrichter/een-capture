@@ -111,6 +111,29 @@ test.describe('Authentication and Navigation', () => {
     await expect(page.getByText('User Profile')).toBeVisible({ timeout: 30000 })
     await page.waitForLoadState('domcontentloaded')
     console.log('Checked for profile page')
+    
+    // Capture credentials from the Profile page
+    console.log('Capturing credentials from Profile page')
+    
+    // Click the Show & Copy button to reveal the token
+    await page.getByRole('button', { name: 'Show & Copy' }).click()
+    
+    // Capture the access token - now it should be visible as text
+    const accessToken = await page.locator('input[type="text"]').inputValue()
+    console.log('Access token captured')
+    
+    // Capture the base URL using the proper selector
+    const baseUrl = await page.locator('label:has-text("Base URL")').evaluate(label => {
+      return label.nextElementSibling.value;
+    });
+    console.log('Base URL captured: ', baseUrl)
+    
+    // Capture the port using the proper selector
+    const port = await page.locator('label:has-text("Port")').evaluate(label => {
+      return label.nextElementSibling.value;
+    });
+    console.log('Port captured: ', port)
+    
     await page.getByRole('navigation').getByRole('link', { name: 'About' }).click()
     await page.waitForURL(/.*\/about$/, { timeout: 10000 })
     await expect(page.getByText('About EEN Login')).toBeVisible()
@@ -166,5 +189,41 @@ test.describe('Authentication and Navigation', () => {
     await expect(page.getByText('Welcome to EEN Login')).toBeVisible()
     await expect(page.getByText('Sign in with Eagle Eye Networks')).toBeVisible()
     console.log('Checked logout')
+    
+    // Now test direct access with the captured credentials
+    console.log('Testing Direct Access with captured credentials')
+    
+    // Navigate to the direct access page
+    await page.goto('/direct')
+    await expect(page.getByRole('heading', { name: /Direct Access to EEN Login/ })).toBeVisible()
+    
+    // Fill in the captured credentials
+    await page.getByLabel('Access Token').fill(accessToken)
+    await page.getByLabel('Base URL').fill(baseUrl)
+    await page.getByLabel('Port').fill(port)
+    
+    // Click the Proceed button
+    await page.getByRole('button', { name: 'Proceed' }).click()
+    
+    // Verify we're on the home page
+    await page.waitForURL(/.*\/home$/, { timeout: 15000 })
+    await expect(page.getByText('Welcome to EEN Login')).toBeVisible()
+    await expect(page.getByText('You have successfully logged in')).toBeVisible()
+    console.log('Direct access successful')
+    
+    // Logout again, but this time use the OK button
+    console.log('Testing logout with OK button')
+    await page.getByRole('button', { name: 'Logout' }).click()
+    
+    // Verify the logout modal is shown
+    await expect(page.getByText('Goodbye!')).toBeVisible()
+    
+    // Click the OK button this time
+    await page.getByRole('button', { name: 'OK' }).click()
+    
+    // Verify we're back on the login page
+    await expect(page).toHaveURL('/', { timeout: 10000 })
+    await expect(page.getByText('Welcome to EEN Login')).toBeVisible()
+    console.log('Logout with OK button successful')
   })
 })
