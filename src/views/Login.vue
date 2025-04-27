@@ -18,6 +18,7 @@
       class="absolute bottom-4 flex items-center space-x-2 text-xs text-gray-400 dark:text-gray-500"
     >
       <span>v{{ appVersion }}</span>
+      <span v-if="lastCommitDate" class="text-gray-300 dark:text-gray-600">| {{ lastCommitDate }}</span>
       <span class="text-gray-300 dark:text-gray-600">|</span>
       <a
         href="https://github.com/klaushofrichter/een-login/blob/develop/README.md"
@@ -53,6 +54,10 @@ const route = useRoute()
 // eslint-disable-next-line no-unused-vars
 const authStore = useAuthStore()
 const appVersion = computed(() => packageJson.version)
+const lastCommitDate = computed(() => {
+  if (!packageJson.lastCommit) return null
+  return packageJson.lastCommit
+})
 const isProcessingCallback = ref(false)
 
 const handleLogin = () => {
