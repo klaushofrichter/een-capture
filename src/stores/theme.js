@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, watch } from 'vue'
+import { ref /* watch */ } from 'vue'
 
 export const useThemeStore = defineStore('theme', () => {
   const theme = ref(localStorage.getItem('theme') || 'system')
@@ -24,10 +24,10 @@ export const useThemeStore = defineStore('theme', () => {
   }
 
   // Set theme
-  const setTheme = (newTheme) => {
+  const setTheme = newTheme => {
     theme.value = newTheme
     localStorage.setItem('theme', newTheme)
-    
+
     if (newTheme === 'dark') {
       document.documentElement.classList.add('dark')
     } else if (newTheme === 'light') {
@@ -47,4 +47,4 @@ export const useThemeStore = defineStore('theme', () => {
     theme,
     setTheme
   }
-}) 
+})

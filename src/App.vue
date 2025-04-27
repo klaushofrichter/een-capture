@@ -8,7 +8,7 @@
       <div class="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-md w-full mx-4 text-center">
         <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Goodbye!</h2>
         <p class="text-gray-600 dark:text-gray-400 mb-4">
-          Thank you for using {{ appName }}. You will be logged out in
+          Thank you for using {{ APP_NAME }}. You will be logged out in
           {{ Math.ceil(logoutRemaining / 1000) }} seconds.
         </p>
         <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mb-6">
@@ -39,7 +39,9 @@
         <div class="flex justify-between h-16">
           <div class="flex">
             <div class="flex-shrink-0 flex items-center">
-              <span class="text-xl font-bold text-primary-600 dark:text-primary-400">{{ appName }}</span>
+              <span class="text-xl font-bold text-primary-600 dark:text-primary-400">{{
+                APP_NAME
+              }}</span>
             </div>
             <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
               <router-link
@@ -212,18 +214,23 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 import { useThemeStore } from './stores/theme'
-import packageJson from '../package.json'
+import { APP_NAME } from './constants'
 
+// Route is used for navigation active classes
 const route = useRoute()
+// Router is used for programmatic navigation - though we use window.location directly in handleImmediateLogout
+// eslint-disable-next-line no-unused-vars
 const router = useRouter()
+// Auth store is used for logout functionality
 const authStore = useAuthStore()
+// Theme store is used for dark/light mode functionality
+// eslint-disable-next-line no-unused-vars
 const themeStore = useThemeStore()
 const isMobileMenuOpen = ref(false)
 const isLoggingOut = ref(false)
 const logoutRemaining = ref(8000)
 
 const isLoginPage = computed(() => route.path === '/' || route.path === '/direct')
-const appName = computed(() => packageJson.displayName)
 
 const handleLogout = async () => {
   isLoggingOut.value = true
