@@ -39,7 +39,7 @@ jobs:
               owner,
               repo,
               workflow_id: 'test.yml',
-              branch: 'prod',
+              branch: 'production',
               per_page: 1
             });
             
