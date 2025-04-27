@@ -51,7 +51,7 @@
 </template>
 
 <script setup>
-import { onMounted, computed } from 'vue'
+import { onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { APP_NAME } from '../constants'
 
