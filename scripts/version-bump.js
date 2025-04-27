@@ -12,6 +12,9 @@ const packagePath = path.join(__dirname, '..', 'package.json')
 const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'))
 const currentVersion = packageJson.version
 
+// Add lastCommit with current date
+packageJson.lastCommit = new Date().toISOString()
+
 // Split version into major, minor, patch
 const [major, minor, patch] = currentVersion.split('.').map(Number)
 const newVersion = `${major}.${minor}.${patch + 1}`
@@ -21,3 +24,4 @@ packageJson.version = newVersion
 fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2) + '\n')
 
 console.log(`Version incremented from ${currentVersion} to ${newVersion}`)
+console.log(`Added lastCommit: ${packageJson.lastCommit}`)

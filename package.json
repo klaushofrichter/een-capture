@@ -1,11 +1,12 @@
 {
   "name": "een-login",
-  "version": "0.0.50",
+  "version": "0.0.51",
+  "lastCommit": "Apr 27 2025, 10:00:00 AM Central Time",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/prepare-dist-package.js",
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
     "format": "prettier --write src/",
