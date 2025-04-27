@@ -31,8 +31,7 @@ jobs:
               owner,
               repo,
               workflow_id: 'deploy.yml',
-              branch: 'prod',
-              per_page: 1
+              branch: 'production',
             });
             
             // Get the test workflow run
