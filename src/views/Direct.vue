@@ -25,37 +25,40 @@
             </div>
 
             <div>
-              <label
-                for="baseUrl"
-                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-              >
-                Base URL
-              </label>
-              <div class="mt-1">
-                <input
-                  id="baseUrl"
-                  v-model="baseUrl"
-                  type="text"
-                  required
-                  placeholder="e.g., example.eagleeyenetworks.com"
-                  class="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label for="port" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Port
-              </label>
-              <div class="mt-1">
-                <input
-                  id="port"
-                  v-model="port"
-                  type="number"
-                  required
-                  placeholder="443"
-                  class="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100"
-                />
+              <div class="flex items-center space-x-4">
+                <div class="w-3/4">
+                  <label
+                    for="baseUrl"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >
+                    Base URL
+                  </label>
+                  <div class="mt-1">
+                    <input
+                      id="baseUrl"
+                      v-model="baseUrl"
+                      type="text"
+                      required
+                      placeholder="api.c021.eagleeyenetworks.com"
+                      class="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100"
+                    />
+                  </div>
+                </div>
+                <div class="w-1/4">
+                  <label for="port" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Port
+                  </label>
+                  <div class="mt-1">
+                    <input
+                      id="port"
+                      v-model="port"
+                      type="number"
+                      required
+                      placeholder="443"
+                      class="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
