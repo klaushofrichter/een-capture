@@ -2,7 +2,7 @@
   <div class="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
     <div class="text-center">
       <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-        Direct Access to {{ appName }}
+        Direct Access to {{ APP_NAME }}
       </h2>
       <div v-if="error" class="mb-4 text-sm text-red-600 dark:text-red-400">{{ error }}</div>
       <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl">
@@ -128,6 +128,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { userService } from '../services/user'
 import packageJson from '../../package.json'
+import { APP_NAME } from '../constants'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -136,7 +137,6 @@ const baseUrl = ref('')
 const port = ref(443)
 const error = ref('')
 const isLoading = ref(false)
-const appName = computed(() => packageJson.displayName)
 const appVersion = computed(() => packageJson.version)
 
 async function handleSubmit() {
@@ -180,6 +180,6 @@ async function handleSubmit() {
 }
 
 onMounted(() => {
-  document.title = `${appName.value} - Direct Access`
+  document.title = `${APP_NAME} - Direct Access`
 })
 </script>

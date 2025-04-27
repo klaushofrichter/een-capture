@@ -4,7 +4,7 @@
       <div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
         <div class="px-4 py-5 sm:px-6">
           <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">
-            Welcome to {{ appName }}
+            Welcome to {{ APP_NAME }}
           </h3>
           <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
             You have successfully logged in to your Eagle Eye Networks account
@@ -53,14 +53,13 @@
 <script setup>
 import { onMounted, computed } from 'vue'
 import { useAuthStore } from '../stores/auth'
-import packageJson from '../../package.json'
+import { APP_NAME } from '../constants'
 
 // We import auth store for potential future use but don't use it directly yet
 // eslint-disable-next-line no-unused-vars
 const authStore = useAuthStore()
-const appName = computed(() => packageJson.displayName)
 
 onMounted(() => {
-  document.title = `${appName.value} - Home`
+  document.title = `${APP_NAME} - Home`
 })
 </script>

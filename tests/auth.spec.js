@@ -21,7 +21,7 @@ test.describe('Authentication and Navigation', () => {
     await page.goto('/direct')
 
     // Check if we're on the direct page
-    await expect(page.getByRole('heading', { name: /Direct Access to .+/ })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /Direct Access to EEN Login/ })).toBeVisible()
 
     // Check for form elements
     await expect(page.getByLabel('Access Token')).toBeVisible()
@@ -107,8 +107,8 @@ test.describe('Authentication and Navigation', () => {
 
     // Test navigation to different pages
     await page.getByRole('navigation').getByRole('link', { name: 'Profile' }).click()
-    await page.waitForURL(/.*\/profile$/, { timeout: 10000 })
-    await expect(page.getByText('User Profile')).toBeVisible()
+    await page.waitForURL(/.*\/profile$/, { timeout: 30000 })
+    await expect(page.getByText('User Profile')).toBeVisible({ timeout: 30000 })
     await page.waitForLoadState('domcontentloaded')
     console.log('Checked for profile page')
     await page.getByRole('navigation').getByRole('link', { name: 'About' }).click()

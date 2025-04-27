@@ -1,7 +1,7 @@
 // Application constants
 
 // Application name
-export const APP_NAME = 'EEN Login App'
+export const APP_NAME = 'EEN Login'
 
 // API endpoints and configuration
 export const API_CONFIG = {
