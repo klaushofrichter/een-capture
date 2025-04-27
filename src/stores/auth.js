@@ -7,19 +7,40 @@ export const useAuthStore = defineStore('auth', () => {
   const hostname = ref(null)
   const port = ref(null)
   const userProfile = ref(null)
-
+  const tokenExpiration = ref(null)
+  const refreshToken = ref(null)
+  const sessionId = ref(null)
   const isAuthenticated = computed(() => !!token.value)
   const baseUrl = computed(() => {
     if (!hostname.value) return null
     return `https://${hostname.value}${port.value ? `:${port.value}` : ''}`
   })
 
-  function setToken(newToken) {
+  function setToken(newToken, expiresIn) {
     token.value = newToken
     if (newToken) {
       localStorage.setItem('auth_token', newToken)
+      // Set expiration time based on expires_in value
+      const expirationTime = Date.now() + expiresIn * 1000 // Convert seconds to milliseconds
+      tokenExpiration.value = expirationTime
+      localStorage.setItem('token_expiration', expirationTime.toString())
+      sessionId.value = sessionId
+      localStorage.setItem('session_id', sessionId)
     } else {
       localStorage.removeItem('auth_token')
+      localStorage.removeItem('token_expiration')
+      tokenExpiration.value = null
+      localStorage.removeItem('session_id')
+      sessionId.value = null
+    }
+  }
+
+  function setRefreshToken(newRefreshToken) {
+    refreshToken.value = newRefreshToken
+    if (newRefreshToken) {
+      localStorage.setItem('refresh_token', newRefreshToken)
+    } else {
+      localStorage.removeItem('refresh_token')
     }
   }
 
@@ -54,23 +75,18 @@ export const useAuthStore = defineStore('auth', () => {
     userProfile.value = profile
   }
 
-  function logout() {
-    token.value = null
-    user.value = null
-    hostname.value = null
-    port.value = null
-    userProfile.value = null
-    localStorage.removeItem('auth_token')
-    localStorage.removeItem('user_data')
-    localStorage.removeItem('hostname')
-    localStorage.removeItem('port')
-  }
+  // Temporary storage for credentials during logout
+  let tempCredentials = null
+  let logoutInterval = null
 
   function initialize() {
     const storedToken = localStorage.getItem('auth_token')
     const storedUser = localStorage.getItem('user_data')
     const storedHostname = localStorage.getItem('hostname')
     const storedPort = localStorage.getItem('port')
+    const storedExpiration = localStorage.getItem('token_expiration')
+    const storedRefreshToken = localStorage.getItem('refresh_token')
+    const storedSessionId = localStorage.getItem('session_id')
 
     if (storedToken) {
       token.value = storedToken
@@ -84,6 +100,114 @@ export const useAuthStore = defineStore('auth', () => {
         port.value = Number(storedPort)
       }
     }
+    if (storedExpiration) {
+      tokenExpiration.value = Number(storedExpiration)
+    }
+    if (storedRefreshToken) {
+      refreshToken.value = storedRefreshToken
+    }
+    if (storedSessionId) {
+      sessionId.value = storedSessionId
+    }
+  }
+
+  function getTokenExpirationTime() {
+    if (!tokenExpiration.value) return null
+    return tokenExpiration.value
+  }
+
+  function getTokenTimeRemaining() {
+    if (!tokenExpiration.value) return null
+    const remaining = tokenExpiration.value - Date.now()
+    return Math.max(0, remaining)
+  }
+
+  async function logout(onDelay) {
+    // Store current credentials temporarily
+    tempCredentials = {
+      token: token.value,
+      user: user.value,
+      hostname: hostname.value,
+      port: port.value,
+      userProfile: userProfile.value,
+      refreshToken: refreshToken.value,
+      sessionId: sessionId.value
+    }
+
+    // Clear store values
+    token.value = null
+    user.value = null
+    hostname.value = null
+    port.value = null
+    userProfile.value = null
+    tokenExpiration.value = null
+    refreshToken.value = null
+    sessionId.value = null
+    // Clear all localStorage items synchronously
+    localStorage.clear()
+
+    // Wait eight seconds to ensure cleanup is complete
+    if (onDelay) {
+      await new Promise(resolve => {
+        const startTime = Date.now()
+        logoutInterval = setInterval(() => {
+          const elapsed = Date.now() - startTime
+          const remaining = Math.max(0, 8000 - elapsed)
+          onDelay(remaining)
+          if (remaining === 0) {
+            clearInterval(logoutInterval)
+            logoutInterval = null
+            resolve()
+          }
+        }, 50)
+      })
+    } else {
+      await new Promise(resolve => setTimeout(resolve, 8000))
+    }
+
+    // Clear temporary credentials after successful logout
+    tempCredentials = null
+
+    // Force a full page reload to clear any cached state
+    window.location.href = '/'
+  }
+
+  function cancelLogout() {
+    if (tempCredentials) {
+      // Clear the interval if it exists
+      if (logoutInterval) {
+        clearInterval(logoutInterval)
+        logoutInterval = null
+      }
+
+      // Restore store values
+      token.value = tempCredentials.token
+      user.value = tempCredentials.user
+      hostname.value = tempCredentials.hostname
+      port.value = tempCredentials.port
+      userProfile.value = tempCredentials.userProfile
+      refreshToken.value = tempCredentials.refreshToken
+      sessionId.value = tempCredentials.sessionId
+      // Restore localStorage
+      if (token.value) localStorage.setItem('auth_token', token.value)
+      if (user.value) localStorage.setItem('user_data', JSON.stringify(user.value))
+      if (hostname.value) localStorage.setItem('hostname', hostname.value)
+      if (port.value) localStorage.setItem('port', String(port.value))
+      if (refreshToken.value) localStorage.setItem('refresh_token', refreshToken.value)
+      if (sessionId.value) localStorage.setItem('session_id', sessionId.value)
+
+      // Clear temporary credentials
+      tempCredentials = null
+    }
+  }
+
+  function setSessionId(newSessionId) {
+    sessionId.value = newSessionId
+    localStorage.setItem('session_id', newSessionId)
+  }
+
+  function getSessionId() {
+    return sessionId.value
   }
 
   // Initialize the store
@@ -95,13 +219,22 @@ export const useAuthStore = defineStore('auth', () => {
     hostname,
     port,
     userProfile,
+    tokenExpiration,
+    refreshToken,
     isAuthenticated,
     baseUrl,
+    sessionId,
     setToken,
-    setUser,
     setBaseUrl,
+    setUser,
     setUserProfile,
+    setRefreshToken,
+    initialize,
+    getTokenExpirationTime,
+    getTokenTimeRemaining,
     logout,
-    initialize
+    cancelLogout,
+    getSessionId,
+    setSessionId
   }
 })
