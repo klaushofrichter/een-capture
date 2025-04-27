@@ -36,8 +36,7 @@ jobs:
           timeout=300
           interval=10
           elapsed=0
-          url="https://${{ github.repository_owner }}.github.io/SwiftEventWeb"
-          
+          url="https://${{ github.repository_owner }}.github.io/een-login"
           echo "Waiting for $url to be available..."
           
           until curl --output /dev/null --silent --head --fail "$url"; do
