@@ -25,9 +25,9 @@ async function getToken(code) {
 
   try {
     const api = createAuthApi()
-    console.log('Token request params:', tokenParams)
+ 
     const response = await api.post('/oauth2/token?' + tokenParams) // this is calling the proxy with the code
-    console.log('Token response:', response.data)
+    
     return {
       token: response.data.accessToken,
       expiresIn: response.data.expiresIn,
@@ -35,7 +35,7 @@ async function getToken(code) {
       sessionId: response.data.sessionId
     }
   } catch (error) {
-    console.log('Error after token request /oauth2/token:', error)
+   
     if (error.response) {
       throw new Error(
         `Failed to get access token: ${error.response.status} ${error.response.statusText}`
@@ -68,13 +68,11 @@ export const refreshToken = async () => {
   const authStore = useAuthStore()
   try {
     const refreshToken = authStore.refreshToken
-    console.log('refreshToken in the store: ', refreshToken)
+    
     if (!refreshToken) return false  // there is no refresh token in the store
 
     const api = createAuthApi()
     const response = await api.post('/refresh', null, { credentials: 'include' })  // we need to pass the session ID somehow
-
-    console.log('refresh: response: ', response.data)
 
     authStore.setToken(response.data.access_token, response.data.expires_in)
     authStore.setRefreshToken('present after refresh')

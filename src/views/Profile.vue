@@ -1,23 +1,23 @@
 <template>
-  <div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-3xl mx-auto">
-      <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+      <div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
         <div class="px-4 py-5 sm:px-6">
-          <h3 class="text-lg leading-6 font-medium text-gray-900">User Profile</h3>
-          <p class="mt-1 max-w-2xl text-sm text-gray-500">
+          <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">User Profile</h3>
+          <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
             Your Eagle Eye Networks account information
           </p>
         </div>
-        <div class="border-t border-gray-200">
+        <div class="border-t border-gray-200 dark:border-gray-700">
           <div class="px-4 py-5 sm:p-6">
             <div v-if="loading" class="text-center py-4">
               <div
                 class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"
               ></div>
-              <p class="mt-2 text-sm text-gray-500">Loading profile...</p>
+              <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Loading profile...</p>
             </div>
             <div v-else-if="error" class="text-center py-4">
-              <p class="text-sm text-red-600">{{ error }}</p>
+              <p class="text-sm text-red-600 dark:text-red-400">{{ error }}</p>
               <button
                 @click="fetchUserProfile"
                 class="mt-2 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
@@ -26,60 +26,60 @@
               </button>
             </div>
             <div v-else-if="!userProfile" class="text-center py-4">
-              <p class="text-sm text-gray-500">No profile data available</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">No profile data available</p>
             </div>
             <div v-else class="grid grid-cols-1 gap-6">
               <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
                 <div class="sm:col-span-1">
-                  <dt class="text-sm font-medium text-gray-500">First Name</dt>
-                  <dd class="mt-1 text-sm text-gray-900">{{ userProfile.firstName || 'N/A' }}</dd>
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">First Name</dt>
+                  <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ userProfile.firstName || 'N/A' }}</dd>
                 </div>
                 <div class="sm:col-span-1">
-                  <dt class="text-sm font-medium text-gray-500">Last Name</dt>
-                  <dd class="mt-1 text-sm text-gray-900">{{ userProfile.lastName || 'N/A' }}</dd>
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Last Name</dt>
+                  <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ userProfile.lastName || 'N/A' }}</dd>
                 </div>
                 <div class="sm:col-span-2">
-                  <dt class="text-sm font-medium text-gray-500">Email</dt>
-                  <dd class="mt-1 text-sm text-gray-900">{{ userProfile.email || 'N/A' }}</dd>
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Email</dt>
+                  <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ userProfile.email || 'N/A' }}</dd>
                 </div>
                 <div class="sm:col-span-2">
-                  <dt class="text-sm font-medium text-gray-500">User ID</dt>
-                  <dd class="mt-1 text-sm text-gray-900">{{ userProfile.id || 'N/A' }}</dd>
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">User ID</dt>
+                  <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ userProfile.id || 'N/A' }}</dd>
                 </div>
               </dl>
 
               <!-- Credentials Section -->
-              <div class="mt-6 border-t border-gray-200 pt-6">
-                <h4 class="text-lg font-medium text-gray-900 mb-4">Credentials</h4>
+              <div class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
+                <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Credentials</h4>
                 <div class="space-y-4">
                   <div class="grid grid-cols-8 gap-4">
                     <div class="col-span-6">
-                      <label class="block text-sm font-medium text-gray-700 mb-1">Base URL</label>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Base URL</label>
                       <input
                         :value="authStore.hostname"
                         readonly
-                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm sm:text-sm dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-0 focus:border-gray-300 dark:focus:border-gray-600"
                       />
                     </div>
                     <div class="col-span-2">
-                      <label class="block text-sm font-medium text-gray-700 mb-1">Port</label>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Port</label>
                       <input
                         :value="authStore.port"
                         readonly
-                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm sm:text-sm dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-0 focus:border-gray-300 dark:focus:border-gray-600"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Access Token</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Access Token</label>
                     <div class="flex items-center space-x-4">
                       <div class="flex-1">
                         <input
                           :type="showToken ? 'text' : 'password'"
                           :value="authStore.token"
                           readonly
-                          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                          class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm sm:text-sm dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-0 focus:border-gray-300 dark:focus:border-gray-600"
                         />
                       </div>
                       <div class="flex space-x-2">
@@ -95,7 +95,7 @@
 
                   <!-- Token Expiration -->
                   <div class="mt-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                       >Token Expiration</label
                     >
                     <div class="flex items-center space-x-2">
@@ -103,14 +103,14 @@
                         <input
                           :value="tokenExpirationText"
                           readonly
-                          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                          class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm sm:text-sm dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-0 focus:border-gray-300 dark:focus:border-gray-600"
                         />
                       </div>
                       <div
                         v-if="tokenExpirationText !== 'Token expiration date is unknown'"
                         class="w-24"
                       >
-                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
                           <div
                             class="h-2.5 rounded-full transition-all duration-1000"
                             :class="{
@@ -128,7 +128,7 @@
 
                   <!-- Refresh Token Status -->
                   <div class="mt-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                       >Refresh Token</label
                     >
                     <div class="flex items-center space-x-4">
@@ -136,7 +136,7 @@
                         <input
                           :value="hasRefreshToken ? 'Available' : 'No Refresh Token available'"
                           readonly
-                          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                          class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm sm:text-sm dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-0 focus:border-gray-300 dark:focus:border-gray-600"
                         />
                       </div>
                       <button
