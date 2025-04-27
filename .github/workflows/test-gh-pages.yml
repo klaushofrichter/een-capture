@@ -1,6 +1,7 @@
 name: Test GH Pages with Playwright
 
 on:
+  workflow_dispatch:
 #  schedule:
 #    - cron: 0 6 * * 3  # This cron expression runs the workflow every Wednesday at 6am
   workflow_run:
