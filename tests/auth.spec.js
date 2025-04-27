@@ -10,7 +10,7 @@ test.describe('Authentication and Navigation', () => {
     await page.goto('/')
   })
 
-  test('should show login page with correct elements', async ({ page }) => {
+  test('login page should have correct elements and consistent styling', async ({ page }) => {
     // Check if we're on the login page
     await expect(page.getByText('Welcome to EEN Login')).toBeVisible()
     await expect(page.getByText('Sign in with Eagle Eye Networks')).toBeVisible()
@@ -24,13 +24,20 @@ test.describe('Authentication and Navigation', () => {
     const separator = bottomDiv.locator('span').nth(1)
     const readme = bottomDiv.locator('a')
 
-    // Check color consistency
+    // Check version element
     await expect(version).toHaveClass(/text-gray-400 dark:text-gray-500/)
+    await expect(version).toHaveText(/^v\d+\.\d+\.\d+$/)
+
+    // Check separator
     await expect(separator).toHaveClass(/text-gray-400 dark:text-gray-500/)
+    await expect(separator).toHaveText(/\|/)
+
+    // Check README link
     await expect(readme).toHaveClass(/text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400/)
+    await expect(readme).toHaveAttribute('href', 'https://github.com/klaushofrichter/een-login/blob/develop/README.md')
   })
 
-  test('should show direct page with correct elements', async ({ page }) => {
+  test('direct page should have correct elements and consistent styling', async ({ page }) => {
     // Navigate directly to the direct page
     await page.goto('/direct')
 
@@ -53,52 +60,17 @@ test.describe('Authentication and Navigation', () => {
     const separator = bottomDiv.locator('span').nth(1)
     const readme = bottomDiv.locator('a')
 
-    // Check color consistency
+    // Check version element
     await expect(version).toHaveClass(/text-gray-400 dark:text-gray-500/)
+    await expect(version).toHaveText(/^v\d+\.\d+\.\d+$/)
+
+    // Check separator
     await expect(separator).toHaveClass(/text-gray-400 dark:text-gray-500/)
+    await expect(separator).toHaveText(/\|/)
+
+    // Check README link
     await expect(readme).toHaveClass(/text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400/)
-  })
-
-  test('login page bottom elements have consistent styling', async ({ page }) => {
-    await page.goto('/')
-    const bottomDiv = page.locator('.absolute.bottom-4')
-    await expect(bottomDiv).toBeVisible()
-    
-    // Check version element
-    const versionSpan = bottomDiv.locator('span').first()
-    await expect(versionSpan).toHaveClass(/text-gray-400 dark:text-gray-500/)
-    await expect(versionSpan).toHaveText(/^v\d+\.\d+\.\d+$/)
-
-    // Check separator
-    const separator = bottomDiv.locator('span').nth(1)
-    await expect(separator).toHaveClass(/text-gray-400 dark:text-gray-500/)
-    await expect(separator).toHaveText(/\|/)
-
-    // Check README link
-    const readmeLink = bottomDiv.locator('a')
-    await expect(readmeLink).toHaveClass(/text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400/)
-    await expect(readmeLink).toHaveAttribute('href', 'https://github.com/klaushofrichter/een-login/blob/develop/README.md')
-  })
-
-  test('direct page bottom elements have consistent styling', async ({ page }) => {
-    await page.goto('/direct')
-    const bottomDiv = page.locator('.absolute.bottom-4')
-    await expect(bottomDiv).toBeVisible()
-    
-    // Check version element
-    const versionSpan = bottomDiv.locator('span').first()
-    await expect(versionSpan).toHaveClass(/text-gray-400 dark:text-gray-500/)
-    await expect(versionSpan).toHaveText(/^v\d+\.\d+\.\d+$/)
-
-    // Check separator
-    const separator = bottomDiv.locator('span').nth(1)
-    await expect(separator).toHaveClass(/text-gray-400 dark:text-gray-500/)
-    await expect(separator).toHaveText(/\|/)
-
-    // Check README link
-    const readmeLink = bottomDiv.locator('a')
-    await expect(readmeLink).toHaveClass(/text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400/)
-    await expect(readmeLink).toHaveAttribute('href', 'https://github.com/klaushofrichter/een-login/blob/develop/README.md')
+    await expect(readme).toHaveAttribute('href', 'https://github.com/klaushofrichter/een-login/blob/develop/README.md')
   })
 
   test('should login successfully and navigate through pages', async ({ page }) => {
