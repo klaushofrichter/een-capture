@@ -1,8 +1,9 @@
 import { useAuthStore } from '../stores/auth'
 import { createAuthApi } from './api'
+import { API_CONFIG } from '../constants'
 
 const CLIENT_ID = import.meta.env.VITE_EEN_CLIENT_ID
-const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI
+const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI || API_CONFIG.REDIRECT_URL
 const AUTH_URL = 'https://auth.eagleeyenetworks.com/oauth2/authorize'
 
 export const getAuthUrl = () => {
@@ -10,7 +11,7 @@ export const getAuthUrl = () => {
     client_id: CLIENT_ID,
     redirect_uri: REDIRECT_URI,
     response_type: 'code',
-    scope: 'vms.all'
+    scope: API_CONFIG.SCOPES
   })
   const url = `${AUTH_URL}?${params.toString()}`
   console.log('getAuthUrl returns: ', url)
@@ -25,9 +26,9 @@ async function getToken(code) {
 
   try {
     const api = createAuthApi()
- 
+
     const response = await api.post('/oauth2/token?' + tokenParams) // this is calling the proxy with the code
-    
+
     return {
       token: response.data.accessToken,
       expiresIn: response.data.expiresIn,
@@ -35,7 +36,6 @@ async function getToken(code) {
       sessionId: response.data.sessionId
     }
   } catch (error) {
-   
     if (error.response) {
       throw new Error(
         `Failed to get access token: ${error.response.status} ${error.response.statusText}`
@@ -46,11 +46,10 @@ async function getToken(code) {
 }
 
 export const handleAuthCallback = async code => {
-  console.log('handleAuthCallback called with code: ', code);
+  console.log('handleAuthCallback called with code: ', code)
   try {
-
     // we pass the code to the proxy to get the tokens
-    const { token, expiresIn, httpsBaseUrl, sessionId } = await getToken(code);
+    const { token, expiresIn, httpsBaseUrl, sessionId } = await getToken(code)
 
     const authStore = useAuthStore()
     authStore.setToken(token, expiresIn)
@@ -68,15 +67,15 @@ export const refreshToken = async () => {
   const authStore = useAuthStore()
   try {
     const refreshToken = authStore.refreshToken
-    
-    if (!refreshToken) return false  // there is no refresh token in the store
+
+    if (!refreshToken) return false // there is no refresh token in the store
 
     const api = createAuthApi()
-    const response = await api.post('/refresh', null, { credentials: 'include' })  // we need to pass the session ID somehow
+    const response = await api.post('/refresh', null, { credentials: 'include' }) // we need to pass the session ID somehow
 
     authStore.setToken(response.data.access_token, response.data.expires_in)
     authStore.setRefreshToken('present after refresh')
-  
+
     return true
   } catch (error) {
     console.error('Token refresh error:', error)

@@ -1,7 +1,9 @@
 <template>
   <div class="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
     <div class="text-center">
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Direct Access to {{ appName }}</h2>
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+        Direct Access to {{ APP_NAME }}
+      </h2>
       <div v-if="error" class="mb-4 text-sm text-red-600 dark:text-red-400">{{ error }}</div>
       <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl">
         <div class="bg-white dark:bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
@@ -23,7 +25,10 @@
             </div>
 
             <div>
-              <label for="baseUrl" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                for="baseUrl"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Base URL
               </label>
               <div class="mt-1">
@@ -99,7 +104,9 @@
         </div>
       </div>
     </div>
-    <div class="absolute bottom-4 flex items-center space-x-2 text-xs text-gray-400 dark:text-gray-500">
+    <div
+      class="absolute bottom-4 flex items-center space-x-2 text-xs text-gray-400 dark:text-gray-500"
+    >
       <span>v{{ appVersion }}</span>
       <span class="text-gray-300 dark:text-gray-600">|</span>
       <a
@@ -121,6 +128,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { userService } from '../services/user'
 import packageJson from '../../package.json'
+import { APP_NAME } from '../constants'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -129,7 +137,6 @@ const baseUrl = ref('')
 const port = ref(443)
 const error = ref('')
 const isLoading = ref(false)
-const appName = computed(() => packageJson.displayName)
 const appVersion = computed(() => packageJson.version)
 
 async function handleSubmit() {
@@ -173,6 +180,6 @@ async function handleSubmit() {
 }
 
 onMounted(() => {
-  document.title = `${appName.value} - Direct Access`
+  document.title = `${APP_NAME} - Direct Access`
 })
 </script>

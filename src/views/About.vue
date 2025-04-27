@@ -3,7 +3,9 @@
     <div class="max-w-3xl mx-auto">
       <div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
         <div class="px-4 py-5 sm:px-6">
-          <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">About {{ appName }}</h3>
+          <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">
+            About {{ APP_NAME }}
+          </h3>
           <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
             A secure authentication application for Eagle Eye Networks
           </p>
@@ -76,7 +78,9 @@
           </div>
 
           <div class="px-4 py-5 sm:p-6 border-t border-gray-200 dark:border-gray-700">
-            <h4 class="text-md font-medium text-gray-900 dark:text-gray-100 mb-4">Technology Stack</h4>
+            <h4 class="text-md font-medium text-gray-900 dark:text-gray-100 mb-4">
+              Technology Stack
+            </h4>
             <div class="grid grid-cols-2 gap-4">
               <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
                 <h5 class="text-sm font-medium text-gray-900 dark:text-gray-100">Frontend</h5>
@@ -105,14 +109,15 @@
 </template>
 
 <script setup>
-import { onMounted, computed } from 'vue'
+import { onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
-import packageJson from '../../package.json'
+import { APP_NAME } from '../constants'
 
+// We import auth store for potential future use but don't use it directly yet
+// eslint-disable-next-line no-unused-vars
 const authStore = useAuthStore()
-const appName = computed(() => packageJson.displayName)
 
 onMounted(() => {
-  document.title = `${appName.value} - About`
+  document.title = `${APP_NAME} - About`
 })
 </script>

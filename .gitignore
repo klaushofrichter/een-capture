@@ -36,6 +36,9 @@ lerna-debug.log*
 # Testing
 coverage
 *.lcov
+test-results/
+playwright-report/
+/playwright/.cache/
 
 # Debug
 npm-debug.log*

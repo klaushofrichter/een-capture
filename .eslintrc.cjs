@@ -20,9 +20,9 @@ module.exports = {
     {
       files: ['tests/**/*.js', 'playwright.config.js'],
       env: {
-        node: true,
-        'playwright/globals': true
+        node: true
       },
+      plugins: ['playwright'],
       extends: ['plugin:playwright/recommended']
     }
   ]
