@@ -37,7 +37,7 @@ lerna-debug.log*
 coverage
 *.lcov
 test-results/
-/playwright-report/
+playwright-report/
 /playwright/.cache/
 
 # Debug
