@@ -129,13 +129,36 @@ test.describe('Authentication and Navigation', () => {
     await expect(page.locator('html')).not.toHaveClass(/dark/)
     console.log('Checked for settings page')
 
-    // Test logout
+    // Test logout - first with cancel
+    console.log('Testing logout with cancel')
     await page.getByRole('button', { name: 'Logout' }).click()
 
     // Verify the logout modal is shown
     await expect(page.getByText('Goodbye!')).toBeVisible()
     await expect(page.getByText('Thank you for using')).toBeVisible()
 
+    // Wait a few seconds before canceling
+    await page.waitForTimeout(3000)
+    
+    // Click the cancel button
+    await page.getByRole('button', { name: 'Cancel Logout' }).click()
+    
+    // Verify modal is gone
+    await expect(page.getByText('Goodbye!')).not.toBeVisible()
+    console.log('Cancel logout successful')
+    
+    // Verify we're still on the settings page
+    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
+    
+    // Now test logout with completion
+    console.log('Testing full logout')
+    await page.getByRole('button', { name: 'Logout' }).click()
+    
+    // Verify the logout modal is shown again
+    await expect(page.getByText('Goodbye!')).toBeVisible()
+    await expect(page.getByText('Thank you for using')).toBeVisible()
+
+    // Wait for the logout to complete automatically
     // Using the more appropriate expect with a timeout instead of waitForTimeout
     await expect(page).toHaveURL('/', { timeout: 15000 })
 
