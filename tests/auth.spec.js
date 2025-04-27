@@ -18,7 +18,7 @@ test.describe('Authentication and Navigation', () => {
 
   test('should login successfully and navigate through pages', async ({ page }) => {
     // Increase timeout for this test
-    test.setTimeout(120000)
+    test.setTimeout(30000)
 
     // Get credentials from environment variables
     const username = process.env.TEST_USER
@@ -36,34 +36,43 @@ test.describe('Authentication and Navigation', () => {
     // Wait for the form to be ready
     await page.waitForLoadState('networkidle')
     
-    // Try multiple selectors for username and password fields
-    const usernameInput = await page.waitForSelector('input[type="text"], input[name="username"], input#username', { timeout: 60000 })
-    const passwordInput = await page.waitForSelector('input[type="password"], input[name="password"], input#password', { timeout: 60000 })
+    // email
+    const emailInput = await page.waitForSelector('#authentication--input__email', { timeout: 10000 })
+    await emailInput.fill(username)
+
+    // Find and click the next button
+    const nextButton = await page.waitForSelector('button[type="submit"]', { timeout: 10000 })
+    await nextButton.click()
     
-    await usernameInput.fill(username)
+    // password input
+    const passwordInput = await page.waitForSelector('#authentication--input__password', { timeout: 10000 })    
     await passwordInput.fill(password)
     
-    // Try to find the login button with different selectors
-    const loginButton = await page.waitForSelector('button[type="submit"], button:has-text("Login")', { timeout: 60000 })
+    // Find and click the login button
+    const loginButton = await page.waitForSelector('button[type="submit"]', { timeout: 10000 })
     await loginButton.click()
 
     // Wait for redirect back to our app and verify we're on the home page
-    await page.waitForURL(/.*\/home$/, { timeout: 60000 })
+    await page.waitForURL(/.*\/home$/, { timeout: 10000 })
     await expect(page.getByText('Welcome to EEN Login')).toBeVisible()
     await expect(page.getByText('You have successfully logged in')).toBeVisible()
+    await page.waitForLoadState('networkidle')
 
     // Test navigation to different pages
-    await page.getByRole('link', { name: 'Profile' }).click()
-    await expect(page.url()).toContain('/profile')
+    await page.getByRole('navigation').getByRole('link', { name: 'Profile' }).click()
+    await page.waitForURL(/.*\/profile$/, { timeout: 10000 })
     await expect(page.getByText('User Profile')).toBeVisible()
+    await page.waitForLoadState('networkidle')
 
-    await page.getByRole('link', { name: 'About' }).click()
-    await expect(page.url()).toContain('/about')
+    await page.getByRole('navigation').getByRole('link', { name: 'About' }).click()
+    await page.waitForURL(/.*\/about$/, { timeout: 10000 })
     await expect(page.getByText('About EEN Login')).toBeVisible()
+    await page.waitForLoadState('networkidle')
 
-    await page.getByRole('link', { name: 'Settings' }).click()
-    await expect(page.url()).toContain('/settings')
-    await expect(page.getByText('Settings')).toBeVisible()
+    await page.getByRole('navigation').getByRole('link', { name: 'Settings' }).click()
+    await page.waitForURL(/.*\/settings$/, { timeout: 10000 })
+    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
+    await page.waitForLoadState('networkidle')
 
     // Test theme switching in settings
     await page.getByRole('button', { name: 'Dark' }).click()
