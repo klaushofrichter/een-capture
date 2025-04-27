@@ -61,16 +61,16 @@
 <script setup>
 import { onMounted, computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
-import packageJson from '../../package.json'
+import { APP_NAME } from '../constants'
 
 const themeStore = useThemeStore()
 const theme = computed(() => themeStore.theme)
 
-const setTheme = (newTheme) => {
+const setTheme = newTheme => {
   themeStore.setTheme(newTheme)
 }
 
 onMounted(() => {
-  document.title = `${packageJson.displayName} - Settings`
+  document.title = `${APP_NAME} - Settings`
 })
 </script>

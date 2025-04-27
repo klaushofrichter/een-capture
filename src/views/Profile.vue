@@ -1,9 +1,18 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
     <div class="max-w-3xl mx-auto">
+      <h1 class="text-3xl font-bold mb-6 text-gray-900 dark:text-gray-100">Your {{ APP_NAME }} Profile</h1>
+
+      <div v-if="loading" class="p-8 text-center">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+        <p class="mt-4 text-gray-600 dark:text-gray-400">Loading your profile...</p>
+      </div>
+
       <div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
         <div class="px-4 py-5 sm:px-6">
-          <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">User Profile</h3>
+          <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">
+            User Profile
+          </h3>
           <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
             Your Eagle Eye Networks account information
           </p>
@@ -32,29 +41,41 @@
               <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
                 <div class="sm:col-span-1">
                   <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">First Name</dt>
-                  <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ userProfile.firstName || 'N/A' }}</dd>
+                  <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                    {{ userProfile.firstName || 'N/A' }}
+                  </dd>
                 </div>
                 <div class="sm:col-span-1">
                   <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Last Name</dt>
-                  <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ userProfile.lastName || 'N/A' }}</dd>
+                  <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                    {{ userProfile.lastName || 'N/A' }}
+                  </dd>
                 </div>
                 <div class="sm:col-span-2">
                   <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Email</dt>
-                  <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ userProfile.email || 'N/A' }}</dd>
+                  <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                    {{ userProfile.email || 'N/A' }}
+                  </dd>
                 </div>
                 <div class="sm:col-span-2">
                   <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">User ID</dt>
-                  <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ userProfile.id || 'N/A' }}</dd>
+                  <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                    {{ userProfile.id || 'N/A' }}
+                  </dd>
                 </div>
               </dl>
 
               <!-- Credentials Section -->
               <div class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
-                <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Credentials</h4>
+                <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
+                  Credentials
+                </h4>
                 <div class="space-y-4">
                   <div class="grid grid-cols-8 gap-4">
                     <div class="col-span-6">
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Base URL</label>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                        >Base URL</label
+                      >
                       <input
                         :value="authStore.hostname"
                         readonly
@@ -62,7 +83,9 @@
                       />
                     </div>
                     <div class="col-span-2">
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Port</label>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                        >Port</label
+                      >
                       <input
                         :value="authStore.port"
                         readonly
@@ -72,7 +95,9 @@
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Access Token</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                      >Access Token</label
+                    >
                     <div class="flex items-center space-x-4">
                       <div class="flex-1">
                         <input
@@ -169,7 +194,7 @@ import { ref, onMounted, computed, onUnmounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { userService } from '../services/user'
 import { refreshToken } from '../services/auth'
-import packageJson from '../../package.json'
+import { APP_NAME } from '../constants'
 
 const authStore = useAuthStore()
 const loading = ref(false)
@@ -180,7 +205,7 @@ const forceUpdate = ref(0)
 const isRefreshing = ref(false)
 
 const userProfile = computed(() => authStore.userProfile)
-const pageTitle = computed(() => `${packageJson.displayName} - Profile`)
+const pageTitle = computed(() => `${APP_NAME} - Profile`)
 const hasRefreshToken = computed(() => !!localStorage.getItem('refresh_token'))
 
 const tokenExpirationPercentage = computed(() => {
@@ -255,7 +280,7 @@ async function handleRefresh() {
 
   isRefreshing.value = true
   try {
-    const success = await refreshToken()  // this calls the proxy to get the refresh token
+    const success = await refreshToken() // this calls the proxy to get the refresh token
     if (success) {
       // Force update the token expiration display
       console.log('handleRefresh: success')

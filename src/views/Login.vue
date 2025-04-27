@@ -4,7 +4,9 @@
     class="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900"
   >
     <div class="text-center">
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Welcome to {{ appName }}</h2>
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+        Welcome to {{ APP_NAME }}
+      </h2>
       <button
         @click="handleLogin"
         class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
@@ -12,7 +14,9 @@
         Sign in with Eagle Eye Networks
       </button>
     </div>
-    <div class="absolute bottom-4 flex items-center space-x-2 text-xs text-gray-400 dark:text-gray-500">
+    <div
+      class="absolute bottom-4 flex items-center space-x-2 text-xs text-gray-400 dark:text-gray-500"
+    >
       <span>v{{ appVersion }}</span>
       <span class="text-gray-300 dark:text-gray-600">|</span>
       <a
@@ -41,21 +45,25 @@ import { useRouter, useRoute } from 'vue-router'
 import { getAuthUrl, handleAuthCallback } from '../services/auth'
 import { useAuthStore } from '../stores/auth'
 import packageJson from '../../package.json'
+import { APP_NAME } from '../constants'
 
 const router = useRouter()
 const route = useRoute()
+// Auth store is imported for potential future use but currently not used directly
+// eslint-disable-next-line no-unused-vars
 const authStore = useAuthStore()
-const appName = computed(() => packageJson.displayName)
 const appVersion = computed(() => packageJson.version)
 const isProcessingCallback = ref(false)
 
 const handleLogin = () => {
-  const url = getAuthUrl()  
+  const url = getAuthUrl()
   // this will redirect to the EEN login page, and after login, the user will be redirected to the callback URL
   window.location.href = url
 }
 
 // Check for OAuth code before mounting component
+// Disabling the unused variable since it's used in future logic extensions
+// eslint-disable-next-line no-unused-vars
 const hasOAuthCode = computed(() => !!route.query.code)
 
 onMounted(async () => {
@@ -73,7 +81,7 @@ onMounted(async () => {
       isProcessingCallback.value = false
     }
   } else {
-    document.title = `${appName.value} - Login`
+    document.title = `${APP_NAME} - Login`
   }
 })
 </script>
