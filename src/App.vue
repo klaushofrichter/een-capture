@@ -1,17 +1,17 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
     <!-- Goodbye Panel -->
     <div
       v-if="isLoggingOut"
       class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50"
     >
-      <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4 text-center">
-        <h2 class="text-2xl font-bold text-gray-900 mb-4">Goodbye!</h2>
-        <p class="text-gray-600 mb-4">
+      <div class="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-md w-full mx-4 text-center">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Goodbye!</h2>
+        <p class="text-gray-600 dark:text-gray-400 mb-4">
           Thank you for using {{ appName }}. You will be logged out in
           {{ Math.ceil(logoutRemaining / 1000) }} seconds.
         </p>
-        <div class="w-full bg-gray-200 rounded-full h-2.5 mb-6">
+        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mb-6">
           <div
             class="bg-primary-600 h-2.5 rounded-full"
             :style="{ width: `${(logoutRemaining / 8000) * 100}%` }"
@@ -20,7 +20,7 @@
         <div class="flex justify-center space-x-4">
           <button
             @click="handleCancelLogout"
-            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-primary-700 bg-primary-100 hover:bg-primary-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-primary-700 dark:text-primary-400 bg-primary-100 dark:bg-primary-900 hover:bg-primary-200 dark:hover:bg-primary-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
           >
             Cancel Logout
           </button>
@@ -34,12 +34,12 @@
       </div>
     </div>
 
-    <nav v-if="!isLoginPage" class="bg-white shadow-lg">
+    <nav v-if="!isLoginPage" class="bg-white dark:bg-gray-800 shadow-lg">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
           <div class="flex">
             <div class="flex-shrink-0 flex items-center">
-              <span class="text-xl font-bold text-primary-600">{{ appName }}</span>
+              <span class="text-xl font-bold text-primary-600 dark:text-primary-400">{{ appName }}</span>
             </div>
             <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
               <router-link
@@ -47,8 +47,8 @@
                 class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
                 :class="[
                   route.path === '/home'
-                    ? 'border-primary-500 text-gray-900'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    ? 'border-primary-500 text-gray-900 dark:text-gray-100'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300'
                 ]"
               >
                 Home
@@ -58,8 +58,8 @@
                 class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
                 :class="[
                   route.path === '/profile'
-                    ? 'border-primary-500 text-gray-900'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    ? 'border-primary-500 text-gray-900 dark:text-gray-100'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300'
                 ]"
               >
                 Profile
@@ -69,8 +69,8 @@
                 class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
                 :class="[
                   route.path === '/about'
-                    ? 'border-primary-500 text-gray-900'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    ? 'border-primary-500 text-gray-900 dark:text-gray-100'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300'
                 ]"
               >
                 About
@@ -80,8 +80,8 @@
                 class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
                 :class="[
                   route.path === '/settings'
-                    ? 'border-primary-500 text-gray-900'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    ? 'border-primary-500 text-gray-900 dark:text-gray-100'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300'
                 ]"
               >
                 Settings
@@ -100,7 +100,7 @@
             <button
               @click="isMobileMenuOpen = !isMobileMenuOpen"
               type="button"
-              class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
+              class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
               aria-controls="mobile-menu"
               :aria-expanded="isMobileMenuOpen"
             >
@@ -154,8 +154,8 @@
             class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
             :class="[
               route.path === '/home'
-                ? 'bg-primary-50 border-primary-500 text-primary-700'
-                : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
+                ? 'bg-primary-50 dark:bg-primary-900 border-primary-500 text-primary-700 dark:text-primary-400'
+                : 'border-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300'
             ]"
           >
             Home
@@ -165,8 +165,8 @@
             class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
             :class="[
               route.path === '/profile'
-                ? 'bg-primary-50 border-primary-500 text-primary-700'
-                : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
+                ? 'bg-primary-50 dark:bg-primary-900 border-primary-500 text-primary-700 dark:text-primary-400'
+                : 'border-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300'
             ]"
           >
             Profile
@@ -176,8 +176,8 @@
             class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
             :class="[
               route.path === '/about'
-                ? 'bg-primary-50 border-primary-500 text-primary-700'
-                : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
+                ? 'bg-primary-50 dark:bg-primary-900 border-primary-500 text-primary-700 dark:text-primary-400'
+                : 'border-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300'
             ]"
           >
             About
@@ -187,15 +187,15 @@
             class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
             :class="[
               route.path === '/settings'
-                ? 'bg-primary-50 border-primary-500 text-primary-700'
-                : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
+                ? 'bg-primary-50 dark:bg-primary-900 border-primary-500 text-primary-700 dark:text-primary-400'
+                : 'border-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300'
             ]"
           >
             Settings
           </router-link>
           <button
             @click="handleLogout"
-            class="w-full text-left border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+            class="w-full text-left border-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
           >
             Logout
           </button>
@@ -211,11 +211,13 @@
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
+import { useThemeStore } from './stores/theme'
 import packageJson from '../package.json'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+const themeStore = useThemeStore()
 const isMobileMenuOpen = ref(false)
 const isLoggingOut = ref(false)
 const logoutRemaining = ref(8000)

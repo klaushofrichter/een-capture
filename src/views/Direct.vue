@@ -1,13 +1,13 @@
 <template>
-  <div class="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+  <div class="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
     <div class="text-center">
-      <h2 class="text-2xl font-bold text-gray-900 mb-4">Direct Access to {{ appName }}</h2>
-      <div v-if="error" class="mb-4 text-sm text-red-600">{{ error }}</div>
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Direct Access to {{ appName }}</h2>
+      <div v-if="error" class="mb-4 text-sm text-red-600 dark:text-red-400">{{ error }}</div>
       <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl">
-        <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div class="bg-white dark:bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <form class="space-y-6" @submit.prevent="handleSubmit">
             <div>
-              <label for="token" class="block text-sm font-medium text-gray-700">
+              <label for="token" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Access Token
               </label>
               <div class="mt-1">
@@ -17,39 +17,40 @@
                   type="password"
                   required
                   autocomplete="off"
-                  class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                  class="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100"
                 />
               </div>
             </div>
 
-            <div class="grid grid-cols-8 gap-4">
-              <div class="col-span-6">
-                <label for="baseUrl" class="block text-sm font-medium text-gray-700">
-                  Base URL
-                </label>
-                <div class="mt-1">
-                  <input
-                    id="baseUrl"
-                    v-model="baseUrl"
-                    type="text"
-                    required
-                    placeholder="e.g. api.c021.eagleeyenetworks.com"
-                    class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                  />
-                </div>
+            <div>
+              <label for="baseUrl" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Base URL
+              </label>
+              <div class="mt-1">
+                <input
+                  id="baseUrl"
+                  v-model="baseUrl"
+                  type="text"
+                  required
+                  placeholder="e.g., example.eagleeyenetworks.com"
+                  class="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100"
+                />
               </div>
+            </div>
 
-              <div class="col-span-2">
-                <label for="port" class="block text-sm font-medium text-gray-700"> Port </label>
-                <div class="mt-1">
-                  <input
-                    id="port"
-                    v-model="port"
-                    type="number"
-                    required
-                    class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                  />
-                </div>
+            <div>
+              <label for="port" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Port
+              </label>
+              <div class="mt-1">
+                <input
+                  id="port"
+                  v-model="port"
+                  type="number"
+                  required
+                  placeholder="443"
+                  class="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:text-gray-100"
+                />
               </div>
             </div>
 
@@ -58,7 +59,7 @@
                 <button
                   type="button"
                   @click="router.push('/')"
-                  class="flex-1 flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                  class="flex-1 flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                 >
                   Back to Login
                 </button>
@@ -98,14 +99,14 @@
         </div>
       </div>
     </div>
-    <div class="absolute bottom-4 flex items-center space-x-2 text-xs text-gray-400">
+    <div class="absolute bottom-4 flex items-center space-x-2 text-xs text-gray-400 dark:text-gray-500">
       <span>v{{ appVersion }}</span>
-      <span class="text-gray-300">|</span>
+      <span class="text-gray-300 dark:text-gray-600">|</span>
       <a
         href="https://github.com/klaushofrichter/een-login/blob/develop/README.md"
         target="_blank"
         rel="noopener noreferrer"
-        class="hover:text-gray-600"
+        class="hover:text-gray-600 dark:hover:text-gray-400"
         title="View README"
       >
         README
