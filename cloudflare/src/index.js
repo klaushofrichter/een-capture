@@ -119,7 +119,7 @@ export default {
         .find(cookie => cookie.startsWith('sessionId='))
         ?.split('=')[1]
       if (!sessionId) {
-        console.log('refresh: sessionId cookie missing as cookie, trying to get it from the URL`')
+        console.log('refresh: sessionId cookie missing as cookie, trying to get it from the URL')
         sessionId = url.searchParams.get('sessionId')
       }
       if (sessionId) {
