@@ -50,9 +50,7 @@ const appVersion = computed(() => packageJson.version)
 const isProcessingCallback = ref(false)
 
 const handleLogin = () => {
-  console.log(`handleLogin`)
   const url = getAuthUrl()  
-  console.log(`url for authentication: ${url}`)
   // this will redirect to the EEN login page, and after login, the user will be redirected to the callback URL
   window.location.href = url
 }
@@ -62,9 +60,7 @@ const hasOAuthCode = computed(() => !!route.query.code)
 
 onMounted(async () => {
   // Check if we're returning from OAuth callback
-  console.log('onMounted')
   const code = route.query.code
-  console.log('code: ', code)
   if (code) {
     isProcessingCallback.value = true
     try {
