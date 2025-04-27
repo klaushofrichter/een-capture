@@ -5,7 +5,7 @@
   >
     <div class="text-center">
       <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-        Welcome to {{ appName }}
+        Welcome to {{ APP_NAME }}
       </h2>
       <button
         @click="handleLogin"
@@ -45,13 +45,13 @@ import { useRouter, useRoute } from 'vue-router'
 import { getAuthUrl, handleAuthCallback } from '../services/auth'
 import { useAuthStore } from '../stores/auth'
 import packageJson from '../../package.json'
+import { APP_NAME } from '../constants'
 
 const router = useRouter()
 const route = useRoute()
 // Auth store is imported for potential future use but currently not used directly
 // eslint-disable-next-line no-unused-vars
 const authStore = useAuthStore()
-const appName = computed(() => packageJson.displayName)
 const appVersion = computed(() => packageJson.version)
 const isProcessingCallback = ref(false)
 
@@ -81,7 +81,7 @@ onMounted(async () => {
       isProcessingCallback.value = false
     }
   } else {
-    document.title = `${appName.value} - Login`
+    document.title = `${APP_NAME} - Login`
   }
 })
 </script>
