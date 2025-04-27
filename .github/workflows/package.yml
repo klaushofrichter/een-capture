@@ -14,13 +14,11 @@ permissions:
   actions: read
 
 jobs:
-  check-workflow-status:
+  check-prerequisites:
     runs-on: ubuntu-latest
-    outputs:
-      should_run: ${{ steps.check.outputs.should_run }}
     steps:
       - name: Check workflow runs
-        id: check
+        id: check_runs
         uses: actions/github-script@v7
         with:
           script: |
@@ -49,11 +47,13 @@ jobs:
             const deploySuccess = deployRuns.data.workflow_runs.length > 0;
             const testSuccess = testRuns.data.workflow_runs.length > 0;
             
-            core.setOutput('should_run', deploySuccess && testSuccess);
+            // If both prerequisites are not met, fail this step
+            if (!deploySuccess || !testSuccess) {
+              core.setFailed('Prerequisites not met: Deploy and Test workflows must succeed first');
+            }
 
   build-package:
-    needs: check-workflow-status
-    if: ${{ needs.check-workflow-status.outputs.should_run == 'true' }}
+    needs: check-prerequisites
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
