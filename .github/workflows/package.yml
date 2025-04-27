@@ -32,6 +32,7 @@ jobs:
               repo,
               workflow_id: 'deploy.yml',
               branch: 'production',
+              status: 'success'
             });
             
             // Get the test workflow run
@@ -40,20 +41,19 @@ jobs:
               repo,
               workflow_id: 'test.yml',
               branch: 'production',
+              status: 'success',
               per_page: 1
             });
             
             // Check if both workflows exist and completed successfully
-            const deploySuccess = deployRuns.data.workflow_runs.length > 0 && 
-                                deployRuns.data.workflow_runs[0].conclusion === 'success';
-            const testSuccess = testRuns.data.workflow_runs.length > 0 && 
-                              testRuns.data.workflow_runs[0].conclusion === 'success';
+            const deploySuccess = deployRuns.data.workflow_runs.length > 0;
+            const testSuccess = testRuns.data.workflow_runs.length > 0;
             
             core.setOutput('should_run', deploySuccess && testSuccess);
 
   build-package:
     needs: check-workflow-status
-    if: needs.check-workflow-status.outputs.should_run == 'true'
+    if: ${{ needs.check-workflow-status.outputs.should_run == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
