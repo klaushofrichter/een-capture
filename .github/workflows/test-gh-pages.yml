@@ -1,0 +1,70 @@
+name: Test GH Pages with Playwright
+
+on:
+#  schedule:
+#    - cron: 0 6 * * 3  # This cron expression runs the workflow every Wednesday at 6am
+  workflow_run:
+    workflows: ["Deploy to GitHub Pages"]
+    types:
+      - completed
+    branches:
+      - production
+
+jobs:
+  test:
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Wait for deployment to be available
+        run: |
+          # Wait up to 5 minutes for the deployment
+          timeout=300
+          interval=10
+          elapsed=0
+          url="https://${{ github.repository_owner }}.github.io/SwiftEventWeb"
+          
+          echo "Waiting for $url to be available..."
+          
+          until curl --output /dev/null --silent --head --fail "$url"; do
+            if [ $elapsed -ge $timeout ]; then
+              echo "Timeout waiting for deployment"
+              exit 1
+            fi
+            sleep $interval
+            elapsed=$((elapsed + interval))
+            echo "Still waiting... ($elapsed seconds elapsed)"
+          done
+          
+          echo "Deployment is available!"
+
+      - name: Run Playwright tests
+        env:
+          PLAYWRIGHT_TEST_BASE_URL: https://${{ github.repository_owner }}.github.io/een-login
+          VITE_EEN_CLIENT_ID: ${{ secrets.VITE_EEN_CLIENT_ID }}
+          VITE_EEN_CLIENT_SECRET: ${{ secrets.VITE_EEN_CLIENT_SECRET }}
+          VITE_REDIRECT_URI: ${{ secrets.VITE_REDIRECT_URI }}
+          TEST_USER: ${{ secrets.TEST_USER }}
+          TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+
+        run: npx playwright test
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30 
