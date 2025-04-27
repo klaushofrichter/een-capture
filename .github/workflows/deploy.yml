@@ -1,0 +1,50 @@
+name: Deploy to GitHub Pages
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - production
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        env:
+          VITE_EEN_CLIENT_ID: ${{ secrets.VITE_EEN_CLIENT_ID }}
+          VITE_EEN_CLIENT_SECRET: ${{ secrets.VITE_EEN_CLIENT_SECRET }}
+          VITE_REDIRECT_URI: ${{ secrets.VITE_REDIRECT_URI }}
+        run: npm run build
+
+      - name: Deploy
+        run: |
+              npx gh-pages -d dist -f \
+                -m 'Deploy to GitHub Pages' \
+                -u "github-actions <github-actions@users.noreply.github.com>" \
+                -r "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
