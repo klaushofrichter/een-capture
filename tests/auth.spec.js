@@ -16,6 +16,21 @@ test.describe('Authentication and Navigation', () => {
     await expect(page.getByText('Sign in with Eagle Eye Networks')).toBeVisible()
   })
 
+  test('should show direct page with correct elements', async ({ page }) => {
+    // Navigate directly to the direct page
+    await page.goto('/direct')
+    
+    // Check if we're on the direct page
+    await expect(page.getByRole('heading', { name: /Direct Access to .+/ })).toBeVisible()
+    
+    // Check for form elements
+    await expect(page.getByLabel('Access Token')).toBeVisible()
+    await expect(page.getByLabel('Base URL')).toBeVisible()
+    await expect(page.getByLabel('Port')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Back to Login' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Proceed' })).toBeVisible()
+  })
+
   test('should login successfully and navigate through pages', async ({ page }) => {
     // Increase timeout for this test
     test.setTimeout(30000)
