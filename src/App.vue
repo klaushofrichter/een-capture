@@ -17,12 +17,20 @@
             :style="{ width: `${(logoutRemaining / 8000) * 100}%` }"
           ></div>
         </div>
-        <button
-          @click="handleCancelLogout"
-          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-primary-700 bg-primary-100 hover:bg-primary-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-        >
-          Cancel Logout
-        </button>
+        <div class="flex justify-center space-x-4">
+          <button
+            @click="handleCancelLogout"
+            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-primary-700 bg-primary-100 hover:bg-primary-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+          >
+            Cancel Logout
+          </button>
+          <button
+            @click="handleImmediateLogout"
+            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+          >
+            OK
+          </button>
+        </div>
       </div>
     </div>
 
@@ -226,5 +234,12 @@ const handleCancelLogout = () => {
   isLoggingOut.value = false
   logoutRemaining.value = 8000
   authStore.cancelLogout()
+}
+
+const handleImmediateLogout = () => {
+  isLoggingOut.value = false
+  logoutRemaining.value = 8000
+  authStore.logout()
+  window.location.href = '/'
 }
 </script>

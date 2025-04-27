@@ -51,10 +51,6 @@ export const handleAuthCallback = async code => {
 
     // we pass the code to the proxy to get the tokens
     const { token, expiresIn, httpsBaseUrl, sessionId } = await getToken(code);
-    console.log('callback: token: ', token);
-    console.log('callback: expiresIn: ', expiresIn);
-    console.log('callback: httpsBaseUrl: ', httpsBaseUrl)
-    console.log('callback: sessionId: ', sessionId)
 
     const authStore = useAuthStore()
     authStore.setToken(token, expiresIn)
