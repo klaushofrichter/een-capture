@@ -96,9 +96,18 @@ test.describe('Authentication and Navigation', () => {
     await page.getByRole('button', { name: 'Light' }).click()
     await expect(page.locator('html')).not.toHaveClass(/dark/)
 
-    // Test logout
+    // Test logout with timeout
     await page.getByRole('button', { name: 'Logout' }).click()
-    await page.getByRole('button', { name: 'OK' }).click()
-    await expect(page.url()).toBe('http://127.0.0.1:3333/')
+    
+    // Verify the logout modal is shown
+    await expect(page.getByText('Goodbye!')).toBeVisible()
+    await expect(page.getByText('Thank you for using')).toBeVisible()
+    
+    // Wait for 10 seconds for automatic logout
+    await page.waitForTimeout(10000)
+    
+    // Verify we're back on the login page
+    await expect(page.getByText('Welcome to EEN Login')).toBeVisible()
+    await expect(page.getByText('Sign in with Eagle Eye Networks')).toBeVisible()
   })
 }) 
