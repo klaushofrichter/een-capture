@@ -1,0 +1,100 @@
+name: Build Package
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Deploy to GitHub Pages", "Test"]
+    types:
+      - completed
+
+# Add permissions needed for creating releases
+permissions:
+  contents: write
+  packages: write
+  actions: read
+
+jobs:
+  check-workflow-status:
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+    steps:
+      - name: Check workflow runs
+        id: check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            
+            // Get the deploy workflow run
+            const deployRuns = await github.rest.actions.listWorkflowRuns({
+              owner,
+              repo,
+              workflow_id: 'deploy.yml',
+              branch: 'production',
+            });
+            
+            // Get the test workflow run
+            const testRuns = await github.rest.actions.listWorkflowRuns({
+              owner,
+              repo,
+              workflow_id: 'test.yml',
+              branch: 'prod',
+              per_page: 1
+            });
+            
+            // Check if both workflows exist and completed successfully
+            const deploySuccess = deployRuns.data.workflow_runs.length > 0 && 
+                                deployRuns.data.workflow_runs[0].conclusion === 'success';
+            const testSuccess = testRuns.data.workflow_runs.length > 0 && 
+                              testRuns.data.workflow_runs[0].conclusion === 'success';
+            
+            core.setOutput('should_run', deploySuccess && testSuccess);
+
+  build-package:
+    needs: check-workflow-status
+    if: needs.check-workflow-status.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create artifacts directory
+        run: mkdir -p artifacts
+
+      - name: Get version from package.json
+        id: package-version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Create source code package
+        run: |
+          # Create a zip file of the source code (excluding sensitive files and directories)
+          zip -r artifacts/swift-sensors-web-src_v${{ steps.package-version.outputs.version }}.zip . \
+            -x "node_modules/*" \
+            -x "dist/*" \
+            -x ".git/*" \
+            -x "*.gitignore" \
+            -x "*.env*" \
+            -x "artifacts/*" \
+            -x "**/secrets.*" \
+            -x "**/config.*" \
+            -x "**/credentials.*"
+
+      - name: Upload source code artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: swift-sensors-web-src
+          path: artifacts/swift-sensors-web-src_v${{ steps.package-version.outputs.version }}.zip
+          retention-days: 5
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.package-version.outputs.version }}
+          name: Release v${{ steps.package-version.outputs.version }}
+          files: artifacts/swift-sensors-web-src_v${{ steps.package-version.outputs.version }}.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
