@@ -13,6 +13,11 @@
       >
         Sign in with Eagle Eye Networks
       </button>
+      <p class="mt-4 text-xs text-gray-500 dark:text-gray-400">
+        <router-link to="/direct" class="hover:underline font-medium"
+          >Click here to use an access token for login</router-link
+        >
+      </p>
     </div>
     <div
       class="absolute bottom-4 flex items-center space-x-2 text-xs"
