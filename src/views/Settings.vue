@@ -66,7 +66,7 @@ import packageJson from '../../package.json'
 const themeStore = useThemeStore()
 const theme = computed(() => themeStore.theme)
 
-const setTheme = (newTheme) => {
+const setTheme = newTheme => {
   themeStore.setTheme(newTheme)
 }
 

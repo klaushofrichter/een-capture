@@ -2,14 +2,13 @@
 
 export default {
   // this is the request from the Frontend coming in
+  // eslint-disable-next-line no-unused-vars
   async fetch(request, env, ctx) {
-
     const origin = request.headers.get('Origin')
 
     // Handle CORS preflight request
     if (request.method === 'OPTIONS') {
       if (origin) {
-
         console.log('origin: ', origin)
         const corsHeaders = {
           'Access-Control-Allow-Origin': '*', // Or a specific origin
@@ -59,12 +58,13 @@ export default {
           const tokens = await tokenResponse.json()
           //console.log('tokens message from een: ', tokens)
           // the proxy generates a session ID to identify the refresh token for the session
-          const sessionId = crypto.randomUUID();
-          const expires_in = tokens.expires_in;
+          const sessionId = crypto.randomUUID()
+          const expires_in = tokens.expires_in
           //console.log('sessionId: ', sessionId)
           //console.log('expires_in: ', expires_in)
 
           //console.log('expires_in: ', expires_in)
+          // eslint-disable-next-line no-unused-vars
           const refresh_token = tokens.refresh_token
           //console.log('refresh_token: ', refresh_token);
           //const access_token = tokens.access_token
@@ -95,7 +95,10 @@ export default {
 
           // Set the Set-Cookie header directly on the response.headers object
           //response.headers.append('Set-Cookie', `sessionId=${sessionId}; Path=/; HttpOnly; Secure; SameSite=Lax`)
-          response.headers.append('Set-Cookie', `sessionId=${sessionId}; Path=/; HttpOnly; SameSite=Lax`); // Keep Lax for now
+          response.headers.append(
+            'Set-Cookie',
+            `sessionId=${sessionId}; Path=/; HttpOnly; SameSite=Lax`
+          ) // Keep Lax for now
 
           //console.log('response: ', response)
           return response
@@ -143,20 +146,25 @@ export default {
               })
             })
             const newTokens = await refreshResponse.json()
-            console.log('newTokens from refresh: ', newTokens);
+            console.log('newTokens from refresh: ', newTokens)
 
             // store the refresh token in the store
-            await env.EEN_LOGIN.put(sessionId, newTokens.refresh_token, 
-              { expirationTtl: newTokens.expires_in })
+            await env.EEN_LOGIN.put(sessionId, newTokens.refresh_token, {
+              expirationTtl: newTokens.expires_in
+            })
             //console.log('new refresh token stored in the store')
-            
+
             // this is the response to the Frontend
             // NOTE: do we need to return the sessionId?
-            return new Response(JSON.stringify(
-                { accessToken: newTokens.access_token, 
-                  expiresIn: newTokens.expires_in }), {
-              headers: { 'Content-Type': 'application/json' }
-            })
+            return new Response(
+              JSON.stringify({
+                accessToken: newTokens.access_token,
+                expiresIn: newTokens.expires_in
+              }),
+              {
+                headers: { 'Content-Type': 'application/json' }
+              }
+            )
           } catch (error) {
             //console.error('Refresh token exchange error:', error)
             // Optionally clear the session ID cookie on refresh failure

@@ -17,11 +17,11 @@ export default defineConfig({
         target: 'https://auth.eagleeyenetworks.com',
         changeOrigin: true,
         secure: false,
-        configure: (proxy, options) => {
-          proxy.on('proxyReq', (proxyReq, req, res) => {
+        configure: proxy => {
+          proxy.on('proxyReq', (proxyReq, req) => {
             console.log(`[Proxy] OAuth request: ${req.method} ${req.url}`)
           })
-          proxy.on('proxyRes', (proxyRes, req, res) => {
+          proxy.on('proxyRes', (proxyRes, req) => {
             console.log(
               `[Proxy] OAuth response: ${proxyRes.statusCode} for ${req.method} ${req.url}`
             )
@@ -32,11 +32,11 @@ export default defineConfig({
         target: 'https://api.eagleeyenetworks.com',
         changeOrigin: true,
         secure: false,
-        configure: (proxy, options) => {
-          proxy.on('proxyReq', (proxyReq, req, res) => {
+        configure: proxy => {
+          proxy.on('proxyReq', (proxyReq, req) => {
             console.log(`[Proxy] API request: ${req.method} ${req.url}`)
           })
-          proxy.on('proxyRes', (proxyRes, req, res) => {
+          proxy.on('proxyRes', (proxyRes, req) => {
             console.log(`[Proxy] API response: ${proxyRes.statusCode} for ${req.method} ${req.url}`)
           })
         }
@@ -45,11 +45,11 @@ export default defineConfig({
         target: 'https://login.eagleeyenetworks.com',
         changeOrigin: true,
         rewrite: path => path.replace(/^\/api/, ''),
-        configure: (proxy, options) => {
-          proxy.on('proxyReq', (proxyReq, req, res) => {
+        configure: proxy => {
+          proxy.on('proxyReq', (proxyReq, req) => {
             console.log(`[Proxy] Login API request: ${req.method} ${req.url}`)
           })
-          proxy.on('proxyRes', (proxyRes, req, res) => {
+          proxy.on('proxyRes', (proxyRes, req) => {
             console.log(
               `[Proxy] Login API response: ${proxyRes.statusCode} for ${req.method} ${req.url}`
             )
@@ -57,6 +57,10 @@ export default defineConfig({
         }
       }
     }
+  },
+  preview: {
+    port: 3333,
+    host: '127.0.0.1'
   },
   build: {
     rollupOptions: {
