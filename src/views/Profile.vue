@@ -3,7 +3,7 @@
     <div class="max-w-3xl mx-auto">
       <h1 class="text-3xl font-bold mb-6 text-gray-900 dark:text-gray-100">Your {{ APP_NAME }} Profile</h1>
 
-      <div v-if="loading" class="p-8 text-center">
+      <div v-if="loading && !userProfile" class="p-8 text-center">
         <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
         <p class="mt-4 text-gray-600 dark:text-gray-400">Loading your profile...</p>
       </div>
@@ -19,7 +19,7 @@
         </div>
         <div class="border-t border-gray-200 dark:border-gray-700">
           <div class="px-4 py-5 sm:p-6">
-            <div v-if="loading" class="text-center py-4">
+            <div v-if="loading && !userProfile" class="text-center py-4">
               <div
                 class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"
               ></div>
@@ -211,7 +211,7 @@ const hasRefreshToken = computed(() => !!localStorage.getItem('refresh_token'))
 const tokenExpirationPercentage = computed(() => {
   forceUpdate.value
   const remaining = authStore.getTokenTimeRemaining()
-  if (remaining === null || remaining === undefined) return 50 // Show as half-full when unknown
+  if (remaining === null || remaining === undefined) return 50
   if (remaining <= 0) return 0
   const percentage = Math.round((remaining / 3600000) * 100)
   return Math.min(100, Math.max(0, percentage))
@@ -239,7 +239,6 @@ async function fetchUserProfile() {
     return
   }
 
-  // If we already have the profile data, no need to fetch again
   if (authStore.userProfile) {
     return
   }
@@ -280,9 +279,8 @@ async function handleRefresh() {
 
   isRefreshing.value = true
   try {
-    const success = await refreshToken() // this calls the proxy to get the refresh token
+    const success = await refreshToken()
     if (success) {
-      // Force update the token expiration display
       console.log('handleRefresh: success')
       forceUpdate.value++
     }
@@ -293,14 +291,12 @@ async function handleRefresh() {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   document.title = pageTitle.value
-  fetchUserProfile()
-
-  // Update expiration time every second
+  await fetchUserProfile()
   expirationInterval = setInterval(() => {
     forceUpdate.value++
-  }, 1000)
+  }, 60000)
 })
 
 onUnmounted(() => {

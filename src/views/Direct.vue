@@ -108,16 +108,16 @@
       </div>
     </div>
     <div
-      class="absolute bottom-4 flex items-center space-x-2 text-xs text-gray-400 dark:text-gray-500"
+      class="absolute bottom-4 flex items-center space-x-2 text-xs"
     >
-      <span>v{{ appVersion }}</span>
-      <span v-if="lastCommitDate" class="text-gray-300 dark:text-gray-600">| {{ lastCommitDate }}</span>
-      <span class="text-gray-300 dark:text-gray-600">|</span>
+      <span class="text-gray-400 dark:text-gray-500">v{{ appVersion }}</span>
+      <span v-if="lastCommitDate" class="text-gray-400 dark:text-gray-500">| {{ lastCommitDate }}</span>
+      <span class="text-gray-400 dark:text-gray-500">|</span>
       <a
         href="https://github.com/klaushofrichter/een-login/blob/develop/README.md"
         target="_blank"
         rel="noopener noreferrer"
-        class="hover:text-gray-600 dark:hover:text-gray-400"
+        class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400"
         title="View README"
       >
         README
