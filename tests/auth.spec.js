@@ -5,6 +5,19 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 test.describe('Authentication and Navigation', () => {
+  // Log Base URL once before all tests in this suite
+  test.beforeAll(async ({ browser }) => {
+    // Create a new context and page to access baseURL without interfering with tests
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    // Access baseURL from the page's context options or directly if available
+    const baseURL = page.context()._options.baseURL;
+    if (baseURL) {
+      console.log(`\n🚀 Running tests against Base URL: ${baseURL}\n`);
+    }
+    await context.close();
+  });
+
   test.beforeEach(async ({ page }) => {
     // Go to the login page before each test
     await page.goto('/')
