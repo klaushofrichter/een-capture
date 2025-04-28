@@ -2,7 +2,7 @@ name: Build Package
 
 on:
   workflow_run:
-    workflows: ["Deploy to GitHub Pages", "Test"]
+    workflows: ["Deploy to GitHub Pages", "Test GH Pages with Playwright"]
     types:
       - completed
 
@@ -38,7 +38,7 @@ jobs:
             const testRuns = await github.rest.actions.listWorkflowRuns({
               owner,
               repo,
-              workflow_id: 'test.yml',
+              workflow_id: 'test-gh-pages.yml',
               branch: 'production',
               per_page: 1
             });
