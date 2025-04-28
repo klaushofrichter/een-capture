@@ -4,21 +4,20 @@ import dotenv from 'dotenv'
 // Load environment variables from .env file
 dotenv.config()
 
+let loggedBaseURL = false; // Flag to ensure baseURL is logged only once
+
 test.describe('Authentication and Navigation', () => {
-  // Log Base URL once before all tests in this suite
-  test.beforeAll(async ({ browser }) => {
-    // Create a new context and page to access baseURL without interfering with tests
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    // Access baseURL from the page's context options or directly if available
-    const baseURL = page.context()._options.baseURL;
-    if (baseURL) {
-      console.log(`\n🚀 Running tests against Base URL: ${baseURL}\n`);
-    }
-    await context.close();
-  });
+  // REMOVED test.beforeAll hook
 
   test.beforeEach(async ({ page }) => {
+    // Log Base URL once before the first test runs
+    if (!loggedBaseURL) {
+      const baseURL = page.context()._options.baseURL;
+      if (baseURL) {
+        console.log(`\n🚀 Running tests against Service at URL: ${baseURL}\n`);
+      }
+      loggedBaseURL = true; // Set flag so it doesn't log again
+    }
     // Go to the login page before each test
     await page.goto('/')
   })
