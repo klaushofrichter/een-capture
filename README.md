@@ -50,7 +50,8 @@ This setup involves configuring both the frontend Vue application and deploying 
    -   Navigate to the worker directory: `cd cloudflare`
    -   Rename `wrangler.toml.example` to `wrangler.toml`.
    -   Edit `wrangler.toml` and set your Cloudflare `account_id`.
-   -   Configure secrets for the worker. **These are NOT stored in `.env`**. Use the Wrangler CLI:
+   -   Login to Cloudflare by calling `wrangler login`.
+   -   Configure secrets for the worker.  Use the Wrangler CLI:
        ```bash
        # Run these commands within the ./cloudflare directory
        wrangler secret put EEN_CLIENT_ID
@@ -58,13 +59,13 @@ This setup involves configuring both the frontend Vue application and deploying 
 
        wrangler secret put EEN_CLIENT_SECRET
        # Paste your EEN Client Secret when prompted
-
-       # Recommended: Add a secret for signing/encrypting refresh token storage
-       wrangler secret put REFRESH_TOKEN_SECRET
-       # Enter a strong, unique random string
        ```
+       **These can also be stored in `.env`**. You can use the included script `./deploy.sh`
+       to push the secrets from the `.env` file to the Cloudflare worker. This also deploys
+       the worker itself.
 
 **3. Deploy Cloudflare Worker:**
+   Unless you use the above mentioned `./deploy.sh` script, please manually deploy the worker: 
    ```bash
    # Run this command within the ./cloudflare directory
    wrangler deploy
