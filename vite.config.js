@@ -29,19 +29,6 @@ export default defineConfig({
           })
         }
       },
-      '/g/aaa/api': {
-        target: 'https://api.eagleeyenetworks.com',
-        changeOrigin: true,
-        secure: false,
-        configure: proxy => {
-          proxy.on('proxyReq', (proxyReq, req) => {
-            console.log(`[Proxy] API request: ${req.method} ${req.url}`)
-          })
-          proxy.on('proxyRes', (proxyRes, req) => {
-            console.log(`[Proxy] API response: ${proxyRes.statusCode} for ${req.method} ${req.url}`)
-          })
-        }
-      },
       '/api': {
         target: 'https://login.eagleeyenetworks.com',
         changeOrigin: true,
@@ -64,6 +51,7 @@ export default defineConfig({
     host: '127.0.0.1'
   },
   build: {
+    outDir: 'dist', // Ensure this matches the -d flag in your workflow
     rollupOptions: {
       external: ['fs', 'path', 'url']
     }
