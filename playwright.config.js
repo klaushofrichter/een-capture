@@ -1,5 +1,18 @@
 import { defineConfig, devices } from '@playwright/test'
 
+// Read base URL from environment variable, default to local dev server
+const baseURL = process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://127.0.0.1:3333'
+
+// Define webServer config only when testing locally
+const webServer = baseURL.includes('127.0.0.1')
+  ? {
+      command: 'npm run dev',
+      url: 'http://127.0.0.1:3333',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120 * 1000 // Increased timeout for server start
+    }
+  : undefined
+
 export default defineConfig({
   testDir: './tests',
   fullyParallel: false, // Keep false due to shared auth state potentially
@@ -8,8 +21,7 @@ export default defineConfig({
   workers: 1, // Keep workers at 1 due to auth tests potentially interfering
   reporter: 'html',
   use: {
-    // baseURL is automatically handled by webServer, but can be a fallback
-    baseURL: 'http://127.0.0.1:3333',
+    baseURL: baseURL, // Use the dynamic baseURL
     trace: 'on-first-retry',
     video: 'on'
   },
@@ -29,10 +41,6 @@ export default defineConfig({
     //   use: { ...devices['Desktop Safari'] },
     // },
   ],
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://127.0.0.1:3333',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000 // Increased timeout for server start
-  }
+  // Conditionally define webServer
+  webServer: webServer
 })
