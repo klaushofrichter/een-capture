@@ -19,11 +19,11 @@
         >
       </p>
     </div>
-    <div
-      class="absolute bottom-4 flex items-center space-x-2 text-xs"
-    >
+    <div class="absolute bottom-4 flex items-center space-x-2 text-xs">
       <span class="text-gray-400 dark:text-gray-500">v{{ appVersion }}</span>
-      <span v-if="lastCommitDate" class="text-gray-400 dark:text-gray-500">| {{ lastCommitDate }}</span>
+      <span v-if="lastCommitDate" class="text-gray-400 dark:text-gray-500"
+        >| {{ lastCommitDate }}</span
+      >
       <span class="text-gray-400 dark:text-gray-500">|</span>
       <a
         href="https://github.com/klaushofrichter/een-login/blob/develop/README.md"

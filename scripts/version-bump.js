@@ -8,13 +8,13 @@ const __dirname = path.dirname(__filename)
 
 // Format date in a more readable way
 function formatDate(date) {
-  const options = { 
-    year: 'numeric', 
-    month: 'short', 
+  const options = {
+    year: 'numeric',
+    month: 'short',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-    timeZoneName: 'short'  // Add timezone information
+    timeZoneName: 'short' // Add timezone information
   }
   return date.toLocaleDateString(undefined, options)
 }

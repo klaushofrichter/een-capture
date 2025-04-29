@@ -13,4 +13,4 @@ export const API_CONFIG = {
 export const THEME = {
   PRIMARY_COLOR: 'blue',
   SECONDARY_COLOR: 'gray'
-} 
+}
