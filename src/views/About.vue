@@ -8,7 +8,8 @@
               About {{ APP_NAME }}
             </h3>
             <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
-              Secure authentication with Eagle Eye Networks using OAuth2 and a Cloudflare Worker proxy.
+              Secure authentication with Eagle Eye Networks using OAuth2 and a Cloudflare Worker
+              proxy.
             </p>
           </div>
           <div class="border-t border-gray-200 dark:border-gray-700 px-4 py-5 sm:p-6">
@@ -16,33 +17,101 @@
             <h4 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">Features</h4>
             <ul class="mt-2 text-sm text-gray-600 dark:text-gray-300 space-y-2 mb-6">
               <li class="flex items-center">
-                <svg class="h-5 w-5 text-green-500 mr-2 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                <svg
+                  class="h-5 w-5 text-green-500 mr-2 flex-shrink-0"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
                 Secure OAuth2 authentication via Cloudflare Worker proxy
               </li>
               <li class="flex items-center">
-                <svg class="h-5 w-5 text-green-500 mr-2 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                <svg
+                  class="h-5 w-5 text-green-500 mr-2 flex-shrink-0"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
                 Direct Token-Based Access option
               </li>
               <li class="flex items-center">
-                <svg class="h-5 w-5 text-green-500 mr-2 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                <svg
+                  class="h-5 w-5 text-green-500 mr-2 flex-shrink-0"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
                 Secure refresh token management via Worker
               </li>
               <li class="flex items-center">
-                <svg class="h-5 w-5 text-green-500 mr-2 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                <svg
+                  class="h-5 w-5 text-green-500 mr-2 flex-shrink-0"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
                 User profile display and credential copying
               </li>
               <li class="flex items-center">
-                <svg class="h-5 w-5 text-green-500 mr-2 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                <svg
+                  class="h-5 w-5 text-green-500 mr-2 flex-shrink-0"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
                 Theme switching (Light/Dark/System)
               </li>
               <li class="flex items-center">
-                <svg class="h-5 w-5 text-green-500 mr-2 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                <svg
+                  class="h-5 w-5 text-green-500 mr-2 flex-shrink-0"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
                 End-to-end testing with Playwright
               </li>
             </ul>
 
             <!-- Technology Stack -->
-            <h4 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">Technology Stack</h4>
+            <h4 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">
+              Technology Stack
+            </h4>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
                 <h5 class="text-sm font-medium text-gray-900 dark:text-gray-100">Frontend</h5>
@@ -76,7 +145,9 @@
             <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
               <div class="flex justify-center items-center space-x-2 text-xs">
                 <span class="text-gray-400 dark:text-gray-500">v{{ appVersion }}</span>
-                <span v-if="lastCommitDate" class="text-gray-400 dark:text-gray-500">| {{ lastCommitDate }}</span>
+                <span v-if="lastCommitDate" class="text-gray-400 dark:text-gray-500"
+                  >| {{ lastCommitDate }}</span
+                >
                 <span class="text-gray-400 dark:text-gray-500">|</span>
                 <a
                   href="https://github.com/klaushofrichter/een-login/blob/develop/README.md"
@@ -89,12 +160,10 @@
                 </a>
               </div>
             </div>
-
           </div>
         </div>
       </div>
     </div>
-
   </div>
 </template>
 

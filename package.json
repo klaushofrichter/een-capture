@@ -1,7 +1,7 @@
 {
   "name": "een-login",
-  "version": "0.0.67",
-  "lastCommit": "Apr 28, 2025, 07:54 PM CDT",
+  "version": "0.0.68",
+  "lastCommit": "Apr 28, 2025, 09:06 PM CDT",
   "private": true,
   "type": "module",
   "base": "/een-login/",
@@ -13,6 +13,8 @@
     "format": "prettier --write src/",
     "version:patch": "node scripts/version-bump.js",
     "prepare": "husky",
+    "gh-deploy": "gh-pages -d dist -f -m 'Deploy to GitHub Pages' -u 'Klaus Hofrichter <klaus@klaushofrichter.net>'",
+    "gh-deploy-help": "gh-pages --help",
     "pre-commit": "npm run version:patch",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
