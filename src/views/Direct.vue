@@ -45,7 +45,10 @@
                   </div>
                 </div>
                 <div class="w-1/4">
-                  <label for="port" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label
+                    for="port"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >
                     Port
                   </label>
                   <div class="mt-1">
@@ -107,11 +110,11 @@
         </div>
       </div>
     </div>
-    <div
-      class="absolute bottom-4 flex items-center space-x-2 text-xs"
-    >
+    <div class="absolute bottom-4 flex items-center space-x-2 text-xs">
       <span class="text-gray-400 dark:text-gray-500">v{{ appVersion }}</span>
-      <span v-if="lastCommitDate" class="text-gray-400 dark:text-gray-500">| {{ lastCommitDate }}</span>
+      <span v-if="lastCommitDate" class="text-gray-400 dark:text-gray-500"
+        >| {{ lastCommitDate }}</span
+      >
       <span class="text-gray-400 dark:text-gray-500">|</span>
       <a
         href="https://github.com/klaushofrichter/een-login/blob/develop/README.md"
