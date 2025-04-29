@@ -1,9 +1,10 @@
 {
   "name": "een-login",
-  "version": "0.0.66",
-  "lastCommit": "Apr 28, 2025, 07:04 PM CDT",
+  "version": "0.0.67",
+  "lastCommit": "Apr 28, 2025, 07:54 PM CDT",
   "private": true,
   "type": "module",
+  "base": "/een-login/",
   "scripts": {
     "dev": "vite",
     "build": "vite build && node scripts/prepare-dist-package.js",
