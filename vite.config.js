@@ -4,6 +4,7 @@ import { fileURLToPath, URL } from 'url'
 
 export default defineConfig({
   plugins: [vue()],
+
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
@@ -25,19 +26,6 @@ export default defineConfig({
             console.log(
               `[Proxy] OAuth response: ${proxyRes.statusCode} for ${req.method} ${req.url}`
             )
-          })
-        }
-      },
-      '/g/aaa/api': {
-        target: 'https://api.eagleeyenetworks.com',
-        changeOrigin: true,
-        secure: false,
-        configure: proxy => {
-          proxy.on('proxyReq', (proxyReq, req) => {
-            console.log(`[Proxy] API request: ${req.method} ${req.url}`)
-          })
-          proxy.on('proxyRes', (proxyRes, req) => {
-            console.log(`[Proxy] API response: ${proxyRes.statusCode} for ${req.method} ${req.url}`)
           })
         }
       },
@@ -63,6 +51,7 @@ export default defineConfig({
     host: '127.0.0.1'
   },
   build: {
+    outDir: 'dist', // Ensure this matches the -d flag in your workflow
     rollupOptions: {
       external: ['fs', 'path', 'url']
     }
