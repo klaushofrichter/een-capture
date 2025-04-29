@@ -2,7 +2,7 @@ name: Build Package
 
 on:
   workflow_run:
-    workflows: ["Deploy to GitHub Pages", "Test GH Pages with Playwright"]
+    workflows: ["Test GH Pages with Playwright"]
     types:
       - completed
 
