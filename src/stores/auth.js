@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import router from '@/router' // Import the router instance
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(null)
@@ -168,8 +169,8 @@ export const useAuthStore = defineStore('auth', () => {
     // Clear temporary credentials after successful logout
     tempCredentials = null
 
-    // Force a full page reload to clear any cached state
-    window.location.href = '/'
+    // Use router.push for navigation to respect base path
+    router.push('/')
   }
 
   function cancelLogout() {
