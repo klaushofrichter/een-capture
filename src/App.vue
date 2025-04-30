@@ -237,6 +237,8 @@ const handleLogout = async () => {
   await authStore.logout(remaining => {
     logoutRemaining.value = remaining
   })
+  // Hide the modal after logout completes
+  isLoggingOut.value = false
 }
 
 const handleCancelLogout = () => {
@@ -245,10 +247,12 @@ const handleCancelLogout = () => {
   authStore.cancelLogout()
 }
 
-const handleImmediateLogout = () => {
-  isLoggingOut.value = false
-  logoutRemaining.value = 8000
-  authStore.logout()
-  window.location.href = '/'
+// Make the function async and use await/router.push
+const handleImmediateLogout = async () => {
+  isLoggingOut.value = false // Hide modal
+  logoutRemaining.value = 8000 // Reset timer state just in case
+  await authStore.logout() // Perform logout without delay
+  // Navigate using router after logout is complete
+  router.push('/')
 }
 </script>
