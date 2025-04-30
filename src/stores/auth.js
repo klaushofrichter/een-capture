@@ -147,7 +147,7 @@ export const useAuthStore = defineStore('auth', () => {
     // Clear all localStorage items synchronously
     localStorage.clear()
 
-    // Wait eight seconds to ensure cleanup is complete
+    // Wait eight seconds ONLY if onDelay callback is provided
     if (onDelay) {
       await new Promise(resolve => {
         const startTime = Date.now()
@@ -162,11 +162,9 @@ export const useAuthStore = defineStore('auth', () => {
           }
         }, 50)
       })
-    } else {
-      await new Promise(resolve => setTimeout(resolve, 8000))
-    }
+    } // No else block needed - if onDelay is not passed, skip the wait
 
-    // Clear temporary credentials after successful logout
+    // Clear temporary credentials after successful logout (or immediate if no delay)
     tempCredentials = null
 
     // Use router.push for navigation to respect base path
