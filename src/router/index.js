@@ -50,6 +50,8 @@ router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
 
   if (requiresAuth && !authStore.isAuthenticated) {
+    localStorage.setItem('redirectAfterLogin', to.fullPath);
+    console.log('Storing redirect path:', to.fullPath);
     next('/')
   } else {
     next()

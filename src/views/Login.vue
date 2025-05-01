@@ -84,12 +84,23 @@ onMounted(async () => {
     try {
       const success = await handleAuthCallback(code)
       if (success) {
-        router.push('/home')
+        // Check for a stored redirect path
+        const redirectPath = localStorage.getItem('redirectAfterLogin');
+        if (redirectPath) {
+            localStorage.removeItem('redirectAfterLogin'); // Clear the stored path
+            console.log('Redirecting to stored path:', redirectPath);
+            router.push(redirectPath); // Redirect to original intended path
+        } else {
+            router.push('/home'); // Default redirect if no path was stored
+        }
       }
     } catch (error) {
       console.error('Error processing callback:', error)
       isProcessingCallback.value = false
+      // Optional: Redirect back to clean login page on error?
+      // router.push('/'); 
     }
+    // No finally needed for isProcessingCallback if navigation happens
   } else {
     document.title = `${APP_NAME} - Login`
   }
