@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { getAuthUrl } from '../services/auth'
+import { useNotificationStore } from '../stores/notification'
 
 const routes = [
   {
@@ -38,6 +39,17 @@ const routes = [
     name: 'Profile',
     component: () => import('../views/Profile.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    // Catch-all route for handling 404s
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('../views/Home.vue'),
+    beforeEnter: (to, from, next) => {
+      const notificationStore = useNotificationStore();
+      notificationStore.showInvalidRouteNotification(to.fullPath);
+      next('/home');
+    }
   }
 ]
 
