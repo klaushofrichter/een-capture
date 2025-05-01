@@ -77,19 +77,21 @@ const handleLogin = () => {
 const hasOAuthCode = computed(() => !!route.query.code)
 
 onMounted(async () => {
-  // Check if we're returning from OAuth callback
   const code = route.query.code
+  const storedRedirectPath = localStorage.getItem('redirectAfterLogin');
+
   if (code) {
+    // Handling the redirect back FROM EEN
+    console.log('Processing auth callback...');
     isProcessingCallback.value = true
     try {
       const success = await handleAuthCallback(code)
       if (success) {
-        // Check for a stored redirect path
-        const redirectPath = localStorage.getItem('redirectAfterLogin');
-        if (redirectPath) {
+        // Check for a stored redirect path (set by the router guard)
+        if (storedRedirectPath) {
             localStorage.removeItem('redirectAfterLogin'); // Clear the stored path
-            console.log('Redirecting to stored path:', redirectPath);
-            router.push(redirectPath); // Redirect to original intended path
+            console.log('Redirecting to stored path:', storedRedirectPath);
+            router.push(storedRedirectPath); // Redirect to original intended path
         } else {
             router.push('/home'); // Default redirect if no path was stored
         }
@@ -97,12 +99,21 @@ onMounted(async () => {
     } catch (error) {
       console.error('Error processing callback:', error)
       isProcessingCallback.value = false
-      // Optional: Redirect back to clean login page on error?
+      // Consider clearing stored redirect path on error too?
+      // localStorage.removeItem('redirectAfterLogin'); 
       // router.push('/'); 
     }
-    // No finally needed for isProcessingCallback if navigation happens
+  } else if (storedRedirectPath) {
+      // User was redirected HERE by the router guard because they tried a deep link
+      // Automatically start the login flow
+      console.log('Deep link detected without auth, initiating login flow for:', storedRedirectPath);
+      // We don't remove the stored path here, it gets removed after successful login
+      handleLogin(); // Redirect to EEN
   } else {
-    document.title = `${APP_NAME} - Login`
+      // Standard case: User navigated directly to Login page, show the button
+      console.log('Displaying login page.');
+      document.title = `${APP_NAME} - Login`
+      isProcessingCallback.value = false // Ensure loading state is off
   }
 })
 </script>
