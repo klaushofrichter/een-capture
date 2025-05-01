@@ -1,10 +1,6 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-3xl mx-auto">
-      <h1 class="text-3xl font-bold mb-6 text-gray-900 dark:text-gray-100">
-        Your {{ APP_NAME }} Profile
-      </h1>
-
       <div v-if="loading && !userProfile" class="p-8 text-center">
         <div
           class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"
