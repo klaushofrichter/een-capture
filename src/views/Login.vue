@@ -78,7 +78,7 @@ const hasOAuthCode = computed(() => !!route.query.code)
 
 onMounted(async () => {
   const code = route.query.code
-  const storedRedirectPath = localStorage.getItem('redirectAfterLogin');
+  // const storedRedirectPath = localStorage.getItem('redirectAfterLogin'); // No longer needed here
 
   if (code) {
     // Handling the redirect back FROM EEN
@@ -88,10 +88,11 @@ onMounted(async () => {
       const success = await handleAuthCallback(code)
       if (success) {
         // Check for a stored redirect path (set by the router guard)
-        if (storedRedirectPath) {
+        const redirectPath = localStorage.getItem('redirectAfterLogin'); // Read it here
+        if (redirectPath) {
             localStorage.removeItem('redirectAfterLogin'); // Clear the stored path
-            console.log('Redirecting to stored path:', storedRedirectPath);
-            router.push(storedRedirectPath); // Redirect to original intended path
+            console.log('Redirecting to stored path:', redirectPath);
+            router.push(redirectPath); // Redirect to original intended path
         } else {
             router.push('/home'); // Default redirect if no path was stored
         }
@@ -103,12 +104,6 @@ onMounted(async () => {
       // localStorage.removeItem('redirectAfterLogin'); 
       // router.push('/'); 
     }
-  } else if (storedRedirectPath) {
-      // User was redirected HERE by the router guard because they tried a deep link
-      // Automatically start the login flow
-      console.log('Deep link detected without auth, initiating login flow for:', storedRedirectPath);
-      // We don't remove the stored path here, it gets removed after successful login
-      handleLogin(); // Redirect to EEN
   } else {
       // Standard case: User navigated directly to Login page, show the button
       console.log('Displaying login page.');
