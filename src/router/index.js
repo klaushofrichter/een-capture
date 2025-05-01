@@ -44,12 +44,7 @@ const routes = [
     // Catch-all route for handling 404s
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
-    component: () => import('../views/Home.vue'),
-    beforeEnter: (to, from, next) => {
-      const notificationStore = useNotificationStore();
-      notificationStore.showInvalidRouteNotification(to.fullPath);
-      next('/home');
-    }
+    component: () => import('../views/NotFound.vue')
   }
 ]
 
@@ -73,7 +68,6 @@ router.beforeEach((to, from, next) => {
     window.location.assign(eenAuthUrl);
     
     next(false);
-
   } else {
     next()
   }
