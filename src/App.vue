@@ -206,7 +206,6 @@
     </nav>
 
     <router-view></router-view>
-    <RouteNotFoundModal />
   </div>
 </template>
 
@@ -216,7 +215,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 import { useThemeStore } from './stores/theme'
 import { APP_NAME } from './constants'
-import RouteNotFoundModal from './components/RouteNotFoundModal.vue'
 
 // Route is used for navigation active classes
 const route = useRoute()
