@@ -88,6 +88,10 @@ test.describe('Invalid Route Navigation', () => {
     await expect(page.getByText(`The page ${invalidRoute} does not exist.`)).toBeVisible()
     console.log('✅ NotFound page displayed correctly')
 
+    // Verify the "Go Back to Previous Page" button is NOT present
+    await expect(page.getByText(/Go Back to/)).not.toBeVisible()
+    console.log('✅ "Go Back to Previous Page" button is correctly hidden')
+
     // Verify navigation buttons are present
     await expect(page.getByText('Go to Home')).toBeVisible()
 
