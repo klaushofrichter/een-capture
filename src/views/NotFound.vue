@@ -8,7 +8,7 @@
       </p>
       <div class="space-y-3">
         <button
-          v-if="previousPageName && previousPageName !== 'Home'"
+          v-if="showBackButton"
           @click="goBack"
           class="inline-flex justify-center px-4 py-2 text-base font-medium text-white bg-primary-600 border border-transparent rounded-md shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:text-sm w-full"
         >
@@ -28,11 +28,13 @@
 <script setup>
 import { onMounted, ref, onBeforeMount, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
 
 const router = useRouter()
 const route = useRoute()
+const authStore = useAuthStore()
 const previousPageName = ref('')
-const canGoBack = ref(window.history.length > 1)
+const canGoBack = ref(false) // Will be determined in onBeforeMount
 
 // Truncate the displayed path
 const truncatedPath = computed(() => {
@@ -42,6 +44,46 @@ const truncatedPath = computed(() => {
     return path.substring(0, maxLength) + '...'
   }
   return path
+})
+
+// Computed property to determine if we should show the back button
+const showBackButton = computed(() => {
+  // Never show back button if not authenticated
+  if (!authStore.isAuthenticated) {
+    console.log('Back button hidden: User not authenticated')
+    return false
+  }
+  
+  // Never show back button if we can't go back in history
+  if (!canGoBack.value) {
+    console.log('Back button hidden: No history to go back to')
+    return false
+  }
+  
+  // Check if we arrived here directly from external login
+  if (isPreviousPageExternalLogin()) {
+    console.log('Back button hidden: Previous page was external login')
+    return false
+  }
+  
+  // Check if we just arrived from login - this would be a post-login redirect to an invalid route
+  const justLoggedIn = sessionStorage.getItem('justCompletedLogin') === 'true'
+  if (justLoggedIn) {
+    console.log('Back button hidden: Just completed login (post-login redirect to NotFound)')
+    // Clear the flag now that we've used it
+    sessionStorage.removeItem('justCompletedLogin')
+    return false
+  }
+  
+  // Check for a meaningful previous page name
+  if (!previousPageName.value) {
+    console.log('Back button hidden: No previous page name')
+    return false
+  }
+  
+  // If we pass all checks, show the back button
+  console.log('Back button visible: All conditions met')
+  return true
 })
 
 // Map of route paths to friendly names
@@ -55,36 +97,58 @@ const routeNameMap = {
 }
 
 function goBack() {
-  if (canGoBack.value) {
-    router.go(-1)
-  } else {
-    router.replace('/home')
+  router.go(-1)
+}
+
+// Helper to check if the previous page was an external login page
+function isPreviousPageExternalLogin() {
+  if (document.referrer) {
+    return document.referrer.includes('eagleeyenetworks.com')
   }
+  return false
 }
 
 onBeforeMount(() => {
-  // Get the previous route from the referrer or history state
+  // Only enable back button if:
+  // 1. There is history to go back to
+  // 2. We're not coming from an external login page
+  // 3. The user is authenticated (otherwise they'd just be sent to login again)
+  canGoBack.value = window.history.length > 1 && 
+                    !isPreviousPageExternalLogin() && 
+                    authStore.isAuthenticated
+  
+  // We only set the previous page name if we can actually go back
   if (canGoBack.value) {
+    // Default to "Previous Page"
+    previousPageName.value = 'Previous Page'
+    
+    // Try to get a more specific name from referrer
     const referrer = document.referrer
-
+    
     if (referrer && referrer.includes(window.location.host)) {
-      // Extract path from referrer URL
       try {
         const referrerUrl = new URL(referrer)
         const path = referrerUrl.pathname
-
+        
         // Match the path to our route map
-        previousPageName.value = routeNameMap[path] || 'Previous Page'
+        if (routeNameMap[path]) {
+          previousPageName.value = routeNameMap[path]
+        }
       } catch (e) {
-        previousPageName.value = 'Previous Page'
+        // Keep the default "Previous Page" if there's an error
       }
-    } else {
-      // If referrer is not available or not from our site
-      previousPageName.value = 'Previous Page'
     }
   } else {
-    previousPageName.value = 'Home'
+    // No previous history available
+    previousPageName.value = ''
   }
+
+  // Add debugging to console
+  console.log('NotFound page - canGoBack:', canGoBack.value)
+  console.log('NotFound page - previousPageName:', previousPageName.value)
+  console.log('NotFound page - history length:', window.history.length)
+  console.log('NotFound page - isAuthenticated:', authStore.isAuthenticated)
+  console.log('NotFound page - isPreviousPageExternalLogin:', isPreviousPageExternalLogin())
 })
 
 onMounted(() => {

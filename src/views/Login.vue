@@ -88,13 +88,31 @@ onMounted(async () => {
       const success = await handleAuthCallback(code)
       if (success) {
         // Check for a stored redirect path (set by the router guard)
-        const redirectPath = localStorage.getItem('redirectAfterLogin') // Read it here
+        const redirectPath = localStorage.getItem('redirectAfterLogin')
+        // Check if the path is known to be valid/invalid (set by router guard)
+        const isValidRoute = localStorage.getItem('isValidRoute') === 'true'
+        
+        // Clear storage regardless of what we do next
+        localStorage.removeItem('redirectAfterLogin')
+        localStorage.removeItem('isValidRoute')
+        
         if (redirectPath) {
-          localStorage.removeItem('redirectAfterLogin') // Clear the stored path
-          console.log('Redirecting to stored path:', redirectPath)
-          router.push(redirectPath) // Redirect to original intended path
+          console.log('Handling redirect after login - Path:', redirectPath, 'Is valid route:', isValidRoute)
+          
+          if (isValidRoute) {
+            // For valid routes, redirect to the original destination
+            router.push(redirectPath)
+          } else {
+            // For invalid routes, use the NotFound page but keep the URL
+            console.log('Invalid route detected, showing NotFound page')
+            // Set a flag so NotFound can determine this was a post-login redirect
+            sessionStorage.setItem('justCompletedLogin', 'true')
+            // We need to manually navigate to ensure NotFound component is used
+            router.push({ name: 'NotFound', params: { pathMatch: redirectPath.substring(1).split('/') }, replace: true })
+          }
         } else {
-          router.push('/home') // Default redirect if no path was stored
+          // Default redirect if no path was stored
+          router.push('/home')
         }
       }
     } catch (error) {
