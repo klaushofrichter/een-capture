@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { getAuthUrl } from '../services/auth'
-import { useNotificationStore } from '../stores/notification'
 
 const routes = [
   {
@@ -59,16 +58,16 @@ router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
 
   if (requiresAuth && !authStore.isAuthenticated) {
-    console.log(`Authentication required for ${to.fullPath}. Redirecting to EEN login.`);
-    
-    localStorage.setItem('redirectAfterLogin', to.fullPath);
-    console.log('Storing redirect path:', to.fullPath);
-    
-    const eenAuthUrl = getAuthUrl();
-    
-    window.location.assign(eenAuthUrl);
-    
-    next(false);
+    console.log(`Authentication required for ${to.fullPath}. Redirecting to EEN login.`)
+
+    localStorage.setItem('redirectAfterLogin', to.fullPath)
+    console.log('Storing redirect path:', to.fullPath)
+
+    const eenAuthUrl = getAuthUrl()
+
+    window.location.assign(eenAuthUrl)
+
+    next(false)
   } else {
     next()
   }
