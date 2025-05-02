@@ -3,8 +3,8 @@
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col text-center p-4 pt-6">
     <div class="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-md mx-auto shadow-lg">
       <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Page Not Found</h2>
-      <p class="text-gray-600 dark:text-gray-400 mb-6">
-        The page <span class="font-semibold">{{ route.fullPath }}</span> does not exist.
+      <p class="text-gray-600 dark:text-gray-400 mb-6 break-words">
+        The page <span class="font-semibold">{{ truncatedPath }}</span> does not exist.
       </p>
       <div class="space-y-3">
         <button
@@ -26,13 +26,23 @@
 </template>
 
 <script setup>
-import { onMounted, ref, onBeforeMount } from 'vue';
+import { onMounted, ref, onBeforeMount, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 
 const router = useRouter();
 const route = useRoute();
 const previousPageName = ref('');
 const canGoBack = ref(window.history.length > 1);
+
+// Truncate the displayed path
+const truncatedPath = computed(() => {
+  const path = route.fullPath;
+  const maxLength = 40; // Adjust this length as needed
+  if (path.length > maxLength) {
+    return path.substring(0, maxLength) + '...';
+  }
+  return path;
+});
 
 // Map of route paths to friendly names
 const routeNameMap = {
