@@ -219,4 +219,4 @@ test.describe('Login and Navigation', () => {
     console.log('✅ Logout with OK button successful')
     console.log('✅ Navigation test completed successfully')
   })
-}) 
+})

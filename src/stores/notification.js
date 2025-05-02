@@ -21,9 +21,9 @@ export const useNotificationStore = defineStore('notification', () => {
     // State
     showRouteNotFoundModal,
     invalidPath,
-    
+
     // Actions
     showInvalidRouteNotification,
     closeRouteNotFoundModal
   }
-}) 
+})

@@ -18,7 +18,9 @@ test.describe('Invalid Route Navigation', () => {
     }
   })
 
-  test('should display not found page after login when navigating to invalid route', async ({ page }) => {
+  test('should display not found page after login when navigating to invalid route', async ({
+    page
+  }) => {
     console.log('🔍 Starting invalid route test')
     // Increase timeout for this test
     test.setTimeout(120000)
@@ -55,7 +57,7 @@ test.describe('Invalid Route Navigation', () => {
     await expect(nextButton).toBeEnabled()
     await nextButton.click()
     console.log('➡️ Clicked Next button')
-    
+
     // Wait for password field and fill
     const passwordInput = page.locator('#authentication--input__password')
     await expect(passwordInput).toBeVisible({ timeout: 10000 })
@@ -66,7 +68,7 @@ test.describe('Invalid Route Navigation', () => {
     const signInButton = page.locator('#next')
     const signInButtonByText = page.getByRole('button', { name: 'Sign in' })
     await expect(signInButton.or(signInButtonByText)).toBeEnabled({ timeout: 5000 })
-    
+
     console.log('🔐 Clicking Sign in button')
     try {
       await signInButton.click()
@@ -80,19 +82,19 @@ test.describe('Invalid Route Navigation', () => {
     // and shown the NotFound page
     await page.waitForURL(new RegExp(`.*${invalidRoute}$`), { timeout: 15000 })
     console.log('✅ Redirected to invalid route after login')
-    
+
     // Verify we're on the NotFound page
     await expect(page.getByText('Page Not Found')).toBeVisible({ timeout: 10000 })
     await expect(page.getByText(`The page ${invalidRoute} does not exist.`)).toBeVisible()
     console.log('✅ NotFound page displayed correctly')
-    
+
     // Verify navigation buttons are present
     await expect(page.getByText('Go to Home')).toBeVisible()
-    
+
     // Navigate to home by clicking the button
     console.log('🏠 Clicking Go to Home button')
     await page.getByText('Go to Home').click()
-    
+
     // Verify we're now on the home page
     await page.waitForURL(/.*\/home$/, { timeout: 10000 })
     await expect(page.getByText('Welcome to EEN Login')).toBeVisible()
@@ -100,4 +102,4 @@ test.describe('Invalid Route Navigation', () => {
     console.log('✅ Navigated to Home page successfully')
     console.log('✅ Invalid route test completed successfully')
   })
-}) 
+})

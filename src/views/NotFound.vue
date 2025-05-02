@@ -26,23 +26,23 @@
 </template>
 
 <script setup>
-import { onMounted, ref, onBeforeMount, computed } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { onMounted, ref, onBeforeMount, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 
-const router = useRouter();
-const route = useRoute();
-const previousPageName = ref('');
-const canGoBack = ref(window.history.length > 1);
+const router = useRouter()
+const route = useRoute()
+const previousPageName = ref('')
+const canGoBack = ref(window.history.length > 1)
 
 // Truncate the displayed path
 const truncatedPath = computed(() => {
-  const path = route.fullPath;
-  const maxLength = 40; // Adjust this length as needed
+  const path = route.fullPath
+  const maxLength = 40 // Adjust this length as needed
   if (path.length > maxLength) {
-    return path.substring(0, maxLength) + '...';
+    return path.substring(0, maxLength) + '...'
   }
-  return path;
-});
+  return path
+})
 
 // Map of route paths to friendly names
 const routeNameMap = {
@@ -52,43 +52,43 @@ const routeNameMap = {
   '/profile': 'Profile',
   '/settings': 'Settings',
   '/direct': 'Direct Login'
-};
+}
 
 function goBack() {
   if (canGoBack.value) {
-    router.go(-1);
+    router.go(-1)
   } else {
-    router.replace('/home');
+    router.replace('/home')
   }
 }
 
 onBeforeMount(() => {
   // Get the previous route from the referrer or history state
   if (canGoBack.value) {
-    const referrer = document.referrer;
-    
+    const referrer = document.referrer
+
     if (referrer && referrer.includes(window.location.host)) {
       // Extract path from referrer URL
       try {
-        const referrerUrl = new URL(referrer);
-        const path = referrerUrl.pathname;
-        
+        const referrerUrl = new URL(referrer)
+        const path = referrerUrl.pathname
+
         // Match the path to our route map
-        previousPageName.value = routeNameMap[path] || 'Previous Page';
+        previousPageName.value = routeNameMap[path] || 'Previous Page'
       } catch (e) {
-        previousPageName.value = 'Previous Page';
+        previousPageName.value = 'Previous Page'
       }
     } else {
       // If referrer is not available or not from our site
-      previousPageName.value = 'Previous Page';
+      previousPageName.value = 'Previous Page'
     }
   } else {
-    previousPageName.value = 'Home';
+    previousPageName.value = 'Home'
   }
-});
+})
 
 onMounted(() => {
   // Set the document title
-  document.title = 'Page Not Found';
-});
-</script> 
+  document.title = 'Page Not Found'
+})
+</script>

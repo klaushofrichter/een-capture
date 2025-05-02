@@ -22,7 +22,7 @@ test.describe('Login Page', () => {
 
   test('login page should have correct elements and consistent styling', async ({ page }) => {
     console.log('🔍 Starting login page elements test')
-    
+
     // Check if we're on the login page
     await expect(page.getByText('Welcome to EEN Login')).toBeVisible()
     await expect(page.getByText('Sign in with Eagle Eye Networks')).toBeVisible()
@@ -59,4 +59,4 @@ test.describe('Login Page', () => {
     console.log('✅ README link verified')
     console.log('✅ Login page test completed successfully')
   })
-}) 
+})

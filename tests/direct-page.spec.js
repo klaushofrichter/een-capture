@@ -20,7 +20,7 @@ test.describe('Direct Page', () => {
 
   test('direct page should have correct elements and consistent styling', async ({ page }) => {
     console.log('🔍 Starting direct page elements test')
-    
+
     // Navigate directly to the direct page
     await page.goto('/direct')
     console.log('🌐 Navigated to direct login page')
@@ -68,4 +68,4 @@ test.describe('Direct Page', () => {
     console.log('✅ README link verified')
     console.log('✅ Direct page test completed successfully')
   })
-}) 
+})

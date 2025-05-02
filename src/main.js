@@ -9,7 +9,7 @@ import { APP_NAME } from './constants'
 const app = createApp(App)
 
 // Initialize Pinia store
-const pinia = createPinia();
+const pinia = createPinia()
 app.use(pinia)
 
 // Initialize router
