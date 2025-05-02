@@ -34,7 +34,7 @@
       </div>
     </div>
 
-    <nav v-if="!isLoginPage" class="bg-white dark:bg-gray-800 shadow-lg">
+    <nav v-if="!isLoginPage" class="bg-white dark:bg-gray-800 shadow-lg z-30 relative">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
           <div class="flex">
@@ -209,14 +209,17 @@
       </div>
     </nav>
 
-    <!-- Overlay to capture outside clicks when mobile menu is open -->
+    <!-- Overlay to capture outside clicks when mobile menu is open with blur effect -->
     <div 
       v-if="isMobileMenuOpen" 
-      class="fixed inset-0 z-10 bg-black bg-opacity-25"
+      class="fixed inset-0 z-20 bg-black bg-opacity-30 backdrop-blur-sm transition-all duration-200"
       @click="closeMobileMenu"
     ></div>
 
-    <router-view></router-view>
+    <!-- Main content wrapper -->
+    <div :class="{ 'pointer-events-none': isMobileMenuOpen }">
+      <router-view></router-view>
+    </div>
   </div>
 </template>
 
