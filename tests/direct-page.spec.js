@@ -19,11 +19,15 @@ test.describe('Direct Page', () => {
   })
 
   test('direct page should have correct elements and consistent styling', async ({ page }) => {
+    console.log('🔍 Starting direct page elements test')
+    
     // Navigate directly to the direct page
     await page.goto('/direct')
+    console.log('🌐 Navigated to direct login page')
 
     // Check if we're on the direct page
     await expect(page.getByRole('heading', { name: /Direct Access to EEN Login/ })).toBeVisible()
+    console.log('✅ Direct page heading verified')
 
     // Check for form elements
     await expect(page.getByLabel('Access Token')).toBeVisible()
@@ -31,10 +35,12 @@ test.describe('Direct Page', () => {
     await expect(page.getByLabel('Port')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Back to Login' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Proceed' })).toBeVisible()
+    console.log('✅ Form elements verified')
 
     // Check bottom elements styling
     const bottomDiv = page.locator('.absolute.bottom-4')
     await expect(bottomDiv).toBeVisible()
+    console.log('🔎 Checking footer elements')
 
     // Get all text elements in the bottom div
     const version = bottomDiv.locator('span').first()
@@ -44,10 +50,12 @@ test.describe('Direct Page', () => {
     // Check version element
     await expect(version).toHaveClass(/text-gray-400 dark:text-gray-500/)
     await expect(version).toHaveText(/^v\d+\.\d+\.\d+$/)
+    console.log('✅ Version element verified')
 
     // Check separator
     await expect(separator).toHaveClass(/text-gray-400 dark:text-gray-500/)
     await expect(separator).toHaveText(/\|/)
+    console.log('✅ Separator element verified')
 
     // Check README link
     await expect(readme).toHaveClass(
@@ -57,5 +65,7 @@ test.describe('Direct Page', () => {
       'href',
       'https://github.com/klaushofrichter/een-login/blob/develop/README.md'
     )
+    console.log('✅ README link verified')
+    console.log('✅ Direct page test completed successfully')
   })
 }) 
