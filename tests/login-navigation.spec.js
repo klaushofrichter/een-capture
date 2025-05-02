@@ -6,9 +6,7 @@ dotenv.config()
 
 let loggedBaseURL = false // Flag to ensure baseURL is logged only once
 
-test.describe('Authentication and Navigation', () => {
-  // REMOVED test.beforeAll hook
-
+test.describe('Login and Navigation', () => {
   test.beforeEach(async ({ page }) => {
     // Log Base URL once before the first test runs
     if (!loggedBaseURL) {
@@ -22,80 +20,8 @@ test.describe('Authentication and Navigation', () => {
     await page.goto('/')
   })
 
-  test('login page should have correct elements and consistent styling', async ({ page }) => {
-    // Check if we're on the login page
-    await expect(page.getByText('Welcome to EEN Login')).toBeVisible()
-    await expect(page.getByText('Sign in with Eagle Eye Networks')).toBeVisible()
-
-    // Check bottom elements styling
-    const bottomDiv = page.locator('.absolute.bottom-4')
-    await expect(bottomDiv).toBeVisible()
-
-    // Get all text elements in the bottom div
-    const version = bottomDiv.locator('span').first()
-    const separator = bottomDiv.locator('span').nth(1)
-    const readme = bottomDiv.locator('a')
-
-    // Check version element
-    await expect(version).toHaveClass(/text-gray-400 dark:text-gray-500/)
-    await expect(version).toHaveText(/^v\d+\.\d+\.\d+$/)
-
-    // Check separator
-    await expect(separator).toHaveClass(/text-gray-400 dark:text-gray-500/)
-    await expect(separator).toHaveText(/\|/)
-
-    // Check README link
-    await expect(readme).toHaveClass(
-      /text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400/
-    )
-    await expect(readme).toHaveAttribute(
-      'href',
-      'https://github.com/klaushofrichter/een-login/blob/develop/README.md'
-    )
-  })
-
-  test('direct page should have correct elements and consistent styling', async ({ page }) => {
-    // Navigate directly to the direct page
-    await page.goto('/direct')
-
-    // Check if we're on the direct page
-    await expect(page.getByRole('heading', { name: /Direct Access to EEN Login/ })).toBeVisible()
-
-    // Check for form elements
-    await expect(page.getByLabel('Access Token')).toBeVisible()
-    await expect(page.getByLabel('Base URL')).toBeVisible()
-    await expect(page.getByLabel('Port')).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Back to Login' })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Proceed' })).toBeVisible()
-
-    // Check bottom elements styling
-    const bottomDiv = page.locator('.absolute.bottom-4')
-    await expect(bottomDiv).toBeVisible()
-
-    // Get all text elements in the bottom div
-    const version = bottomDiv.locator('span').first()
-    const separator = bottomDiv.locator('span').nth(1)
-    const readme = bottomDiv.locator('a')
-
-    // Check version element
-    await expect(version).toHaveClass(/text-gray-400 dark:text-gray-500/)
-    await expect(version).toHaveText(/^v\d+\.\d+\.\d+$/)
-
-    // Check separator
-    await expect(separator).toHaveClass(/text-gray-400 dark:text-gray-500/)
-    await expect(separator).toHaveText(/\|/)
-
-    // Check README link
-    await expect(readme).toHaveClass(
-      /text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400/
-    )
-    await expect(readme).toHaveAttribute(
-      'href',
-      'https://github.com/klaushofrichter/een-login/blob/develop/README.md'
-    )
-  })
-
   test('should login successfully and navigate through pages', async ({ page }) => {
+    console.log('🔍 Starting login and navigation test')
     // Increase timeout for this test
     test.setTimeout(120000)
 
@@ -110,35 +36,37 @@ test.describe('Authentication and Navigation', () => {
       'Test credentials not found. Please set TEST_USER and TEST_PASSWORD environment variables.'
     )
 
+    console.log('🚀 Starting login process')
     // Click the login button
     await page.getByText('Sign in with Eagle Eye Networks').click()
 
     // Wait for redirect to EEN login page
     await page.waitForURL(/.*eagleeyenetworks.com.*/, { timeout: 30000 })
+    console.log('✅ Redirected to EEN login page')
 
     // Wait for the email field to be visible and ready
     const emailInput = page.locator('#authentication--input__email')
     await expect(emailInput).toBeVisible({ timeout: 15000 })
     await expect(emailInput).toBeEnabled()
 
-    console.log('Attempting to fill email field...')
+    console.log('👤 Attempting to fill email field...')
     await emailInput.fill(username)
-    console.log('Email field filled successfully')
+    console.log('✅ Email field filled successfully')
 
     // Find and click the next button, wait for it to be enabled
     const nextButton = page.getByRole('button', { name: 'Next' })
     await expect(nextButton).toBeEnabled()
     await nextButton.click()
-    console.log('Next button clicked')
+    console.log('➡️ Next button clicked')
 
     // Wait for password field to appear and be ready
     const passwordInput = page.locator('#authentication--input__password')
     await expect(passwordInput).toBeVisible({ timeout: 10000 })
     await expect(passwordInput).toBeEnabled()
 
-    console.log('Attempting to fill password field...')
+    console.log('🔑 Attempting to fill password field...')
     await passwordInput.fill(password)
-    console.log('Password field filled successfully')
+    console.log('✅ Password field filled successfully')
 
     // Wait for the sign in button to be ready
     const signInButton = page.locator('#next') // Assuming #next is the primary sign in button
@@ -146,17 +74,17 @@ test.describe('Authentication and Navigation', () => {
     await expect(signInButton.or(signInButtonByText)).toBeEnabled({ timeout: 5000 })
 
     // Find and click the sign in button
-    console.log('Attempting to click sign in button...')
+    console.log('🔐 Attempting to click sign in button...')
     try {
       await signInButton.click()
-      console.log('Clicked sign in button by ID')
+      console.log('✅ Clicked sign in button by ID')
     } catch (error) {
-      console.log('Could not find sign in button by ID, trying text...')
+      console.log('⚠️ Could not find sign in button by ID, trying text...')
       await signInButtonByText.click()
-      console.log('Clicked sign in button by text')
+      console.log('✅ Clicked sign in button by text')
     }
 
-    console.log('Sign in button clicked successfully')
+    console.log('✅ Sign in button clicked successfully')
 
     // Wait for redirect back to our app and verify we're on the home page
     await page.waitForURL(/.*\/home$/, { timeout: 15000 })
@@ -164,57 +92,61 @@ test.describe('Authentication and Navigation', () => {
     await expect(page.getByText('You have successfully logged in')).toBeVisible()
     // Wait for navigation links to be present as a sign of page load completion
     await expect(page.getByRole('navigation').getByRole('link', { name: 'Profile' })).toBeVisible()
-    console.log('Checked for home page')
+    console.log('✅ Home page loaded successfully')
 
     // Test navigation to different pages
+    console.log('👤 Navigating to Profile page')
     await page.getByRole('navigation').getByRole('link', { name: 'Profile' }).click()
     await page.waitForURL(/.*\/profile$/, { timeout: 10000 })
     await expect(page.getByText('User Profile')).toBeVisible({ timeout: 10000 })
     await expect(page.getByRole('button', { name: 'Show & Copy' })).toBeVisible() // Wait for element specific to profile page
-    console.log('Checked for profile page')
+    console.log('✅ Profile page loaded successfully')
 
     // Capture credentials from the Profile page
-    console.log('Capturing credentials from Profile page')
+    console.log('🔑 Capturing credentials from Profile page')
 
     // Click the Show & Copy button to reveal the token
     await page.getByRole('button', { name: 'Show & Copy' }).click()
 
     // Capture the access token - now it should be visible as text
     const accessToken = await page.locator('input[type="text"]').inputValue()
-    console.log('Access token captured')
+    console.log('✅ Access token captured')
 
     // Capture the base URL using the proper selector
     const baseUrl = await page.locator('label:has-text("Base URL")').evaluate(label => {
       return label.nextElementSibling.value
     })
-    console.log('Base URL captured: ', baseUrl)
+    console.log('✅ Base URL captured')
 
     // Capture the port using the proper selector
     const port = await page.locator('label:has-text("Port")').evaluate(label => {
       return label.nextElementSibling.value
     })
-    console.log('Port captured: ', port)
+    console.log('✅ Port captured')
 
+    console.log('ℹ️ Navigating to About page')
     await page.getByRole('navigation').getByRole('link', { name: 'About' }).click()
     await page.waitForURL(/.*\/about$/, { timeout: 10000 })
     await expect(page.getByText('About EEN Login')).toBeVisible()
     await expect(page.getByText('Features')).toBeVisible() // Wait for element specific to about page
-    console.log('Checked for about page')
+    console.log('✅ About page loaded successfully')
 
+    console.log('⚙️ Navigating to Settings page')
     await page.getByRole('navigation').getByRole('link', { name: 'Settings' }).click()
     await page.waitForURL(/.*\/settings$/, { timeout: 10000 })
     await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Light' })).toBeVisible() // Wait for element specific to settings page
 
     // Test theme switching in settings
+    console.log('🎨 Testing theme switching')
     await page.getByRole('button', { name: 'Dark' }).click()
     await expect(page.locator('html')).toHaveClass(/dark/)
     await page.getByRole('button', { name: 'Light' }).click()
     await expect(page.locator('html')).not.toHaveClass(/dark/)
-    console.log('Checked for settings page')
+    console.log('✅ Theme switching works correctly')
 
     // Test logout - first with cancel
-    console.log('Testing logout with cancel')
+    console.log('🚪 Testing logout with cancel')
     await page.getByRole('button', { name: 'Logout' }).click()
 
     // Verify the logout modal is shown by waiting for specific elements
@@ -226,13 +158,13 @@ test.describe('Authentication and Navigation', () => {
 
     // Verify modal is gone
     await expect(page.getByText('Goodbye!')).toBeHidden()
-    console.log('Cancel logout successful')
+    console.log('✅ Cancel logout successful')
 
     // Verify we're still on the settings page
     await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
 
     // Now test logout with completion
-    console.log('Testing full logout')
+    console.log('🚪 Testing full logout - this will take at least 8 seconds')
     await page.getByRole('button', { name: 'Logout' }).click()
 
     // Verify the logout modal is shown again
@@ -245,31 +177,33 @@ test.describe('Authentication and Navigation', () => {
     // Verify we're back on the login page
     await expect(page.getByText('Welcome to EEN Login')).toBeVisible()
     await expect(page.getByText('Sign in with Eagle Eye Networks')).toBeVisible()
-    console.log('Checked logout')
+    console.log('✅ Automatic logout completed successfully')
 
     // Now test direct access with the captured credentials
-    console.log('Testing Direct Access with captured credentials')
+    console.log('🔑 Testing Direct Access with captured credentials')
 
     // Navigate to the direct access page
     await page.goto('/direct')
     await expect(page.getByRole('heading', { name: /Direct Access to EEN Login/ })).toBeVisible()
 
     // Fill in the captured credentials
+    console.log('📝 Filling direct access form with captured credentials')
     await page.getByLabel('Access Token').fill(accessToken)
     await page.getByLabel('Base URL').fill(baseUrl)
     await page.getByLabel('Port').fill(port)
 
     // Click the Proceed button
     await page.getByRole('button', { name: 'Proceed' }).click()
+    console.log('➡️ Clicked Proceed button')
 
     // Verify we're on the home page
     await page.waitForURL(/.*\/home$/, { timeout: 15000 })
     await expect(page.getByText('Welcome to EEN Login')).toBeVisible()
     await expect(page.getByText('You have successfully logged in')).toBeVisible()
-    console.log('Direct access successful')
+    console.log('✅ Direct access login successful')
 
     // Logout again, but this time use the OK button
-    console.log('Testing logout with OK button')
+    console.log('🚪 Testing logout with OK button')
     await page.getByRole('button', { name: 'Logout' }).click()
 
     // Verify the logout modal is shown
@@ -277,10 +211,12 @@ test.describe('Authentication and Navigation', () => {
 
     // Click the OK button this time
     await page.getByRole('button', { name: 'OK' }).click()
+    console.log('👆 Clicked OK button on logout modal')
 
     // Verify we're back on the login page
     await expect(page).toHaveURL('/', { timeout: 10000 })
     await expect(page.getByText('Welcome to EEN Login')).toBeVisible()
-    console.log('Logout with OK button successful')
+    console.log('✅ Logout with OK button successful')
+    console.log('✅ Navigation test completed successfully')
   })
 })

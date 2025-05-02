@@ -77,21 +77,38 @@ const handleLogin = () => {
 const hasOAuthCode = computed(() => !!route.query.code)
 
 onMounted(async () => {
-  // Check if we're returning from OAuth callback
   const code = route.query.code
+  // const storedRedirectPath = localStorage.getItem('redirectAfterLogin'); // No longer needed here
+
   if (code) {
+    // Handling the redirect back FROM EEN
+    console.log('Processing auth callback...')
     isProcessingCallback.value = true
     try {
       const success = await handleAuthCallback(code)
       if (success) {
-        router.push('/home')
+        // Check for a stored redirect path (set by the router guard)
+        const redirectPath = localStorage.getItem('redirectAfterLogin') // Read it here
+        if (redirectPath) {
+          localStorage.removeItem('redirectAfterLogin') // Clear the stored path
+          console.log('Redirecting to stored path:', redirectPath)
+          router.push(redirectPath) // Redirect to original intended path
+        } else {
+          router.push('/home') // Default redirect if no path was stored
+        }
       }
     } catch (error) {
       console.error('Error processing callback:', error)
       isProcessingCallback.value = false
+      // Consider clearing stored redirect path on error too?
+      // localStorage.removeItem('redirectAfterLogin');
+      // router.push('/');
     }
   } else {
+    // Standard case: User navigated directly to Login page, show the button
+    console.log('Displaying login page.')
     document.title = `${APP_NAME} - Login`
+    isProcessingCallback.value = false // Ensure loading state is off
   }
 })
 </script>

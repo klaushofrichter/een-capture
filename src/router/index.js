@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { getAuthUrl } from '../services/auth'
 
 const routes = [
   {
@@ -37,6 +38,13 @@ const routes = [
     name: 'Profile',
     component: () => import('../views/Profile.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    // Catch-all route for handling 404s
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('../views/NotFound.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 
@@ -50,7 +58,16 @@ router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
 
   if (requiresAuth && !authStore.isAuthenticated) {
-    next('/')
+    console.log(`Authentication required for ${to.fullPath}. Redirecting to EEN login.`)
+
+    localStorage.setItem('redirectAfterLogin', to.fullPath)
+    console.log('Storing redirect path:', to.fullPath)
+
+    const eenAuthUrl = getAuthUrl()
+
+    window.location.assign(eenAuthUrl)
+
+    next(false)
   } else {
     next()
   }
