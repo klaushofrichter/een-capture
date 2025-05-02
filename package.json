@@ -1,7 +1,7 @@
 {
   "name": "een-login",
-  "version": "0.0.89",
-  "lastCommit": "May 1, 2025, 08:43 PM CDT",
+  "version": "0.0.90",
+  "lastCommit": "May 1, 2025, 08:54 PM CDT",
   "private": true,
   "type": "module",
   "base": "/een-login/",
