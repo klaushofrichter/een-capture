@@ -44,7 +44,8 @@ const routes = [
     // Catch-all route for handling 404s
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
-    component: () => import('../views/NotFound.vue')
+    component: () => import('../views/NotFound.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 
