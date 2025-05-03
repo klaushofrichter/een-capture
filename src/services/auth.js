@@ -59,6 +59,9 @@ export const handleAuthCallback = async code => {
     authStore.setBaseUrl(httpsBaseUrl)
     authStore.setRefreshToken('present') // this marks that the refresh token is present at the proxy
     authStore.setSessionId(sessionId)
+    console.log('handleAuthCallback: token: ', token)
+    console.log('handleAuthCallback: httpsBaseUrl: ', httpsBaseUrl)
+    console.log('handleAuthCallback: sessionId: ', sessionId)
     return { token, httpsBaseUrl }
   } catch (error) {
     console.error('Authentication error:', error)
@@ -83,9 +86,16 @@ export const refreshToken = async () => {
     const api = createAuthApi() // for communication with the proxy
     const response = await api.post('/refreshAccessToken?sessionId=' + sessionId, null, {
       credentials: 'include'
-    }) // we need to pass the session ID somehow
+    })
 
     console.log('response.data from the refresh call: ', response.data)
+
+    // check if the response is valid
+    if (!response.data.accessToken || !response.data.expiresIn) {
+      console.error('Invalid response from the refresh call')
+      return false
+    }
+
     authStore.setToken(response.data.accessToken, response.data.expiresIn) // save the new token and expiresIn
     authStore.setRefreshToken('present after refresh') // this marks that the refresh token is present at the proxy
 
