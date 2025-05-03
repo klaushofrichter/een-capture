@@ -116,8 +116,8 @@ test.describe('Login and Navigation', () => {
     await expect(tokenExpirationInput).toBeEnabled()
 
     // Capture the access token - now it should be visible as text
-    const accessToken = await tokenInput.getAttribute('value')
-    console.log('✅ Access token captured')
+    const firstAccessToken = await tokenInput.getAttribute('value')
+    console.log('✅ First Access token captured', firstAccessToken)
 
     // Capture the base URL using the proper selector
     const baseUrl = await page.locator('label:has-text("Base URL")').evaluate(label => {
@@ -130,6 +130,30 @@ test.describe('Login and Navigation', () => {
       return label.nextElementSibling.value
     })
     console.log('✅ Port captured')
+
+    // Click the Refresh button if available
+    console.log('🔄 Attempting to refresh token')
+    const refreshButton = page.getByRole('button', { name: 'Refresh' })
+    await expect(refreshButton).toBeVisible()
+    await refreshButton.click()
+
+      // Wait for the refresh to complete
+    await expect(page.getByText('Refreshing...')).toBeVisible()
+    await expect(page.getByText('Refreshing...')).toBeHidden({ timeout: 10000 })
+    console.log('✅ Token refreshed successfully')
+
+    // click the show button again
+    //await expect(tokenInput).toBeVisible()
+    //await expect(tokenInput).toBeDisabled()
+    await page.waitForTimeout(5000)
+    await page.getByRole('button', { name: 'Show & Copy' }).click()
+    //const tokenInput = page.locator('input[type="text"]')
+    await expect(tokenInput).toBeVisible()
+    await expect(tokenInput).toBeEnabled()
+
+    const accessToken = await tokenInput.getAttribute('value')
+    console.log('✅ Access token captured', accessToken)
+
 
     console.log('ℹ️ Navigating to About page')
     await page.getByRole('navigation').getByRole('link', { name: 'About' }).click()
@@ -221,8 +245,8 @@ test.describe('Login and Navigation', () => {
     await expect(page.getByText('User Profile')).toBeVisible()
 
     // Verify Refresh button is disabled (since we don't have a refresh token in direct login)
-    const refreshButton = page.getByRole('button', { name: 'Refresh' })
-    await expect(refreshButton).toBeHidden()
+    const refreshButtonAfterDirectLogin = page.getByRole('button', { name: 'Refresh' })
+    await expect(refreshButtonAfterDirectLogin).toBeHidden()
     console.log('✅ Verified Refresh button is not available after direct login')
 
     // Logout again, but this time use the OK button
