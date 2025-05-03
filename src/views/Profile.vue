@@ -305,6 +305,8 @@ async function handleRefresh() {
     if (success) {
       console.log('handleRefresh: success')
       forceUpdate.value++
+      // Hide the token if it was shown
+      showToken.value = false
     }
   } catch (error) {
     console.error('Failed to refresh token:', error)
