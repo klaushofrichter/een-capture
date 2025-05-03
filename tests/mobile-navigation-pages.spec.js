@@ -98,7 +98,7 @@ test.describe('Mobile Navigation - Page Navigation and Logout', () => {
     // Click the logout button/link
     const logoutButton = page.locator('#mobile-menu button').filter({ hasText: 'Logout' })
     await logoutButton.click()
-    console.log('👆 Clicked Logout button')
+    console.log('👆 Clicked Logout button - this will take 8 or more seconds to complete')
 
     // Wait for redirect to login page
     // We might have different patterns for the login page URL depending on your auth flow
@@ -112,7 +112,7 @@ test.describe('Mobile Navigation - Page Navigation and Logout', () => {
     }
 
     // Verify we're logged out by checking for login button presence
-    await expect(page.getByText('Sign in with Eagle Eye Networks')).toBeVisible({ timeout: 15000 })
+    await expect(page.getByText('Sign in with Eagle Eye Networks')).toBeVisible({ timeout: 10000 })
     console.log('✅ Successfully logged out and returned to login page')
 
     console.log('✅ Mobile navigation and logout test completed successfully')

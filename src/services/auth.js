@@ -18,16 +18,19 @@ export const getAuthUrl = () => {
   return url
 }
 
-async function getToken(code) {
+async function getAccessToken(code) {
+
+  // build the query string for the proxy
   const tokenParams = new URLSearchParams({
     code: code,
     redirect_uri: REDIRECT_URI
   })
 
   try {
-    const api = createAuthApi()
+    const api = createAuthApi()  // for communication with the proxy
 
-    const response = await api.post('/oauth2/token?' + tokenParams) // this is calling the proxy with the code
+    const response = await api.post('/getAccessToken?' + tokenParams) // this is calling the proxy with the code
+    //console.log('response from the getAccessToken call: ', response)
 
     return {
       token: response.data.accessToken,
@@ -49,7 +52,7 @@ export const handleAuthCallback = async code => {
   //console.log('handleAuthCallback called with code: ', code)
   try {
     // we pass the code to the proxy to get the tokens
-    const { token, expiresIn, httpsBaseUrl, sessionId } = await getToken(code)
+    const { token, expiresIn, httpsBaseUrl, sessionId } = await getAccessToken(code)
 
     const authStore = useAuthStore()
     authStore.setToken(token, expiresIn)
@@ -66,15 +69,25 @@ export const handleAuthCallback = async code => {
 export const refreshToken = async () => {
   const authStore = useAuthStore()
   try {
+    
+    // we do not have a refresh token, just an indication that the refresh token is present at the proxy
     const refreshToken = authStore.refreshToken
+    console.log('refreshToken for the refresh call coming from API: ', refreshToken)
 
-    if (!refreshToken) return false // there is no refresh token in the store
+    if (!refreshToken) return false // there is no refresh token at the proxy
 
-    const api = createAuthApi()
-    const response = await api.post('/refresh', null, { credentials: 'include' }) // we need to pass the session ID somehow
+    // get the session ID from the store - this should not be needed because the session ID is in the cookie
+    const sessionId = authStore.sessionId;
+    console.log('sessionId for the refresh call coming from API: ', sessionId)
 
-    authStore.setToken(response.data.access_token, response.data.expires_in)
-    authStore.setRefreshToken('present after refresh')
+    const api = createAuthApi() // for communication with the proxy
+    const response = await api.post('/refreshAccessToken?sessionId=' + sessionId, null, {
+      credentials: 'include'
+    }) // we need to pass the session ID somehow
+
+    console.log('response.data from the refresh call: ', response.data)
+    authStore.setToken(response.data.accessToken, response.data.expiresIn) // save the new token and expiresIn
+    authStore.setRefreshToken('present after refresh') // this marks that the refresh token is present at the proxy
 
     return true
   } catch (error) {

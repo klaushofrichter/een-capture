@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { fileURLToPath, URL } from 'url'
+import { APP_NAME, APP_DESCRIPTION } from './src/constants.js'
 
 export default defineConfig(({ command }) => {
   const config = {
@@ -54,6 +55,15 @@ export default defineConfig(({ command }) => {
       outDir: 'dist',
       rollupOptions: {
         external: ['fs', 'path', 'url']
+      }
+    },
+    // Add template data for HTML processing
+    template: {
+      transformIndexHtml: {
+        data: {
+          APP_NAME,
+          APP_DESCRIPTION
+        }
       }
     }
   }
