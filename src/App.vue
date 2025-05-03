@@ -34,7 +34,7 @@
       </div>
     </div>
 
-    <nav v-if="!isLoginPage" class="bg-white dark:bg-gray-800 shadow-lg">
+    <nav v-if="!isLoginPage" class="bg-white dark:bg-gray-800 shadow-lg z-30 relative">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
           <div class="flex">
@@ -159,6 +159,7 @@
                 ? 'bg-primary-50 dark:bg-primary-900 border-primary-500 text-primary-700 dark:text-primary-400'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300'
             ]"
+            @click="closeMobileMenu"
           >
             Home
           </router-link>
@@ -170,6 +171,7 @@
                 ? 'bg-primary-50 dark:bg-primary-900 border-primary-500 text-primary-700 dark:text-primary-400'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300'
             ]"
+            @click="closeMobileMenu"
           >
             Profile
           </router-link>
@@ -181,6 +183,7 @@
                 ? 'bg-primary-50 dark:bg-primary-900 border-primary-500 text-primary-700 dark:text-primary-400'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300'
             ]"
+            @click="closeMobileMenu"
           >
             About
           </router-link>
@@ -192,11 +195,12 @@
                 ? 'bg-primary-50 dark:bg-primary-900 border-primary-500 text-primary-700 dark:text-primary-400'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300'
             ]"
+            @click="closeMobileMenu"
           >
             Settings
           </router-link>
           <button
-            @click="handleLogout"
+            @click="handleLogoutAndCloseMenu"
             class="w-full text-left border-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
           >
             Logout
@@ -205,12 +209,22 @@
       </div>
     </nav>
 
-    <router-view></router-view>
+    <!-- Overlay to capture outside clicks when mobile menu is open with blur effect -->
+    <div 
+      v-if="isMobileMenuOpen" 
+      class="fixed inset-0 z-20 bg-black bg-opacity-30 backdrop-blur-sm transition-all duration-200"
+      @click="closeMobileMenu"
+    ></div>
+
+    <!-- Main content wrapper -->
+    <div :class="{ 'pointer-events-none': isMobileMenuOpen }">
+      <router-view></router-view>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 import { useThemeStore } from './stores/theme'
@@ -231,6 +245,34 @@ const isLoggingOut = ref(false)
 const logoutRemaining = ref(8000)
 
 const isLoginPage = computed(() => route.path === '/' || route.path === '/direct')
+
+// Function to close the mobile menu
+const closeMobileMenu = () => {
+  isMobileMenuOpen.value = false
+}
+
+// Combined function to handle logout and close the menu
+const handleLogoutAndCloseMenu = () => {
+  closeMobileMenu()
+  handleLogout()
+}
+
+// Handle ESC key press to close mobile menu
+const handleKeyDown = (event) => {
+  if (event.key === 'Escape' && isMobileMenuOpen.value) {
+    closeMobileMenu()
+  }
+}
+
+// Add keyboard event listener when component is mounted
+onMounted(() => {
+  document.addEventListener('keydown', handleKeyDown)
+})
+
+// Remove event listener when component is unmounted
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeyDown)
+})
 
 const handleLogout = async () => {
   isLoggingOut.value = true
