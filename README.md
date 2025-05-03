@@ -238,14 +238,20 @@ This project uses Playwright for end-to-end testing.
     npm run test:debug
     ```
 
-The tests cover:
--   Login page element rendering and styling.
--   Direct Access page element rendering and styling.
--   Full EEN OAuth login flow (requires test credentials).
--   Navigation between authenticated pages (Home, Profile, About, Settings).
--   Theme switching functionality.
--   Logout flow (including modal interactions and redirection).
--   Direct Access login flow using credentials captured during the OAuth test.
+### Test Coverage
+
+The current test suite provides comprehensive coverage for various user flows and scenarios:
+
+-   **Login Page (`login-page.spec.js`):** Verifies the initial rendering and elements of the main login page.
+-   **EEN OAuth Flow (`login-navigation.spec.js`):** Covers the complete authentication process via Eagle Eye Networks, including redirection, credential entry, and successful login.
+-   **Direct Access (`direct-page.spec.js`):** Tests the direct login functionality for users who already have access tokens.
+-   **Invalid Routes (`invalid-route.spec.js`):** Checks the behavior when navigating to non-existent routes, ensuring the "Not Found" page is displayed correctly and handles navigation appropriately (e.g., hiding the "Go Back" button after an invalid deep link).
+-   **Deep Linking (`deep-linking.spec.js`):** Verifies that accessing protected routes directly before login correctly redirects to the login page and then back to the originally requested route after successful authentication.
+-   **Post-Login Navigation (`login-navigation.spec.js`):** Includes tests for navigating between different authenticated pages (Home, Profile, About, Settings), verifying page content, and theme switching.
+-   **Logout Flow (`login-navigation.spec.js`, `mobile-navigation-pages.spec.js`):** Tests the complete logout process, including the confirmation modal and redirection back to the login page.
+-   **Mobile Navigation (`mobile-navigation.spec.js`, `mobile-navigation-pages.spec.js`):
+    -   Tests the functionality of the mobile hamburger menu (opening, closing, overlay interaction).
+    -   Verifies page navigation and logout specifically within the mobile viewport (500px width).
 
 ## Available Scripts
 
