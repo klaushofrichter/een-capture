@@ -221,6 +221,17 @@ test.describe('Login and Navigation', () => {
     await expect(page.getByText('You have successfully logged in')).toBeVisible()
     console.log('✅ Direct access login successful')
 
+    // Navigate to Profile page and verify Refresh button state
+    console.log('👤 Navigating to Profile page after direct login')
+    await page.getByRole('navigation').getByRole('link', { name: 'Profile' }).click()
+    await page.waitForURL(/.*\/profile$/, { timeout: 10000 })
+    await expect(page.getByText('User Profile')).toBeVisible()
+    
+    // Verify Refresh button is disabled (since we don't have a refresh token in direct login)
+    const refreshButton = page.getByRole('button', { name: 'Refresh' })
+    await expect(refreshButton).toBeHidden()
+    console.log('✅ Verified Refresh button is not available after direct login')
+
     // Logout again, but this time use the OK button
     console.log('🚪 Testing logout with OK button')
     await page.getByRole('button', { name: 'Logout' }).click()
