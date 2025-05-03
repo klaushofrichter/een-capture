@@ -225,12 +225,34 @@ const tokenExpirationText = computed(() => {
 
   const hours = Math.floor(remaining / 3600000)
   const minutes = Math.floor((remaining % 3600000) / 60000)
-
-  if (hours >= 2) {
-    return `more than ${hours} hours remaining`
+  
+  // Calculate absolute expiration time
+  const now = new Date()
+  const expirationTime = new Date(now.getTime() + remaining)
+  const timeString = expirationTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  
+  // Determine if expiration is today, tomorrow, or later
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  
+  let dayIndicator
+  if (expirationTime < tomorrow) {
+    dayIndicator = 'today'
+  } else if (expirationTime < new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000)) {
+    dayIndicator = 'tomorrow'
   } else {
-    return `${minutes} minutes remaining`
+    dayIndicator = expirationTime.toLocaleDateString()
   }
+  
+  let remainingText
+  if (hours >= 2) {
+    remainingText = `more than ${hours} hours remaining`
+  } else {
+    remainingText = `${minutes} minutes remaining`
+  }
+  
+  return `${remainingText} (expires at ${timeString} ${dayIndicator})`
 })
 
 async function fetchUserProfile() {
