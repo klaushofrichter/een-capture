@@ -69,7 +69,7 @@ test.describe('Deep Linking', () => {
     console.log('🔐 Clicking Sign in button')
     try {
       await signInButton.click()
-      console.log('Clicked sign in button by ID')
+      console.log('➡️ Clicked sign in button by ID')
     } catch (error) {
       console.log('Could not find sign in button by ID, trying by text')
       await signInButtonByText.click()

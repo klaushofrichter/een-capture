@@ -19,7 +19,6 @@ export const getAuthUrl = () => {
 }
 
 async function getAccessToken(code) {
-
   // build the query string for the proxy
   const tokenParams = new URLSearchParams({
     code: code,
@@ -27,7 +26,7 @@ async function getAccessToken(code) {
   })
 
   try {
-    const api = createAuthApi()  // for communication with the proxy
+    const api = createAuthApi() // for communication with the proxy
 
     const response = await api.post('/getAccessToken?' + tokenParams) // this is calling the proxy with the code
     //console.log('response from the getAccessToken call: ', response)
@@ -72,7 +71,6 @@ export const handleAuthCallback = async code => {
 export const refreshToken = async () => {
   const authStore = useAuthStore()
   try {
-    
     // we do not have a refresh token, just an indication that the refresh token is present at the proxy
     const refreshToken = authStore.refreshToken
     console.log('refreshToken for the refresh call coming from API: ', refreshToken)
@@ -80,7 +78,7 @@ export const refreshToken = async () => {
     if (!refreshToken) return false // there is no refresh token at the proxy
 
     // get the session ID from the store - this should not be needed because the session ID is in the cookie
-    const sessionId = authStore.sessionId;
+    const sessionId = authStore.sessionId
     console.log('sessionId for the refresh call coming from API: ', sessionId)
 
     const api = createAuthApi() // for communication with the proxy

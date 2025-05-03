@@ -36,7 +36,8 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  function setRefreshToken(newRefreshToken) { // this is not the actual token, but an indication that the refresh token is present at the proxy
+  function setRefreshToken(newRefreshToken) {
+    // this is not the actual token, but an indication that the refresh token is present at the proxy
     refreshToken.value = newRefreshToken
     if (newRefreshToken) {
       localStorage.setItem('refresh_token', newRefreshToken)

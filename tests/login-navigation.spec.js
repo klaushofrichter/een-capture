@@ -12,7 +12,7 @@ test.describe('Login and Navigation', () => {
     if (!loggedBaseURL) {
       const baseURL = page.context()._options.baseURL
       if (baseURL) {
-        console.log(`\n🚀 Running tests against Service at URL: ${baseURL}\n`)
+        console.log('\n🚀 Running tests against Service at URL: ${baseURL}\n')
       }
       loggedBaseURL = true // Set flag so it doesn't log again
     }
@@ -102,34 +102,22 @@ test.describe('Login and Navigation', () => {
     await expect(page.getByRole('button', { name: 'Show & Copy' })).toBeVisible() // Wait for element specific to profile page
     console.log('✅ Profile page loaded successfully')
 
-    // Capture token expiration text
-    console.log('⏰ Capturing token expiration text')
-    await page.waitForTimeout(1000) // Wait for the content to load
-    
-    // Show the initial token
+    // Show the initial token first
+    console.log('🔑 Showing initial token')
     await page.getByRole('button', { name: 'Show & Copy' }).click()
     const tokenInput = page.locator('input[type="text"]')
     await expect(tokenInput).toBeVisible()
-    //const initialToken = await tokenInput.getAttribute('value')
-    //console.log('✅ Initial access token captured', initialToken)
-    
-    // Click refresh button and wait a moment
-    //console.log('🔄 Testing token refresh after 5 seconds from refresh')
-    //await page.getByRole('button', { name: 'Refresh' }).click()
-    //await page.waitForTimeout(5000) // Wait for refresh to complete
+    await expect(tokenInput).toBeEnabled()
 
-    // Capture credentials from the Profile page
-    //console.log('🔑 Capturing new credentials from Profile page')
+    // Capture token expiration text
+    console.log('⏰ Capturing token expiration text')
+    const tokenExpirationInput = page.locator('div.mt-4:has(label:has-text("Token Expiration")) input')
+    await expect(tokenExpirationInput).toBeVisible()
+    await expect(tokenExpirationInput).toBeEnabled()
 
     // Capture the access token - now it should be visible as text
-    const accessToken = await tokenInput.getAttribute('value');
+    const accessToken = await tokenInput.getAttribute('value')
     console.log('✅ Access token captured')
-
-    //await page.getByRole('button', { name: 'Refresh' }).click()
-
-    // Verify the token has changed - to be done 
-    //expect(accessToken).not.toBe(initialToken)
-    //console.log('✅ Access token changed after refresh')
 
     // Capture the base URL using the proper selector
     const baseUrl = await page.locator('label:has-text("Base URL")').evaluate(label => {
@@ -206,7 +194,12 @@ test.describe('Login and Navigation', () => {
     await expect(page.getByRole('heading', { name: /Direct Access to EEN Login/ })).toBeVisible()
 
     // Fill in the captured credentials
-    console.log('📝 Filling direct access form with captured credentials ', accessToken, baseUrl, port)
+    console.log(
+      '📝 Filling direct access form with captured credentials',
+      accessToken,
+      baseUrl,
+      port
+    )
     await page.getByLabel('Access Token').fill(accessToken)
     await page.getByLabel('Base URL').fill(baseUrl)
     await page.getByLabel('Port').fill(port)
@@ -226,7 +219,7 @@ test.describe('Login and Navigation', () => {
     await page.getByRole('navigation').getByRole('link', { name: 'Profile' }).click()
     await page.waitForURL(/.*\/profile$/, { timeout: 10000 })
     await expect(page.getByText('User Profile')).toBeVisible()
-    
+
     // Verify Refresh button is disabled (since we don't have a refresh token in direct login)
     const refreshButton = page.getByRole('button', { name: 'Refresh' })
     await expect(refreshButton).toBeHidden()
