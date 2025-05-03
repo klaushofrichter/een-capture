@@ -14,7 +14,7 @@ export const getAuthUrl = () => {
     scope: API_CONFIG.SCOPES
   })
   const url = `${AUTH_URL}?${params.toString()}`
-  console.log('getAuthUrl returns: ', url)
+  //console.log('getAuthUrl returns: ', url)
   return url
 }
 
@@ -46,7 +46,7 @@ async function getToken(code) {
 }
 
 export const handleAuthCallback = async code => {
-  console.log('handleAuthCallback called with code: ', code)
+  //console.log('handleAuthCallback called with code: ', code)
   try {
     // we pass the code to the proxy to get the tokens
     const { token, expiresIn, httpsBaseUrl, sessionId } = await getToken(code)
