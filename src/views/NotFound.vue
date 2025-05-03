@@ -103,7 +103,19 @@ function goBack() {
 // Helper to check if the previous page was an external login page
 function isPreviousPageExternalLogin() {
   if (document.referrer) {
-    return document.referrer.includes('eagleeyenetworks.com')
+    try {
+      // Parse the referrer as a URL
+      const referrerUrl = new URL(document.referrer)
+      
+      // Check if the hostname is eagleeyenetworks.com or ends with .eagleeyenetworks.com
+      const hostname = referrerUrl.hostname
+      return hostname === 'eagleeyenetworks.com' || 
+             hostname.endsWith('.eagleeyenetworks.com')
+    } catch (e) {
+      // If URL parsing fails, return false for safety
+      console.error('Error parsing referrer URL:', e)
+      return false
+    }
   }
   return false
 }
