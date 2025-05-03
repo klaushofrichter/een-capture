@@ -15,7 +15,7 @@ test.describe('Mobile Navigation - Menu Functionality', () => {
     if (!loggedBaseURL) {
       const baseURL = page.context()._options.baseURL
       if (baseURL) {
-        console.log(`\n🚀 Running tests against Service at URL: ${baseURL}\n`)
+        console.log('\n🚀 Running tests against Service at URL: ${baseURL}\n')
       }
       loggedBaseURL = true // Set flag so it doesn't log again
     }
