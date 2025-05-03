@@ -1,8 +1,13 @@
 # EEN Login Application
 
-A modern Vue 3 application demonstrating secure authentication with Eagle Eye Networks (EEN) using OAuth2. It includes a Cloudflare Worker implementation acting as a secure backend proxy for the OAuth flow. It also provides a direct access method for scenarios where an access token and API endpoint details are already known.
+A modern Vue 3 application demonstrating secure authentication 
+with [Eagle Eye Networks](https://www.een.com/) (EEN) services 
+using OAuth2. It includes a Cloudflare Worker implementation acting as a secure backend proxy for the OAuth flow. It also provides a direct access method for scenarios where an access token and API endpoint details are already known.
 
-This project serves as a foundation or starting point for applications needing to integrate with EEN authentication securely.
+This project serves as a foundation or starting point for applications needing to integrate with Eagle
+Eye Networks services securely. The application uses the EEN APIs, but is otherwise not supported 
+by Eagle Eye Networks. Visit the [Eagle Eye Networks Developer Portal](https://developer.eagleeyenetworks.com/)
+for more information about the Eagle Eye Networks APIs. 
 
 ## Features
 
@@ -42,7 +47,7 @@ This setup involves configuring both the frontend Vue application and deploying 
 
 **1. Clone the repository:**
    ```bash
-   git clone <repository-url>
+   git clone git@github.com:klaushofrichter/een-login.git
    cd een-login
    ```
 
