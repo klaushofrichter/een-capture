@@ -59,22 +59,13 @@ test.describe('Mobile Navigation - Menu Functionality', () => {
     await expect(overlay).toBeVisible()
     console.log('✅ Overlay is visible')
 
-    // Try clicking on a page element that should be behind the overlay
-    const contentElement = page.getByText('You have successfully logged in')
+    // Click the overlay to close the menu
+    await overlay.click()
+    console.log('👆 Clicked overlay to close menu')
 
-    // Try to click through the overlay on the content
-    // Avoid using force:true by first checking if element is obscured
-    console.log('👆 Attempting to interact with page content behind overlay')
-    await contentElement.hover().catch(() => {
-      console.log('Content is properly obscured by overlay as expected')
-    })
-    await contentElement.click().catch(() => {
-      console.log('Click was intercepted by overlay as expected')
-    })
-
-    // Check if the click closed the menu (in this implementation, clicks are captured by the overlay)
+    // Menu should now be hidden
     await expect(mobileMenu).toHaveClass(/hidden/)
-    console.log('✅ Menu closed after clicking on content (overlay captured the click)')
+    console.log('✅ Menu closed after clicking overlay')
 
     // Reopen the menu for further testing
     await hamburgerButton.click()
