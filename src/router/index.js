@@ -62,17 +62,17 @@ router.beforeEach((to, from, next) => {
 
   if (requiresAuth && !authStore.isAuthenticated) {
     console.log(`Authentication required for ${to.fullPath}. Redirecting to EEN login.`)
-    
+
     // Check if the route is valid or invalid before redirecting to login
     const routePath = to.fullPath.split('?')[0] // Remove any query params
     const routeSegment = routePath.split('/')[1] // Get the first path segment after /
     const isValidRoute = validRoutes.includes(routeSegment)
-    
+
     // Store whether the path is valid or not along with the path
     localStorage.setItem('redirectAfterLogin', to.fullPath)
     localStorage.setItem('isValidRoute', isValidRoute.toString())
     console.log('Storing redirect info - Path:', to.fullPath, 'Is valid:', isValidRoute)
-    
+
     const eenAuthUrl = getAuthUrl()
     window.location.assign(eenAuthUrl)
     next(false)

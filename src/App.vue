@@ -210,8 +210,8 @@
     </nav>
 
     <!-- Overlay to capture outside clicks when mobile menu is open with blur effect -->
-    <div 
-      v-if="isMobileMenuOpen" 
+    <div
+      v-if="isMobileMenuOpen"
       class="fixed inset-0 z-20 bg-black bg-opacity-30 backdrop-blur-sm transition-all duration-200"
       @click="closeMobileMenu"
     ></div>
@@ -258,7 +258,7 @@ const handleLogoutAndCloseMenu = () => {
 }
 
 // Handle ESC key press to close mobile menu
-const handleKeyDown = (event) => {
+const handleKeyDown = event => {
   if (event.key === 'Escape' && isMobileMenuOpen.value) {
     closeMobileMenu()
   }
