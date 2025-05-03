@@ -89,7 +89,7 @@ test.describe('Invalid Route Navigation', () => {
     console.log('✅ NotFound page displayed correctly')
 
     // Verify the "Go Back to Previous Page" button is NOT present
-    await expect(page.getByText(/Go Back to/)).not.toBeVisible()
+    await expect(page.getByText(/Go Back to/)).toBeHidden()
     console.log('✅ "Go Back to Previous Page" button is correctly hidden')
 
     // Verify navigation buttons are present
