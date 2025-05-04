@@ -7,8 +7,11 @@ const CLIENT_ID = import.meta.env.VITE_EEN_CLIENT_ID
 const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI || API_CONFIG.REDIRECT_URL
 const EEN_AUTH_URL = import.meta.env.VITE_EEN_AUTH_URL || 'https://auth.eagleeyenetworks.com/oauth2/authorize'
 
+// Determine proxy URL, defaulting to local Vite server if VITE_AUTH_PROXY_URL is not set
+const AUTH_PROXY_URL = import.meta.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333';
+
 // Determine if we are using the local Vite proxy based on the URL structure
-const AUTH_PROXY_URL = import.meta.env.VITE_AUTH_PROXY_URL || '';
+// Use local proxy if the URL (explicitly set or defaulted) points to localhost/127.0.0.1
 const USE_LOCAL_VITE_PROXY = AUTH_PROXY_URL.includes('127.0.0.1') || AUTH_PROXY_URL.includes('localhost');
 
 console.log(`[auth.js] Using ${USE_LOCAL_VITE_PROXY ? 'Local Vite Proxy' : 'Remote Proxy'} at ${AUTH_PROXY_URL}`);

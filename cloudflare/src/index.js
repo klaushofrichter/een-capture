@@ -96,7 +96,8 @@ export default {
     }
 
     // this is where the frontend asks the proxy to use the refresh token to generate a new access token
-    // The session Id is in the header - frontend needs to make sure it is provided
+    // The session Id is in the header - frontend needs to make sure it is provided. There is a fallback 
+    // to get it from the URL due to the cookie not being available in some cases because of CORS.
     if (url.pathname === '/refreshAccessToken') {
       var sessionId = request.headers
         .get('Cookie')
@@ -105,11 +106,9 @@ export default {
         ?.split('=')[1]
       if (!sessionId) {
         sessionId = url.searchParams.get('sessionId')
-	console.log("getting sessionId from the parameter",sessionId)
       }
       if (sessionId) {
         // this is where the session ID is used to find the refresh token
-	console.log("sessionId is:",sessionId)
         const refreshToken = await env.EEN_LOGIN.get(sessionId)
         if (refreshToken) {
           try {
