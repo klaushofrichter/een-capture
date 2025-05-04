@@ -61,8 +61,7 @@ async function getAccessToken(code) {
     return {
       token: data.accessToken,
       expiresIn: data.expiresIn,
-      httpsBaseUrl: data.httpsBaseUrl,
-      sessionId: data.sessionId
+      httpsBaseUrl: data.httpsBaseUrl
     }
   } catch (error) {
     console.error('[auth.js] getAccessToken fetch error:', error)
@@ -73,12 +72,11 @@ async function getAccessToken(code) {
 
 export const handleAuthCallback = async code => {
   try {
-    const { token, expiresIn, httpsBaseUrl, sessionId } = await getAccessToken(code)
+    const { token, expiresIn, httpsBaseUrl } = await getAccessToken(code)
     const authStore = useAuthStore()
     authStore.setToken(token, expiresIn)
     authStore.setBaseUrl(httpsBaseUrl)
     authStore.setRefreshToken('present')
-    authStore.setSessionId(sessionId)
     return { token, httpsBaseUrl }
   } catch (error) {
     console.error('Authentication error:', error)
@@ -89,16 +87,15 @@ export const handleAuthCallback = async code => {
 export const refreshToken = async () => {
   const authStore = useAuthStore()
   const refreshTokenMarker = authStore.refreshToken
-  const sessionId = authStore.sessionId
 
-  if (!refreshTokenMarker || !sessionId) {
-    console.log('[auth.js] Missing refresh token marker or session ID for refresh.')
+  if (!refreshTokenMarker) {
+    console.log('[auth.js] Missing refresh token marker for refresh.')
     return false
   }
 
   // Construct path based on proxy target
-  const relativePath = USE_LOCAL_VITE_PROXY ? '/proxy/refreshAccessToken' : '/proxy/refreshAccessToken'
-  const requestUrl = `${AUTH_PROXY_URL}${relativePath}?sessionId=${sessionId}`
+  const relativePath = '/proxy/refreshAccessToken'
+  const requestUrl = `${AUTH_PROXY_URL}${relativePath}`
   //console.log(`[auth.js] Fetching: ${requestUrl}`)
 
   try {
