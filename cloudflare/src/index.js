@@ -9,7 +9,7 @@ export default {
     // Handle CORS preflight request
     if (request.method === 'OPTIONS') {
       if (origin) {
-        console.log('origin: ', origin)
+        //console.log('origin: ', origin)
         const corsHeaders = {
           'Access-Control-Allow-Origin': '*', // Or a specific origin
           'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -65,9 +65,9 @@ export default {
           // the refreshtoken is put into the store with the sessionId as key
           // NOTE: We should add an expiration time based on the expire__in value.
           //       Time to live is in seconds
-          console.log('created session id: ', sessionId)
-          console.log('refreshtoken storing: ', tokens.refresh_token)
-          console.log('expiring: ', tokens.expires_in)
+          //console.log('created session id: ', sessionId)
+          //console.log('refreshtoken storing: ', tokens.refresh_token)
+          //console.log('expiring: ', tokens.expires_in)
 
           await env.EEN_LOGIN.put(sessionId, tokens.refresh_token, {
             expirationTtl: tokens.expires_in
@@ -113,24 +113,24 @@ export default {
     // this is where the frontend asks the proxy to use the refresh token to generate a new access token
     // The session Id is in the header - frontend needs to make sure it is provided
     if (url.pathname === '/refreshAccessToken') {
-      console.log('refreshAccessToken: header: ', JSON.stringify(request.headers))
-      console.log('refreshAccessToken: body: ', JSON.stringify(request.body))
+      //console.log('refreshAccessToken: header: ', JSON.stringify(request.headers))
+      //console.log('refreshAccessToken: body: ', JSON.stringify(request.body))
       var sessionId = request.headers
         .get('Cookie')
         ?.split('; ')
         .find(cookie => cookie.startsWith('sessionId='))
         ?.split('=')[1]
       if (!sessionId) {
-        console.log('refresh: sessionId cookie missing as cookie, trying to get it from the URL')
+        //console.log('refresh: sessionId cookie missing as cookie, trying to get it from the URL')
         sessionId = url.searchParams.get('sessionId')
-        console.log('refresh: sessionId from URL: ', sessionId)
+        //console.log('refresh: sessionId from URL: ', sessionId)
       }
       if (sessionId) {
         // this is where the session ID is used to find the refresh token
-        console.log('refreshToken - using sessionid to get refresh token: sessionId: ', sessionId)
+        //console.log('refreshToken - using sessionid to get refresh token: sessionId: ', sessionId)
         const refreshToken = await env.EEN_LOGIN.get(sessionId)
-        console.log('sessionid: ', sessionId)
-        console.log('old refreshToken from KV: ', refreshToken)
+        //console.log('sessionid: ', sessionId)
+        //console.log('old refreshToken from KV: ', refreshToken)
         if (refreshToken) {
           try {
             // this is the een service that generates a new access token, and new refresh token
@@ -146,16 +146,16 @@ export default {
               })
             })
             const newTokens = await refreshResponse.json()
-            console.log('newTokens from refresh: new refresh: ', newTokens.refresh_token)
-            console.log('newTokens from refresh: new expires: ', newTokens.expires_in)
+            //console.log('newTokens from refresh: new refresh: ', newTokens.refresh_token)
+            //console.log('newTokens from refresh: new expires: ', newTokens.expires_in)
 
             // store the refresh token in the store
             await env.EEN_LOGIN.put(sessionId, newTokens.refresh_token, {
               expirationTtl: newTokens.expires_in
             })
-            console.log(
-              'new refresh token stored in the store, sending access token back to the frontend'
-            )
+            //console.log(
+            //  'new refresh token stored in the store, sending access token back to the frontend'
+            //)
 
             // this is the response to the Frontend
             return new Response(
