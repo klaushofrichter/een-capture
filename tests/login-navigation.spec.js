@@ -8,11 +8,13 @@ let loggedBaseURL = false // Flag to ensure baseURL is logged only once
 
 test.describe('Login and Navigation', () => {
   test.beforeEach(async ({ page }) => {
-    // Log Base URL once before the first test runs
+    // Log Base URL and Proxy URL once before the first test runs
     if (!loggedBaseURL) {
       const baseURL = page.context()._options.baseURL
+      const configuredProxyUrl = process.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333' // Default logic
       if (baseURL) {
-        console.log(`\n🚀 Running tests against Service at URL: ${baseURL}\n`)
+        console.log(`\n🚀 Running tests against Service at URL: ${baseURL}`)
+        console.log(`🔒 Using Auth Proxy URL: ${configuredProxyUrl}\n`)
       }
       loggedBaseURL = true // Set flag so it doesn't log again
     }
@@ -102,15 +104,24 @@ test.describe('Login and Navigation', () => {
     await expect(page.getByRole('button', { name: 'Show & Copy' })).toBeVisible() // Wait for element specific to profile page
     console.log('✅ Profile page loaded successfully')
 
-    // Capture credentials from the Profile page
-    console.log('🔑 Capturing credentials from Profile page')
-
-    // Click the Show & Copy button to reveal the token
+    // Show the initial token first
+    console.log('🔑 Showing initial token')
     await page.getByRole('button', { name: 'Show & Copy' }).click()
+    const tokenInput = page.locator('input[type="text"]')
+    await expect(tokenInput).toBeVisible()
+    await expect(tokenInput).toBeEnabled()
+
+    // Capture token expiration text
+    console.log('⏰ Capturing token expiration text')
+    const tokenExpirationInput = page.locator(
+      'div.mt-4:has(label:has-text("Token Expiration")) input'
+    )
+    await expect(tokenExpirationInput).toBeVisible()
+    await expect(tokenExpirationInput).toBeEnabled()
 
     // Capture the access token - now it should be visible as text
-    const accessToken = await page.locator('input[type="text"]').inputValue()
-    console.log('✅ Access token captured')
+    const firstAccessToken = await tokenInput.getAttribute('value')
+    console.log('✅ Current access token captured')
 
     // Capture the base URL using the proper selector
     const baseUrl = await page.locator('label:has-text("Base URL")').evaluate(label => {
@@ -123,6 +134,40 @@ test.describe('Login and Navigation', () => {
       return label.nextElementSibling.value
     })
     console.log('✅ Port captured')
+
+    // Click the Refresh button if available
+    console.log('🔄 Attempting to refresh token')
+    const refreshButton = page.getByRole('button', { name: 'Refresh' })
+    await expect(refreshButton).toBeVisible()
+    await refreshButton.click()
+
+    // Wait for the refresh to complete
+    await expect(page.getByText('Refreshing...')).toBeVisible()
+    await expect(page.getByText('Refreshing...')).toBeHidden({ timeout: 10000 })
+    console.log('✅ Token refreshed successfully')
+
+    // click the show button again to reveal the new token
+    // Wait for the button to potentially change from 'Hide' back to 'Show & Copy' and be stable
+    const showCopyButton = page.getByRole('button', { name: 'Show & Copy' })
+    await expect(showCopyButton).toBeVisible({ timeout: 5000 })
+    await expect(showCopyButton).toBeEnabled({ timeout: 5000 })
+    await showCopyButton.click()
+
+    await expect(tokenInput).toBeVisible()
+    await expect(tokenInput).toBeEnabled()
+
+    // Capture the value for comparison later
+    const newAccessToken = await tokenInput.inputValue();
+
+    console.log('✅ New access token captured')
+
+    // compare the access token with the first access token
+    // First, ensure the new token is actually a non-empty string before comparing
+    expect(typeof newAccessToken).toBe('string');
+    expect(newAccessToken).not.toBe('');
+    // Then compare with the original token
+    expect(newAccessToken).not.toBe(firstAccessToken)
+    console.log('✅ Access token is different from the first access token')
 
     console.log('ℹ️ Navigating to About page')
     await page.getByRole('navigation').getByRole('link', { name: 'About' }).click()
@@ -164,7 +209,7 @@ test.describe('Login and Navigation', () => {
     await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
 
     // Now test logout with completion
-    console.log('🚪 Testing full logout - this will take at least 8 seconds')
+    console.log('🚪 Performing full logout - this will take at least 8 seconds')
     await page.getByRole('button', { name: 'Logout' }).click()
 
     // Verify the logout modal is shown again
@@ -187,8 +232,7 @@ test.describe('Login and Navigation', () => {
     await expect(page.getByRole('heading', { name: /Direct Access to EEN Login/ })).toBeVisible()
 
     // Fill in the captured credentials
-    console.log('📝 Filling direct access form with captured credentials')
-    await page.getByLabel('Access Token').fill(accessToken)
+    await page.getByLabel('Access Token').fill(newAccessToken)
     await page.getByLabel('Base URL').fill(baseUrl)
     await page.getByLabel('Port').fill(port)
 
@@ -201,6 +245,17 @@ test.describe('Login and Navigation', () => {
     await expect(page.getByText('Welcome to EEN Login')).toBeVisible()
     await expect(page.getByText('You have successfully logged in')).toBeVisible()
     console.log('✅ Direct access login successful')
+
+    // Navigate to Profile page and verify Refresh button state
+    console.log('👤 Navigating to Profile page after direct login')
+    await page.getByRole('navigation').getByRole('link', { name: 'Profile' }).click()
+    await page.waitForURL(/.*\/profile$/, { timeout: 10000 })
+    await expect(page.getByText('User Profile')).toBeVisible()
+
+    // Verify Refresh button is disabled (since we don't have a refresh token in direct login)
+    const refreshButtonAfterDirectLogin = page.getByRole('button', { name: 'Refresh' })
+    await expect(refreshButtonAfterDirectLogin).toBeHidden()
+    console.log('✅ Verified Refresh button is not available after direct login')
 
     // Logout again, but this time use the OK button
     console.log('🚪 Testing logout with OK button')

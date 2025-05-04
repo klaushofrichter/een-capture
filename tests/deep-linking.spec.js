@@ -8,11 +8,13 @@ let loggedBaseURL = false // Flag to ensure baseURL is logged only once
 
 test.describe('Deep Linking', () => {
   test.beforeEach(async ({ page }) => {
-    // Log Base URL once before the first test runs
+    // Log Base URL and Proxy URL once before the first test runs
     if (!loggedBaseURL) {
       const baseURL = page.context()._options.baseURL
+      const configuredProxyUrl = process.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333' // Default logic
       if (baseURL) {
-        console.log(`\n🚀 Running tests against Service at URL: ${baseURL}\n`)
+        console.log(`\n🚀 Running tests against Service at URL: ${baseURL}`)
+        console.log(`🔒 Using Auth Proxy URL: ${configuredProxyUrl}\n`)
       }
       loggedBaseURL = true // Set flag so it doesn't log again
     }
@@ -69,7 +71,7 @@ test.describe('Deep Linking', () => {
     console.log('🔐 Clicking Sign in button')
     try {
       await signInButton.click()
-      console.log('Clicked sign in button by ID')
+      console.log('➡️ Clicked sign in button by ID')
     } catch (error) {
       console.log('Could not find sign in button by ID, trying by text')
       await signInButtonByText.click()

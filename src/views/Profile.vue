@@ -131,23 +131,6 @@
                           class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm sm:text-sm dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-0 focus:border-gray-300 dark:focus:border-gray-600"
                         />
                       </div>
-                      <div
-                        v-if="tokenExpirationText !== 'Token expiration date is unknown'"
-                        class="w-24"
-                      >
-                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                          <div
-                            class="h-2.5 rounded-full transition-all duration-1000"
-                            :class="{
-                              'bg-green-500': tokenExpirationPercentage > 50,
-                              'bg-yellow-500':
-                                tokenExpirationPercentage <= 50 && tokenExpirationPercentage > 25,
-                              'bg-red-500': tokenExpirationPercentage <= 25
-                            }"
-                            :style="{ width: `${tokenExpirationPercentage}%` }"
-                          ></div>
-                        </div>
-                      </div>
                     </div>
                   </div>
 
@@ -208,15 +191,6 @@ const userProfile = computed(() => authStore.userProfile)
 const pageTitle = computed(() => `${APP_NAME} - Profile`)
 const hasRefreshToken = computed(() => !!localStorage.getItem('refresh_token'))
 
-const tokenExpirationPercentage = computed(() => {
-  forceUpdate.value
-  const remaining = authStore.getTokenTimeRemaining()
-  if (remaining === null || remaining === undefined) return 50
-  if (remaining <= 0) return 0
-  const percentage = Math.round((remaining / 3600000) * 100)
-  return Math.min(100, Math.max(0, percentage))
-})
-
 const tokenExpirationText = computed(() => {
   forceUpdate.value
   const remaining = authStore.getTokenTimeRemaining()
@@ -226,11 +200,33 @@ const tokenExpirationText = computed(() => {
   const hours = Math.floor(remaining / 3600000)
   const minutes = Math.floor((remaining % 3600000) / 60000)
 
-  if (hours >= 2) {
-    return `more than ${hours} hours remaining`
+  // Calculate absolute expiration time
+  const now = new Date()
+  const expirationTime = new Date(now.getTime() + remaining)
+  const timeString = expirationTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+
+  // Determine if expiration is today, tomorrow, or later
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+
+  let dayIndicator
+  if (expirationTime < tomorrow) {
+    dayIndicator = 'today'
+  } else if (expirationTime < new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000)) {
+    dayIndicator = 'tomorrow'
   } else {
-    return `${minutes} minutes remaining`
+    dayIndicator = expirationTime.toLocaleDateString()
   }
+
+  let remainingText
+  if (hours >= 2) {
+    remainingText = `more than ${hours} hours remaining`
+  } else {
+    remainingText = `${minutes} minutes remaining`
+  }
+
+  return `${remainingText} (expires at ${timeString} ${dayIndicator})`
 })
 
 async function fetchUserProfile() {
@@ -281,8 +277,9 @@ async function handleRefresh() {
   try {
     const success = await refreshToken()
     if (success) {
-      console.log('handleRefresh: success')
       forceUpdate.value++
+      // Hide the token if it was shown
+      showToken.value = false
     }
   } catch (error) {
     console.error('Failed to refresh token:', error)

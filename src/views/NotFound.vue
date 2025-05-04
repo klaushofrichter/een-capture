@@ -53,19 +53,19 @@ const showBackButton = computed(() => {
     console.log('Back button hidden: User not authenticated')
     return false
   }
-  
+
   // Never show back button if we can't go back in history
   if (!canGoBack.value) {
     console.log('Back button hidden: No history to go back to')
     return false
   }
-  
+
   // Check if we arrived here directly from external login
   if (isPreviousPageExternalLogin()) {
     console.log('Back button hidden: Previous page was external login')
     return false
   }
-  
+
   // Check if we just arrived from login - this would be a post-login redirect to an invalid route
   const justLoggedIn = sessionStorage.getItem('justCompletedLogin') === 'true'
   if (justLoggedIn) {
@@ -74,13 +74,13 @@ const showBackButton = computed(() => {
     sessionStorage.removeItem('justCompletedLogin')
     return false
   }
-  
+
   // Check for a meaningful previous page name
   if (!previousPageName.value) {
     console.log('Back button hidden: No previous page name')
     return false
   }
-  
+
   // If we pass all checks, show the back button
   console.log('Back button visible: All conditions met')
   return true
@@ -106,11 +106,10 @@ function isPreviousPageExternalLogin() {
     try {
       // Parse the referrer as a URL
       const referrerUrl = new URL(document.referrer)
-      
+
       // Check if the hostname is eagleeyenetworks.com or ends with .eagleeyenetworks.com
       const hostname = referrerUrl.hostname
-      return hostname === 'eagleeyenetworks.com' || 
-             hostname.endsWith('.eagleeyenetworks.com')
+      return hostname === 'eagleeyenetworks.com' || hostname.endsWith('.eagleeyenetworks.com')
     } catch (e) {
       // If URL parsing fails, return false for safety
       console.error('Error parsing referrer URL:', e)
@@ -125,23 +124,22 @@ onBeforeMount(() => {
   // 1. There is history to go back to
   // 2. We're not coming from an external login page
   // 3. The user is authenticated (otherwise they'd just be sent to login again)
-  canGoBack.value = window.history.length > 1 && 
-                    !isPreviousPageExternalLogin() && 
-                    authStore.isAuthenticated
-  
+  canGoBack.value =
+    window.history.length > 1 && !isPreviousPageExternalLogin() && authStore.isAuthenticated
+
   // We only set the previous page name if we can actually go back
   if (canGoBack.value) {
     // Default to "Previous Page"
     previousPageName.value = 'Previous Page'
-    
+
     // Try to get a more specific name from referrer
     const referrer = document.referrer
-    
+
     if (referrer && referrer.includes(window.location.host)) {
       try {
         const referrerUrl = new URL(referrer)
         const path = referrerUrl.pathname
-        
+
         // Match the path to our route map
         if (routeNameMap[path]) {
           previousPageName.value = routeNameMap[path]

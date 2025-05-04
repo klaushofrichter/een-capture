@@ -10,7 +10,6 @@ export const useAuthStore = defineStore('auth', () => {
   const userProfile = ref(null)
   const tokenExpiration = ref(null)
   const refreshToken = ref(null)
-  const sessionId = ref(null)
   const isAuthenticated = computed(() => !!token.value)
   const baseUrl = computed(() => {
     if (!hostname.value) return null
@@ -25,18 +24,15 @@ export const useAuthStore = defineStore('auth', () => {
       const expirationTime = Date.now() + expiresIn * 1000 // Convert seconds to milliseconds
       tokenExpiration.value = expirationTime
       localStorage.setItem('token_expiration', expirationTime.toString())
-      sessionId.value = sessionId
-      localStorage.setItem('session_id', sessionId)
     } else {
       localStorage.removeItem('auth_token')
       localStorage.removeItem('token_expiration')
       tokenExpiration.value = null
-      localStorage.removeItem('session_id')
-      sessionId.value = null
     }
   }
 
   function setRefreshToken(newRefreshToken) {
+    // this is not the actual token, but an indication that the refresh token is present at the proxy
     refreshToken.value = newRefreshToken
     if (newRefreshToken) {
       localStorage.setItem('refresh_token', newRefreshToken)
@@ -87,7 +83,6 @@ export const useAuthStore = defineStore('auth', () => {
     const storedPort = localStorage.getItem('port')
     const storedExpiration = localStorage.getItem('token_expiration')
     const storedRefreshToken = localStorage.getItem('refresh_token')
-    const storedSessionId = localStorage.getItem('session_id')
 
     if (storedToken) {
       token.value = storedToken
@@ -106,9 +101,6 @@ export const useAuthStore = defineStore('auth', () => {
     }
     if (storedRefreshToken) {
       refreshToken.value = storedRefreshToken
-    }
-    if (storedSessionId) {
-      sessionId.value = storedSessionId
     }
   }
 
@@ -132,7 +124,6 @@ export const useAuthStore = defineStore('auth', () => {
       port: port.value,
       userProfile: userProfile.value,
       refreshToken: refreshToken.value,
-      sessionId: sessionId.value
     }
 
     // Clear store values
@@ -143,7 +134,7 @@ export const useAuthStore = defineStore('auth', () => {
     userProfile.value = null
     tokenExpiration.value = null
     refreshToken.value = null
-    sessionId.value = null
+    
     // Clear all localStorage items synchronously
     localStorage.clear()
 
@@ -186,27 +177,16 @@ export const useAuthStore = defineStore('auth', () => {
       port.value = tempCredentials.port
       userProfile.value = tempCredentials.userProfile
       refreshToken.value = tempCredentials.refreshToken
-      sessionId.value = tempCredentials.sessionId
       // Restore localStorage
       if (token.value) localStorage.setItem('auth_token', token.value)
       if (user.value) localStorage.setItem('user_data', JSON.stringify(user.value))
       if (hostname.value) localStorage.setItem('hostname', hostname.value)
       if (port.value) localStorage.setItem('port', String(port.value))
       if (refreshToken.value) localStorage.setItem('refresh_token', refreshToken.value)
-      if (sessionId.value) localStorage.setItem('session_id', sessionId.value)
 
       // Clear temporary credentials
       tempCredentials = null
     }
-  }
-
-  function setSessionId(newSessionId) {
-    sessionId.value = newSessionId
-    localStorage.setItem('session_id', newSessionId)
-  }
-
-  function getSessionId() {
-    return sessionId.value
   }
 
   // Initialize the store
@@ -222,7 +202,6 @@ export const useAuthStore = defineStore('auth', () => {
     refreshToken,
     isAuthenticated,
     baseUrl,
-    sessionId,
     setToken,
     setBaseUrl,
     setUser,
@@ -232,8 +211,6 @@ export const useAuthStore = defineStore('auth', () => {
     getTokenExpirationTime,
     getTokenTimeRemaining,
     logout,
-    cancelLogout,
-    getSessionId,
-    setSessionId
+    cancelLogout
   }
 })

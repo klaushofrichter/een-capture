@@ -1,8 +1,13 @@
 # EEN Login Application
 
-A modern Vue 3 application demonstrating secure authentication with Eagle Eye Networks (EEN) using OAuth2. It includes a Cloudflare Worker implementation acting as a secure backend proxy for the OAuth flow. It also provides a direct access method for scenarios where an access token and API endpoint details are already known.
+A modern Vue 3 application demonstrating secure authentication 
+with [Eagle Eye Networks](https://www.een.com/) (EEN) services 
+using OAuth2. It includes a Cloudflare Worker implementation acting as a secure backend proxy for the OAuth flow. It also provides a direct access method for scenarios where an access token and API endpoint details are already known.
 
-This project serves as a foundation or starting point for applications needing to integrate with EEN authentication securely.
+This project serves as a foundation or starting point for applications needing to integrate with Eagle
+Eye Networks services securely. The application uses the EEN APIs, but is otherwise not supported 
+by Eagle Eye Networks. Visit the [Eagle Eye Networks Developer Portal](https://developer.eagleeyenetworks.com/)
+for more information about the Eagle Eye Networks APIs. 
 
 ## Features
 
@@ -42,7 +47,7 @@ This setup involves configuring both the frontend Vue application and deploying 
 
 **1. Clone the repository:**
    ```bash
-   git clone <repository-url>
+   git clone git@github.com:klaushofrichter/een-login.git
    cd een-login
    ```
 
@@ -98,9 +103,48 @@ This setup involves configuring both the frontend Vue application and deploying 
        ```
        *   Replace `YOUR_EEN_CLIENT_ID`.
        *   Replace `VITE_AUTH_PROXY_URL` with your actual deployed worker URL.
-       *   **Do NOT put `EEN_CLIENT_SECRET` in this `.env` file.** It lives securely in the worker.
+       *   **`VITE_EEN_CLIENT_SECRET`: This is **not used by the frontend application** when targeting the deployed worker (it lives securely in the worker environment). However, it **is required** in this `.env` file **if you use the `./cloudflare/deploy.sh` script** to push secrets to Cloudflare.
        *   Ensure `VITE_REDIRECT_URI` matches your EEN application setup and the local development URL.
        *   Add `TEST_USER` and `TEST_PASSWORD` if you intend to run the full end-to-end tests.
+
+## Configuring the Authentication Proxy
+
+The application needs to communicate with an authentication proxy to handle the OAuth token exchange with Eagle Eye Networks securely. You can configure the application to use either a local proxy running within the Vite development server or a deployed Cloudflare Worker.
+
+This is controlled by the `VITE_AUTH_PROXY_URL` variable in your root `.env` file:
+
+*   **Using the Local Vite Proxy (for Development):**
+    *   Set `VITE_AUTH_PROXY_URL` to your local Vite server address (e.g., `http://127.0.0.1:3333`).
+    *   **This is the default behavior if `VITE_AUTH_PROXY_URL` is not set.**
+    *   Requires the following in the `.env` file:
+        *   `VITE_EEN_CLIENT_ID`
+        *   `VITE_EEN_CLIENT_SECRET`
+    *   Example (`.env`):
+        ```env
+        # Required for Local Vite Proxy:
+        VITE_EEN_CLIENT_ID=YOUR_EEN_CLIENT_ID
+        VITE_EEN_CLIENT_SECRET=YOUR_EEN_CLIENT_SECRET
+        # Set to local server (or leave unset to default to local):
+        VITE_AUTH_PROXY_URL=http://127.0.0.1:3333
+        ```
+    *   When configured this way, the frontend will make requests to `/proxy/getAccessToken` and `/proxy/refreshAccessToken` on the Vite server, which are handled by the built-in plugin in `vite.config.js`.
+
+*   **Using the Deployed Cloudflare Worker (Recommended for Production / Testing Deployment):**
+    *   Set `VITE_AUTH_PROXY_URL` to the full URL of your deployed Cloudflare worker.
+    *   Requires `VITE_EEN_CLIENT_ID` in the `.env` file (the frontend needs this).
+    *   The `VITE_EEN_CLIENT_SECRET` is **not used by the frontend application** itself, but **must be in `.env` if using the `./cloudflare/deploy.sh` script** to configure the worker.
+    *   Example:
+        ```env
+        VITE_EEN_CLIENT_ID=YOUR_EEN_CLIENT_ID
+        VITE_EEN_CLIENT_SECRET=YOUR_EEN_CLIENT_SECRET
+        VITE_AUTH_PROXY_URL=https://your-worker-name.your-account.workers.dev
+        ```
+    *   When configured this way, the frontend will make requests directly to `/getAccessToken` and `/refreshAccessToken` on your Cloudflare worker URL.
+
+**Important:**
+*   The `VITE_AUTH_PROXY_URL` variable **must be set** in your `.env` file for the authentication flow to function correctly. There is currently no default fallback if it is missing.
+*   If `VITE_AUTH_PROXY_URL` is **not set**, the application will default to using the **Local Vite Proxy** (`http://127.0.0.1:3333`). Ensure `VITE_EEN_CLIENT_SECRET` is also set in `.env` in this case.
+*   Remember to **restart the Vite development server** after changing the `.env` file for the changes to take effect.
 
 **5. Start the development server:**
    ```bash
@@ -238,14 +282,20 @@ This project uses Playwright for end-to-end testing.
     npm run test:debug
     ```
 
-The tests cover:
--   Login page element rendering and styling.
--   Direct Access page element rendering and styling.
--   Full EEN OAuth login flow (requires test credentials).
--   Navigation between authenticated pages (Home, Profile, About, Settings).
--   Theme switching functionality.
--   Logout flow (including modal interactions and redirection).
--   Direct Access login flow using credentials captured during the OAuth test.
+### Test Coverage
+
+The current test suite provides comprehensive coverage for various user flows and scenarios:
+
+-   **Login Page (`login-page.spec.js`):** Verifies the initial rendering and elements of the main login page.
+-   **EEN OAuth Flow (`login-navigation.spec.js`):** Covers the complete authentication process via Eagle Eye Networks, including redirection, credential entry, and successful login.
+-   **Direct Access (`direct-page.spec.js`):** Tests the direct login functionality for users who already have access tokens.
+-   **Invalid Routes (`invalid-route.spec.js`):** Checks the behavior when navigating to non-existent routes, ensuring the "Not Found" page is displayed correctly and handles navigation appropriately (e.g., hiding the "Go Back" button after an invalid deep link).
+-   **Deep Linking (`deep-linking.spec.js`):** Verifies that accessing protected routes directly before login correctly redirects to the login page and then back to the originally requested route after successful authentication.
+-   **Post-Login Navigation (`login-navigation.spec.js`):** Includes tests for navigating between different authenticated pages (Home, Profile, About, Settings), verifying page content, and theme switching.
+-   **Logout Flow (`login-navigation.spec.js`, `mobile-navigation-pages.spec.js`):** Tests the complete logout process, including the confirmation modal and redirection back to the login page.
+-   **Mobile Navigation (`mobile-navigation.spec.js`, `mobile-navigation-pages.spec.js`):
+    -   Tests the functionality of the mobile hamburger menu (opening, closing, overlay interaction).
+    -   Verifies page navigation and logout specifically within the mobile viewport (500px width).
 
 ## Available Scripts
 
@@ -273,10 +323,10 @@ The tests cover:
 ## Security Considerations
 
 -   **Client Secret:** Protected within the Cloudflare Worker environment secrets. **Do not** add it to the frontend `.env` file.
--   **Refresh Token:** Managed securely by the Cloudflare Worker. **Do not** attempt to store or handle refresh tokens in the frontend browser storage.
--   **Access Token:** Stored in the frontend's memory (Pinia store). While less sensitive than the refresh token, minimize its exposure and rely on short expiry times enforced by EEN.
--   **Worker Security:** Ensure your worker code handles errors correctly and doesn't inadvertently log sensitive information.
--   **HTTPS:** Essential for both the frontend application and the Cloudflare Worker URL.
+-   **Refresh Token:** Managed securely by the proxy (Cloudflare Worker or Vite plugin). **Do not** attempt to store or handle refresh tokens directly in the frontend browser storage.
+-   **Access Token:** Stored in the frontend's memory (Pinia store). While less sensitive than the refresh token, minimize its exposure (e.g., avoid logging) and rely on short expiry times enforced by EEN.
+-   **Worker/Proxy Security:** Ensure your proxy code (Cloudflare Worker or Vite plugin) handles errors correctly and doesn't inadvertently log sensitive information.
+-   **HTTPS:** Essential for the production frontend application and the Cloudflare Worker URL.
 
 ## Contributing
 
