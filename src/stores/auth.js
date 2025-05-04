@@ -25,14 +25,10 @@ export const useAuthStore = defineStore('auth', () => {
       const expirationTime = Date.now() + expiresIn * 1000 // Convert seconds to milliseconds
       tokenExpiration.value = expirationTime
       localStorage.setItem('token_expiration', expirationTime.toString())
-      //sessionId.value = sessionId
-      //localStorage.setItem('session_id', sessionId)
     } else {
       localStorage.removeItem('auth_token')
       localStorage.removeItem('token_expiration')
       tokenExpiration.value = null
-      //localStorage.removeItem('session_id')
-      //sessionId.value = null
     }
   }
 
