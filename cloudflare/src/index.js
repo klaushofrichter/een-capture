@@ -65,6 +65,10 @@ export default {
           // the refreshtoken is put into the store with the sessionId as key
           // NOTE: We should add an expiration time based on the expire__in value.
           //       Time to live is in seconds
+          console.log("created session id: ", sessionId);
+          console.log("refreshtoken storing: ", tokens.refresh_token);
+          console.log("expiring: ", tokens.expires_in);
+
           await env.EEN_LOGIN.put(sessionId, tokens.refresh_token, {
             expirationTtl: tokens.expires_in
           })
@@ -125,7 +129,8 @@ export default {
         // this is where the session ID is used to find the refresh token
         console.log('refreshToken - using sessionid to get refresh token: sessionId: ', sessionId)
         const refreshToken = await env.EEN_LOGIN.get(sessionId)
-        console.log('refreshToken from KV: ', refreshToken)
+        console.log('sessionid: ', sessionId)
+        console.log('old refreshToken from KV: ', refreshToken)
         if (refreshToken) {
           try {
             // this is the een service that generates a new access token, and new refresh token
@@ -141,7 +146,8 @@ export default {
               })
             })
             const newTokens = await refreshResponse.json()
-            console.log('newTokens from refresh: ', newTokens)
+            console.log('newTokens from refresh: new refresh: ', newTokens.refresh_token)
+            console.log('newTokens from refresh: new expires: ', newTokens.expires_in)
 
             // store the refresh token in the store
             await env.EEN_LOGIN.put(sessionId, newTokens.refresh_token, {
@@ -152,14 +158,15 @@ export default {
             )
 
             // this is the response to the Frontend
-            // NOTE: do we need to return the sessionId?
             return new Response(
               JSON.stringify({
                 accessToken: newTokens.access_token,
                 expiresIn: newTokens.expires_in
               }),
               {
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*', 
+                'Access-Control-Allow-Credentials': 'true'  }
               }
             )
           } catch (error) {

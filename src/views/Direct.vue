@@ -140,7 +140,7 @@ import { APP_NAME } from '../constants'
 const router = useRouter()
 const authStore = useAuthStore()
 const token = ref('')
-const baseUrl = ref('')
+const baseUrl = ref('api.c021.eagleeyenetworks.com')
 const port = ref(443)
 const error = ref('')
 const isLoading = ref(false)
