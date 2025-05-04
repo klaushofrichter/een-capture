@@ -7,7 +7,6 @@ const createAxiosInstance = () => {
   if (!authStore.baseUrl) {
     throw new Error('Base URL is not available')
   }
-  //console.log('createAxiosInstance', authStore.token)
   return axios.create({
     baseURL: authStore.baseUrl,
     headers: {

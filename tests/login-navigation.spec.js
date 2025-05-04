@@ -144,20 +144,21 @@ test.describe('Login and Navigation', () => {
     await expect(page.getByText('Refreshing...')).toBeHidden({ timeout: 10000 })
     console.log('✅ Token refreshed successfully')
 
-    // click the show button again
-    //await expect(tokenInput).toBeVisible()
-    //await expect(tokenInput).toBeDisabled()
-    await page.waitForTimeout(5000)
-    await page.getByRole('button', { name: 'Show & Copy' }).click()
-    //const tokenInput = page.locator('input[type="text"]')
+    // click the show button again to reveal the new token
+    // Wait for the button to potentially change from 'Hide' back to 'Show & Copy' and be stable
+    const showCopyButton = page.getByRole('button', { name: 'Show & Copy' })
+    await expect(showCopyButton).toBeVisible({ timeout: 5000 })
+    await expect(showCopyButton).toBeEnabled({ timeout: 5000 })
+    await showCopyButton.click()
+
     await expect(tokenInput).toBeVisible()
     await expect(tokenInput).toBeEnabled()
 
-    const accessToken = await tokenInput.getAttribute('value')
+    const newAccessToken = await tokenInput.inputValue()
     console.log('✅ New access token captured')
 
     // compare the access token with the first access token
-    expect(accessToken).not.toBe(firstAccessToken)
+    expect(newAccessToken).not.toBe(firstAccessToken)
     console.log('✅ Access token is different from the first access token')
 
     console.log('ℹ️ Navigating to About page')
@@ -223,13 +224,7 @@ test.describe('Login and Navigation', () => {
     await expect(page.getByRole('heading', { name: /Direct Access to EEN Login/ })).toBeVisible()
 
     // Fill in the captured credentials
-    //console.log(
-    //  '📝 Filling direct access form with captured credentials',
-    //  accessToken,
-    //  baseUrl,
-    //  port
-    //)
-    await page.getByLabel('Access Token').fill(accessToken)
+    await page.getByLabel('Access Token').fill(newAccessToken)
     await page.getByLabel('Base URL').fill(baseUrl)
     await page.getByLabel('Port').fill(port)
 
