@@ -205,7 +205,7 @@ test.describe('Login and Navigation', () => {
     await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
 
     // Now test logout with completion
-    console.log('🚪 Testing full logout - this will take at least 8 seconds')
+    console.log('🚪 Performing full logout - this will take at least 8 seconds')
     await page.getByRole('button', { name: 'Logout' }).click()
 
     // Verify the logout modal is shown again

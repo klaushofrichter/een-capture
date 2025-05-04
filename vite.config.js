@@ -19,7 +19,10 @@ const localOauthProxy = (env) => {
     // console.log('[Vite Plugin] Intercepted /proxy/getAccessToken'); // DEBUG
     const queryParams = parse(req.url.split('?')[1] || '');
     const code = queryParams.code;
-    const redirectUri = queryParams.redirect_uri || env.VITE_REDIRECT_URI;
+    const redirectUri =
+      queryParams.redirect_uri ||
+      env.VITE_REDIRECT_URI ||
+      'http://127.0.0.1:3333';
 
     if (!code) {
       console.error('[Vite Plugin] Missing code parameter');
