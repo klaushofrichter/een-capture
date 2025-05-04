@@ -156,15 +156,17 @@ test.describe('Login and Navigation', () => {
     await expect(tokenInput).toBeVisible()
     await expect(tokenInput).toBeEnabled()
 
-    // Use expect().toHaveValue() for better assertion that it's populated
-    await expect(tokenInput).toHaveValue(/[\s\S]+/) // Regex checks for any non-empty string
     // Capture the value for comparison later
-    const newAccessToken = tokenInput
+    const newAccessToken = await tokenInput.inputValue();
 
     console.log('✅ New access token captured')
 
     // compare the access token with the first access token
-    await expect(newAccessToken).not.toHaveValue(firstAccessToken)
+    // First, ensure the new token is actually a non-empty string before comparing
+    expect(typeof newAccessToken).toBe('string');
+    expect(newAccessToken).not.toBe('');
+    // Then compare with the original token
+    expect(newAccessToken).not.toBe(firstAccessToken)
     console.log('✅ Access token is different from the first access token')
 
     console.log('ℹ️ Navigating to About page')
