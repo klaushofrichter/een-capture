@@ -2,266 +2,216 @@ import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { fileURLToPath, URL } from 'url'
 import process from 'process'
+import fetch from 'node-fetch'; // Need node-fetch for server-side requests
+import { parse } from 'node:querystring'; // To parse query strings
+import { randomBytes } from 'node:crypto'; // For session ID generation
 import { APP_NAME, APP_DESCRIPTION } from './src/constants.js'
-import cookie from 'cookie'
-import { Buffer } from 'buffer'
 
-// In-memory store for refresh tokens (dev only)
-const tokenStore = new Map()
-const REFRESH_TOKEN_EXPIRATION = 24 * 60 * 60 // 24 hours in seconds
+// Define the proxy plugin
+const localOauthProxy = (env) => {
+  const sessions = new Map(); // In-memory store for refresh tokens, keyed by sessionId
 
-// --- Helper function for /proxy/getAccessToken logic ---
-async function handleGetAccessToken(req, res, env) {
-  const url = new URL(req.url, `http://${req.headers.host}`)
-  console.log(`[Vite Middleware] Handling ${req.method} ${url.pathname}`)
-  const cookies = cookie.parse(req.headers.cookie || '');
-  const sessionId = cookies.session_id; // Define sessionId here
+  // Helper to generate a session ID
+  const generateSessionId = () => randomBytes(16).toString('hex');
 
-  const code = url.searchParams.get('code');
-  const redirectUri = url.searchParams.get('redirect_uri');
+  // Helper to handle /getAccessToken
+  const handleGetAccessToken = async (req, res, next) => {
+    // console.log('[Vite Plugin] Intercepted /proxy/getAccessToken'); // DEBUG
+    const queryParams = parse(req.url.split('?')[1] || '');
+    const code = queryParams.code;
+    const redirectUri = queryParams.redirect_uri || env.VITE_REDIRECT_URI;
 
-  // ... (check sessionId, storedData, env vars) ...
+    if (!code) {
+      console.error('[Vite Plugin] Missing code parameter');
+      res.statusCode = 400;
+      return res.end('Missing code parameter');
+    }
 
-  // Define formData here so it's accessible in logging before try
-  const tokenFormData = new URLSearchParams();
-  tokenFormData.append('grant_type', 'authorization_code');
-  tokenFormData.append('code', code);
-  tokenFormData.append('scope', 'vms.all');
-  tokenFormData.append('redirect_uri', redirectUri);
+    const tokenUrl = env.VITE_EEN_TOKEN_URL || 'https://auth.eagleeyenetworks.com/oauth2/token';
+    const clientId = env.VITE_EEN_CLIENT_ID;
+    const clientSecret = env.VITE_EEN_CLIENT_SECRET; // Make sure this is in your .env
 
-  let tokenResponse; // Declare outside try block
-  try {
-    console.log(`[Vite Middleware] Fetching token from EEN...`);
-    console.log(`[Vite Middleware] Auth Header: Basic ${Buffer.from(`${env.VITE_EEN_CLIENT_ID}:******`).toString('base64').substring(0, 10)}...`); // Log partial header
-    console.log(`[Vite Middleware] Body Params: ${tokenFormData.toString()}`);
+    if (!clientSecret) {
+        console.error('[Vite Plugin] Missing VITE_EEN_CLIENT_SECRET in .env');
+        res.statusCode = 500;
+        return res.end('Server configuration error: Missing client secret.');
+    }
 
-    tokenResponse = await fetch('https://auth.eagleeyenetworks.com/oauth2/token', {
+
+    const body = new URLSearchParams({
+      grant_type: 'authorization_code',
+      code: code,
+      redirect_uri: redirectUri,
+      client_id: clientId,
+      client_secret: clientSecret
+    });
+
+    // console.log(`[Vite Plugin] Calling EEN Token URL: ${tokenUrl}`); // DEBUG
+    // console.log(`[Vite Plugin] With Body Params: grant_type=authorization_code, code=${code}, redirect_uri=${redirectUri}, client_id=${clientId}, client_secret=[PRESENT]`); // DEBUG
+
+    try {
+      const eenResponse = await fetch(tokenUrl, {
         method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Authorization': `Basic ${Buffer.from(`${env.VITE_EEN_CLIENT_ID}:${env.VITE_EEN_CLIENT_SECRET}`).toString('base64')}`
-        },
-        body: tokenFormData
-    });
-    console.log(`[Vite Middleware] EEN Response Status: ${tokenResponse.status}`);
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+      });
 
-    // --- Explicit error handling for EEN fetch failure ---
-    if (!tokenResponse.ok) {
-      const errorText = await tokenResponse.text(); // Read as text first
-      const statusCode = tokenResponse.status || 502;
-      console.error(`[Vite Middleware] EEN Token Error: ${statusCode}. Response Body: ${errorText}`); // Log the HTML/text
-      if (!res.headersSent) {
-          res.writeHead(statusCode, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Failed to exchange token with EEN', details: `Status ${statusCode}` })); // Avoid sending potentially large HTML back
+      const responseBodyText = await eenResponse.text(); // Read as text first for debugging
+
+      if (!eenResponse.ok) {
+        console.error(`[Vite Plugin] EEN Token Error ${eenResponse.status}:`, responseBodyText);
+        res.statusCode = eenResponse.status;
+        return res.end(`EEN Token Error: ${responseBodyText}`);
       }
-      return; // Stop processing
-    }
-    // --- End explicit error handling ---
 
-    // If response is OK, THEN parse as JSON
-    const tokens = await tokenResponse.json();
+      const data = JSON.parse(responseBodyText); // Parse JSON only if response is OK
 
-    // Handle invalid token structure
-    if (!tokens.access_token || !tokens.refresh_token || !tokens.expires_in) {
-       console.error('[Vite Middleware] Incomplete tokens received from EEN:', tokens);
-       // Send 500 if token structure is invalid
-       if (!res.headersSent) {
-           res.writeHead(500, { 'Content-Type': 'application/json' });
-           res.end(JSON.stringify({ error: 'Invalid token data received from EEN' }));
-       }
-       return; // Stop processing
-    }
+      if (data.refresh_token) {
+        const sessionId = generateSessionId();
+        sessions.set(sessionId, data.refresh_token);
+        // console.log(`[Vite Plugin] Stored refresh token for session: ${sessionId}`); // DEBUG
 
-    // Define sessionId and responseBody before sending success
-    const sessionId = crypto.randomUUID();
-    tokenStore.set(sessionId, {
-      refreshToken: tokens.refresh_token,
-      expiresAt: Date.now() + (tokens.expires_in * 1000)
-    });
-    console.log(`[Vite Middleware] Stored refresh token for session ${sessionId}`);
-
-    const responseBody = JSON.stringify({
-      accessToken: tokens.access_token,
-      expiresIn: tokens.expires_in,
-      httpsBaseUrl: tokens.httpsBaseUrl,
-      sessionId: sessionId
-    });
-
-    res.writeHead(200, { /* ... headers ... */ });
-    res.end(responseBody);
-
-  } catch (error) {
-    // Catch other errors
-    console.error('[Vite Middleware] /getAccessToken Unexpected Error:', error);
-    // If we have a response object, try reading text from it in case of JSON parse error
-    if (tokenResponse && !res.headersSent) { 
-        try {
-            const errorBody = await tokenResponse.text();
-            console.error('[Vite Middleware] Raw error response body:', errorBody);
-        } catch (readError) {
-            console.error('[Vite Middleware] Could not read error response body.');
-        }
-    }
-    if (!res.headersSent) {
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Middleware error during token exchange' }));
-    }
-  }
-}
-
-// --- Helper function for /proxy/refreshAccessToken logic ---
-async function handleRefreshAccessToken(req, res, env) {
-  const url = new URL(req.url, `http://${req.headers.host}`);
-  console.log(`[Vite Middleware] Handling ${req.method} ${url.pathname}`);
-
-  // Read sessionId from URL query parameter
-  const sessionId = url.searchParams.get('sessionId');
-  console.log(`[Vite Middleware] Session ID from Query Param: ${sessionId}`);
-
-  if (!sessionId) {
-    res.writeHead(400, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Session ID query parameter missing' }));
-    return;
-  }
-
-  const storedData = tokenStore.get(sessionId); // Use sessionId from query
-
-  if (!storedData || Date.now() > storedData.expiresAt) {
-    res.writeHead(400, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Session ID is invalid or expired' }));
-    return;
-  }
-
-  let refreshResponse; // Declare outside try block
-  try {
-    const refreshTokenFormData = new URLSearchParams();
-    refreshTokenFormData.append('grant_type', 'refresh_token');
-    refreshTokenFormData.append('refresh_token', storedData.refreshToken);
-
-    console.log(`[Vite Middleware] Refreshing token for session ${sessionId}...`);
-    refreshResponse = await fetch('https://auth.eagleeyenetworks.com/oauth2/token', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${Buffer.from(`${env.VITE_EEN_CLIENT_ID}:${env.VITE_EEN_CLIENT_SECRET}`).toString('base64')}`
-      },
-      body: refreshTokenFormData
-    });
-    console.log(`[Vite Middleware] EEN Refresh Response Status: ${refreshResponse.status}`);
-
-    // --- Explicit error handling for EEN fetch failure ---
-    if (!refreshResponse.ok) {
-      const errorText = await refreshResponse.text(); // Read as text first
-      const statusCode = refreshResponse.status || 502;
-      console.error(`[Vite Middleware] EEN Refresh Error: ${statusCode}. Response Body: ${errorText}`); // Log the HTML/text
-      tokenStore.delete(sessionId); // Invalidate session on refresh failure
-      if (!res.headersSent) {
-          res.writeHead(statusCode, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Failed to refresh token with EEN', details: `Status ${statusCode}` })); // Avoid sending potentially large HTML back
+        // Respond to the client
+        res.setHeader('Content-Type', 'application/json');
+        res.statusCode = 200;
+        res.end(JSON.stringify({
+          accessToken: data.access_token,
+          expiresIn: data.expires_in,
+          httpsBaseUrl: data.httpsBaseUrl, // Pass this through if EEN provides it
+          sessionId: sessionId // Send session ID back to client
+        }));
+      } else {
+         console.error('[Vite Plugin] No refresh token received from EEN');
+         res.statusCode = 500;
+         res.end('Failed to obtain refresh token from EEN.');
       }
-      return; // Stop processing
+
+    } catch (error) {
+      console.error('[Vite Plugin] Error fetching access token:', error);
+      res.statusCode = 500;
+      res.end(`Server error: ${error.message}`);
     }
-    // --- End explicit error handling ---
+  };
 
-    // If response is OK, THEN parse as JSON
-    const newTokens = await refreshResponse.json();
+  // Helper to handle /refreshAccessToken
+  const handleRefreshAccessToken = async (req, res, next) => {
+    // console.log('[Vite Plugin] Intercepted /proxy/refreshAccessToken'); // DEBUG
+    const queryParams = parse(req.url.split('?')[1] || '');
+    const sessionId = queryParams.sessionId;
 
-    // Handle invalid token structure
-    if (!newTokens.access_token || !newTokens.refresh_token || !newTokens.expires_in) {
-       console.error('[Vite Middleware] Incomplete tokens from EEN refresh:', newTokens);
-       tokenStore.delete(sessionId); // Invalidate session
-       if (!res.headersSent) {
-           res.writeHead(500, { 'Content-Type': 'application/json' });
-           res.end(JSON.stringify({ error: 'Invalid token data received from EEN refresh' }));
-       }
-       return; // Stop processing
+    if (!sessionId) {
+        console.error('[Vite Plugin] Missing sessionId for refresh');
+        res.statusCode = 400;
+        return res.end('Missing sessionId parameter');
     }
 
-    // Define responseBody before sending success
-    tokenStore.set(sessionId, {
-      refreshToken: newTokens.refresh_token,
-      expiresAt: Date.now() + (newTokens.expires_in * 1000)
+    const refreshToken = sessions.get(sessionId);
+
+    if (!refreshToken) {
+        console.error(`[Vite Plugin] No refresh token found for session: ${sessionId}`);
+        res.statusCode = 401; // Unauthorized or session expired
+        return res.end('Invalid or expired session.');
+    }
+
+    const tokenUrl = env.VITE_EEN_TOKEN_URL || 'https://auth.eagleeyenetworks.com/oauth2/token';
+    const clientId = env.VITE_EEN_CLIENT_ID;
+    const clientSecret = env.VITE_EEN_CLIENT_SECRET;
+
+     if (!clientSecret) {
+        console.error('[Vite Plugin] Missing VITE_EEN_CLIENT_SECRET in .env');
+        res.statusCode = 500;
+        return res.end('Server configuration error: Missing client secret.');
+    }
+
+    const body = new URLSearchParams({
+      grant_type: 'refresh_token',
+      refresh_token: refreshToken,
+      client_id: clientId,
+      client_secret: clientSecret
     });
-    console.log(`[Vite Middleware] Refreshed token for session ${sessionId}`);
 
-    const responseBody = JSON.stringify({
-      accessToken: newTokens.access_token,
-      expiresIn: newTokens.expires_in
-    });
+    try {
+      const eenResponse = await fetch(tokenUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+      });
 
-    res.writeHead(200, { /* ... */ });
-    res.end(responseBody);
+      const responseBodyText = await eenResponse.text(); // Read as text first
 
-  } catch (error) {
-    // Catch other errors
-    console.error('[Vite Middleware] /refreshAccessToken Unexpected Error:', error);
-    // If we have a response object, try reading text from it in case of JSON parse error
-    if (refreshResponse && !res.headersSent) { 
-        try {
-            const errorBody = await refreshResponse.text();
-            console.error('[Vite Middleware] Raw error response body:', errorBody);
-        } catch (readError) {
-            console.error('[Vite Middleware] Could not read error response body.');
+      if (!eenResponse.ok) {
+        console.error(`[Vite Plugin] EEN Refresh Error ${eenResponse.status}:`, responseBodyText);
+        // If refresh fails (e.g., invalid_grant), remove the session
+        if (eenResponse.status === 400 || eenResponse.status === 401) {
+            sessions.delete(sessionId);
+            console.log(`[Vite Plugin] Deleted session due to refresh failure: ${sessionId}`);
         }
-    }
-     if (!res.headersSent) {
-          res.writeHead(500, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Middleware error during token refresh' }));
-     }
-  }
-}
+        res.statusCode = eenResponse.status;
+        return res.end(`EEN Refresh Error: ${responseBodyText}`);
+      }
 
-// --- Custom Vite Plugin for Local OAuth Proxy ---
-function localOauthProxy(env) {
+      const data = JSON.parse(responseBodyText); // Parse JSON only if OK
+
+      // --- Handle Refresh Token Rotation ---
+      // Check if EEN returned a new refresh token
+      if (data.refresh_token) {
+        // Update the session with the new refresh token
+        sessions.set(sessionId, data.refresh_token);
+        // console.log(`[Vite Plugin] Updated refresh token for session: ${sessionId}`); // DEBUG
+      } else {
+        // If no new refresh token is provided, the old one might still be valid (depending on provider)
+        // For EEN, it's likely rotated, but we log just in case.
+        // console.log(`[Vite Plugin] No new refresh token received for session: ${sessionId}. Keeping existing one.`); // DEBUG
+      }
+      // --- End Handle Refresh Token Rotation ---
+
+      res.setHeader('Content-Type', 'application/json');
+      res.statusCode = 200;
+      res.end(JSON.stringify({
+        accessToken: data.access_token,
+        expiresIn: data.expires_in,
+        // EEN might not return httpsBaseUrl on refresh, handle accordingly
+        // httpsBaseUrl: data.httpsBaseUrl
+      }));
+
+    } catch (error) {
+      console.error('[Vite Plugin] Error refreshing token:', error);
+      res.statusCode = 500;
+      res.end(`Server error: ${error.message}`);
+    }
+  };
+
   return {
     name: 'local-oauth-proxy',
     configureServer(server) {
-      console.log('[Vite Plugin] Applying local OAuth proxy middleware...');
-      server.middlewares.use(async (req, res, next) => {
-        let parsedPath = '(parse error)';
-        let url;
-        try {
-          const base = `http://${req.headers.host}`;
-          url = new URL(req.url, base);
-          parsedPath = url.pathname;
-        } catch (e) {
-          console.error(`[Vite Middleware] URL Parse Error for req.url: ${req.url}`, e);
-          parsedPath = req.url; // Fallback for logging
+      // console.log('[Vite Plugin] configureServer hook called.'); // DEBUG
+      server.middlewares.use((req, res, next) => {
+        // Check if the request path starts with /proxy/ and method is POST
+        if (req.method === 'POST' && req.url?.startsWith('/proxy/getAccessToken')) {
+          return handleGetAccessToken(req, res, next);
         }
-        console.log(`[Vite Middleware Entry] Method: ${req.method}, URL: ${req.url}, Parsed Path: ${parsedPath}`);
-
-        if (parsedPath === '/proxy/getAccessToken') {
-          console.log(`[Vite Middleware] Handling /proxy/getAccessToken`);
-          await handleGetAccessToken(req, res, env);
-          console.log(`[Vite Middleware] Finished handling /proxy/getAccessToken`);
-          return; // Stop processing this request
+        if (req.method === 'POST' && req.url?.startsWith('/proxy/refreshAccessToken')) {
+          return handleRefreshAccessToken(req, res, next);
         }
-
-        if (parsedPath === '/proxy/refreshAccessToken') {
-          console.log(`[Vite Middleware] Handling /proxy/refreshAccessToken`);
-          await handleRefreshAccessToken(req, res, env);
-          console.log(`[Vite Middleware] Finished handling /proxy/refreshAccessToken`);
-          return; // Stop processing this request
-        }
-
-        // Pass unmatched requests
-        console.log(`[Vite Middleware] Passing non-target path: ${parsedPath}`);
+        // If not matching our paths, pass control to the next middleware
         next();
       });
     }
   };
-}
-// --- End Custom Plugin ---
+};
+
+// Load .env variables early if needed by the plugin setup
+const mode = process.env.NODE_ENV || 'development'; // Determine mode early
+const earlyEnv = loadEnv(mode, process.cwd(), '');
 
 export default defineConfig(({ command, mode }) => {
-  // Load .env variables for the current mode
-  const env = loadEnv(mode, process.cwd(), '')
+  // Load .env variables for the current mode (can reuse earlyEnv if sufficient)
+  const env = loadEnv(mode, process.cwd(), '');
 
   const config = {
     plugins: [
       vue(),
+      // Add the proxy plugin instance, passing loaded env variables
       localOauthProxy(env)
     ],
     resolve: {
@@ -272,7 +222,7 @@ export default defineConfig(({ command, mode }) => {
     server: {
       port: 3333,
       host: '127.0.0.1',
-      proxy: {}, // No proxy rules needed here now
+      proxy: {},
     },
     preview: {
       port: 3333,

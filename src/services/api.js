@@ -2,26 +2,22 @@ import axios from 'axios'
 import { useAuthStore } from '../stores/auth'
 
 export const createAuthApi = () => {
+  // Base URL points to the proxy (local Vite via /proxy, or deployed worker)
+  const proxyUrl = import.meta.env.VITE_AUTH_PROXY_URL;
+
+  if (!proxyUrl) {
+    console.error(
+        'ERROR: VITE_AUTH_PROXY_URL environment variable is not set! Set it to the proxy URL (e.g., http://127.0.0.1:3333 or your Cloudflare worker URL).'
+    );
+  }
+
   let config = {
-    // For dev, proxy path is /proxy. For prod, it's the full worker URL.
-    baseURL: '/proxy', // Default for dev
+    // Use the proxy URL directly. It will contain either the local path or the full worker URL.
+    baseURL: proxyUrl || '',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
     }
   };
-
-  // In production, override baseURL with the specific Cloudflare Worker URL
-  if (import.meta.env.PROD) {
-    if (!import.meta.env.VITE_AUTH_PROXY_URL_PROD) {
-      console.error(
-        'ERROR: VITE_AUTH_PROXY_URL_PROD is not set for production build! Auth API calls will likely fail.'
-      );
-      // Fallback or specific error handling might be needed here
-      // For now, it will try to use /proxy which won't work in prod without the worker URL
-    } else {
-      config.baseURL = import.meta.env.VITE_AUTH_PROXY_URL_PROD;
-    }
-  }
 
   return axios.create(config);
 }
