@@ -96,7 +96,7 @@ export default {
     }
 
     // this is where the frontend asks the proxy to use the refresh token to generate a new access token
-    // The session Id is in the header - frontend needs to make sure it is provided. There is a fallback 
+    // The session Id is in the header - frontend needs to make sure it is provided. There is a fallback
     // to get it from the URL due to the cookie not being available in some cases because of CORS.
     if (url.pathname === '/refreshAccessToken') {
       var sessionId = request.headers
