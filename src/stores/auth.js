@@ -134,6 +134,7 @@ export const useAuthStore = defineStore('auth', () => {
     userProfile.value = null
     tokenExpiration.value = null
     refreshToken.value = null
+    
     // Clear all localStorage items synchronously
     localStorage.clear()
 
