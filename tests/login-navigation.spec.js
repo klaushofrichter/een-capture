@@ -12,7 +12,7 @@ test.describe('Login and Navigation', () => {
     if (!loggedBaseURL) {
       const baseURL = page.context()._options.baseURL
       if (baseURL) {
-        console.log('\n🚀 Running tests against Service at URL: ${baseURL}\n')
+        console.log(`\n🚀 Running tests against Service at URL: ${baseURL}\n`)
       }
       loggedBaseURL = true // Set flag so it doesn't log again
     }
@@ -154,7 +154,11 @@ test.describe('Login and Navigation', () => {
     await expect(tokenInput).toBeVisible()
     await expect(tokenInput).toBeEnabled()
 
-    const newAccessToken = await tokenInput.inputValue()
+    // Use expect().toHaveValue() for better assertion that it's populated
+    await expect(tokenInput).toHaveValue(/[\s\S]+/); // Regex checks for any non-empty string
+    // Capture the value for comparison later
+    const newAccessToken = await tokenInput.inputValue();
+
     console.log('✅ New access token captured')
 
     // compare the access token with the first access token
