@@ -106,12 +106,6 @@ const localOauthProxy = env => {
       .find(cookie => cookie.startsWith('sessionId='))
       ?.split('=')[1]
     
-    // Fallback to query parameter if cookie not found
-    if (!sessionId) {
-      console.log('[Vite Plugin] No sessionId found in cookie, trying query parameter')
-      sessionId = queryParams.sessionId
-    }
-
     if (!sessionId) {
       console.error('[Vite Plugin] Missing sessionId for refresh')
       res.statusCode = 400

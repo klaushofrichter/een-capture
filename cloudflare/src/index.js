@@ -12,7 +12,7 @@ export default {
         const corsHeaders = {
           'Access-Control-Allow-Origin': origin,
           'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization', // Add any other allowed headers
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization, Cookie', // Add Cookie to allowed headers
           'Access-Control-Allow-Credentials': 'true', // If you need to send/receive cookies or auth headers
           'Access-Control-Max-Age': '86400' // 24 hours
         }
@@ -30,7 +30,7 @@ export default {
 
     // this is where the proxy gets called by the frontend with the "code" that enables the
     // proxy to get the actual tokens.
-    if (url.pathname === '/getAccessToken') {
+    if (url.pathname === '/proxy/getAccessToken') {
       const code = url.searchParams.get('code')
       const redirectUri = url.searchParams.get('redirect_uri')
       if (code && redirectUri) {
@@ -74,17 +74,16 @@ export default {
               headers: {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': origin,
-                'Access-Control-Allow-Credentials': 'true' // If you need to send/receive cookies or auth headers
+                'Access-Control-Allow-Credentials': 'true' // Enable credentials
               }
             }
           )
 
           // Set the Set-Cookie header directly on the response.headers object
-          //response.headers.append('Set-Cookie', `sessionId=${sessionId}; Path=/; HttpOnly; Secure; SameSite=Lax`)
           response.headers.append(
             'Set-Cookie',
-            `sessionId=${sessionId}; Path=/; HttpOnly; SameSite=Lax`
-          ) // Keep Lax for now
+            `sessionId=${sessionId}; Path=/; HttpOnly; SameSite=None; Secure`
+          )
 
           return response
         } catch (error) {
@@ -96,18 +95,16 @@ export default {
     }
 
     // this is where the frontend asks the proxy to use the refresh token to generate a new access token
-    // The session Id is in the header - frontend needs to make sure it is provided. There is a fallback
-    // to get it from the URL due to the cookie not being available in some cases because of CORS.
-    if (url.pathname === '/refreshAccessToken') {
+    // The session Id is in the header - frontend needs to make sure it is provided. 
+    if (url.pathname === '/proxy/refreshAccessToken') {
+      console.log('Cookie header:', request.headers.get('Cookie'))
       var sessionId = request.headers
         .get('Cookie')
         ?.split('; ')
         .find(cookie => cookie.startsWith('sessionId='))
         ?.split('=')[1]
-      if (!sessionId) {
-        sessionId = url.searchParams.get('sessionId')
-      }
       if (sessionId) {
+        console.log('sessionId found somewhere, trying to get refresh token')
         // this is where the session ID is used to find the refresh token
         const refreshToken = await env.EEN_LOGIN.get(sessionId)
         if (refreshToken) {
