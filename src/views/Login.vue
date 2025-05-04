@@ -82,7 +82,7 @@ onMounted(async () => {
 
   if (code) {
     // Handling the redirect back FROM EEN
-    console.log('Processing auth callback...')
+    //console.log('Processing auth callback...')
     isProcessingCallback.value = true
     try {
       const success = await handleAuthCallback(code)
@@ -133,7 +133,7 @@ onMounted(async () => {
     }
   } else {
     // Standard case: User navigated directly to Login page, show the button
-    console.log('Displaying login page.')
+    //console.log('Displaying login page.')
     document.title = `${APP_NAME} - Login`
     isProcessingCallback.value = false // Ensure loading state is off
   }
