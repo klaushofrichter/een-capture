@@ -10,13 +10,8 @@ const EEN_AUTH_URL =
 // Determine proxy URL, defaulting to local Vite server if VITE_AUTH_PROXY_URL is not set
 const AUTH_PROXY_URL = import.meta.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333'
 
-// Determine if we are using the local Vite proxy based on the URL structure
-// Use local proxy if the URL (explicitly set or defaulted) points to localhost/127.0.0.1
-const USE_LOCAL_VITE_PROXY =
-  AUTH_PROXY_URL.includes('127.0.0.1') || AUTH_PROXY_URL.includes('localhost')
-
 console.log(
-  `[auth.js] Using ${USE_LOCAL_VITE_PROXY ? 'Local Vite Proxy' : 'Remote Proxy'} at ${AUTH_PROXY_URL}`
+  `[auth.js] Using ${AUTH_PROXY_URL} for the proxy`
 )
 
 export const getAuthUrl = () => {
@@ -37,7 +32,7 @@ async function getAccessToken(code) {
   })
 
   // Construct path based on whether we target the local proxy or remote
-  const relativePath = USE_LOCAL_VITE_PROXY ? '/proxy/getAccessToken' : '/proxy/getAccessToken'
+  const relativePath = '/proxy/getAccessToken'
   const requestUrl = `${AUTH_PROXY_URL}${relativePath}?${tokenParams.toString()}`
   console.log(`[auth.js] Fetching: ${requestUrl}`)
 
