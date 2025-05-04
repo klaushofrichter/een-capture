@@ -65,9 +65,9 @@ export default {
           // the refreshtoken is put into the store with the sessionId as key
           // NOTE: We should add an expiration time based on the expire__in value.
           //       Time to live is in seconds
-          console.log("created session id: ", sessionId);
-          console.log("refreshtoken storing: ", tokens.refresh_token);
-          console.log("expiring: ", tokens.expires_in);
+          console.log('created session id: ', sessionId)
+          console.log('refreshtoken storing: ', tokens.refresh_token)
+          console.log('expiring: ', tokens.expires_in)
 
           await env.EEN_LOGIN.put(sessionId, tokens.refresh_token, {
             expirationTtl: tokens.expires_in
@@ -164,9 +164,11 @@ export default {
                 expiresIn: newTokens.expires_in
               }),
               {
-                headers: { 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*', 
-                'Access-Control-Allow-Credentials': 'true'  }
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Access-Control-Allow-Origin': '*',
+                  'Access-Control-Allow-Credentials': 'true'
+                }
               }
             )
           } catch (error) {

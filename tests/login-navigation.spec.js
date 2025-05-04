@@ -111,13 +111,15 @@ test.describe('Login and Navigation', () => {
 
     // Capture token expiration text
     console.log('⏰ Capturing token expiration text')
-    const tokenExpirationInput = page.locator('div.mt-4:has(label:has-text("Token Expiration")) input')
+    const tokenExpirationInput = page.locator(
+      'div.mt-4:has(label:has-text("Token Expiration")) input'
+    )
     await expect(tokenExpirationInput).toBeVisible()
     await expect(tokenExpirationInput).toBeEnabled()
 
     // Capture the access token - now it should be visible as text
     const firstAccessToken = await tokenInput.getAttribute('value')
-    console.log('✅ First Access token captured', firstAccessToken)
+    console.log('✅ Current access token captured')
 
     // Capture the base URL using the proper selector
     const baseUrl = await page.locator('label:has-text("Base URL")').evaluate(label => {
@@ -137,7 +139,7 @@ test.describe('Login and Navigation', () => {
     await expect(refreshButton).toBeVisible()
     await refreshButton.click()
 
-      // Wait for the refresh to complete
+    // Wait for the refresh to complete
     await expect(page.getByText('Refreshing...')).toBeVisible()
     await expect(page.getByText('Refreshing...')).toBeHidden({ timeout: 10000 })
     console.log('✅ Token refreshed successfully')
@@ -152,8 +154,11 @@ test.describe('Login and Navigation', () => {
     await expect(tokenInput).toBeEnabled()
 
     const accessToken = await tokenInput.getAttribute('value')
-    console.log('✅ Access token captured', accessToken)
+    console.log('✅ New access token captured')
 
+    // compare the access token with the first access token
+    expect(accessToken).not.toBe(firstAccessToken)
+    console.log('✅ Access token is different from the first access token')
 
     console.log('ℹ️ Navigating to About page')
     await page.getByRole('navigation').getByRole('link', { name: 'About' }).click()
@@ -218,12 +223,12 @@ test.describe('Login and Navigation', () => {
     await expect(page.getByRole('heading', { name: /Direct Access to EEN Login/ })).toBeVisible()
 
     // Fill in the captured credentials
-    console.log(
-      '📝 Filling direct access form with captured credentials',
-      accessToken,
-      baseUrl,
-      port
-    )
+    //console.log(
+    //  '📝 Filling direct access form with captured credentials',
+    //  accessToken,
+    //  baseUrl,
+    //  port
+    //)
     await page.getByLabel('Access Token').fill(accessToken)
     await page.getByLabel('Base URL').fill(baseUrl)
     await page.getByLabel('Port').fill(port)

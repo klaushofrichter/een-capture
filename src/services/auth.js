@@ -58,9 +58,9 @@ export const handleAuthCallback = async code => {
     authStore.setBaseUrl(httpsBaseUrl)
     authStore.setRefreshToken('present') // this marks that the refresh token is present at the proxy
     authStore.setSessionId(sessionId)
-    console.log('handleAuthCallback: token: ', token)
-    console.log('handleAuthCallback: httpsBaseUrl: ', httpsBaseUrl)
-    console.log('handleAuthCallback: sessionId: ', sessionId)
+    //console.log('handleAuthCallback: token: ', token)
+    //console.log('handleAuthCallback: httpsBaseUrl: ', httpsBaseUrl)
+    //console.log('handleAuthCallback: sessionId: ', sessionId)
     return { token, httpsBaseUrl }
   } catch (error) {
     console.error('Authentication error:', error)
@@ -73,20 +73,20 @@ export const refreshToken = async () => {
   try {
     // we do not have a refresh token, just an indication that the refresh token is present at the proxy
     const refreshToken = authStore.refreshToken
-    console.log('refreshToken for the refresh call coming from API: ', refreshToken)
+    //console.log('refreshToken for the refresh call coming from API: ', refreshToken)
 
     if (!refreshToken) return false // there is no refresh token at the proxy
 
     // get the session ID from the store - this should not be needed because the session ID is in the cookie
     const sessionId = authStore.sessionId
-    console.log('sessionId for the refresh call coming from API: ', sessionId)
+   // console.log('sessionId for the refresh call coming from API: ', sessionId)
 
     const api = createAuthApi() // for communication with the proxy
     const response = await api.post('/refreshAccessToken?sessionId=' + sessionId, null, {
       credentials: 'include'
     })
 
-    console.log('response.data from the refresh call: ', response.data)
+    //console.log('response.data from the refresh call: ', response.data)
 
     // check if the response is valid
     if (!response.data.accessToken || !response.data.expiresIn) {

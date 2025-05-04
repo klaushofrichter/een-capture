@@ -131,23 +131,6 @@
                           class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm sm:text-sm dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-0 focus:border-gray-300 dark:focus:border-gray-600"
                         />
                       </div>
-                      <div
-                        v-if="tokenExpirationText !== 'Token expiration date is unknown'"
-                        class="w-24"
-                      >
-                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                          <div
-                            class="h-2.5 rounded-full transition-all duration-1000"
-                            :class="{
-                              'bg-green-500': tokenExpirationPercentage > 50,
-                              'bg-yellow-500':
-                                tokenExpirationPercentage <= 50 && tokenExpirationPercentage > 25,
-                              'bg-red-500': tokenExpirationPercentage <= 25
-                            }"
-                            :style="{ width: `${tokenExpirationPercentage}%` }"
-                          ></div>
-                        </div>
-                      </div>
                     </div>
                   </div>
 
@@ -303,7 +286,7 @@ async function handleRefresh() {
   try {
     const success = await refreshToken()
     if (success) {
-      console.log('handleRefresh: success')
+      //console.log('handleRefresh: success')
       forceUpdate.value++
       // Hide the token if it was shown
       showToken.value = false
