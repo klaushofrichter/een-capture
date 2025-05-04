@@ -1,10 +1,9 @@
 import { useAuthStore } from '../stores/auth'
 // Remove createAuthApi import if no longer used elsewhere in this file
 // import { createAuthApi } from './api'
-import { API_CONFIG } from '../constants'
 
 const CLIENT_ID = import.meta.env.VITE_EEN_CLIENT_ID
-const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI || API_CONFIG.REDIRECT_URL || 'http://127.0.0.1:3333'
+const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI || 'http://127.0.0.1:3333'
 const EEN_AUTH_URL = import.meta.env.VITE_EEN_AUTH_URL || 'https://auth.eagleeyenetworks.com/oauth2/authorize'
 
 // Determine proxy URL, defaulting to local Vite server if VITE_AUTH_PROXY_URL is not set
@@ -21,7 +20,7 @@ export const getAuthUrl = () => {
     client_id: CLIENT_ID,
     redirect_uri: REDIRECT_URI,
     response_type: 'code',
-    scope: API_CONFIG.SCOPES
+    scope: 'vms.all'
   })
   const url = `${EEN_AUTH_URL}?${params.toString()}`
   return url
