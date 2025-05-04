@@ -4,7 +4,7 @@ import { API_CONFIG } from '../constants'
 
 const CLIENT_ID = import.meta.env.VITE_EEN_CLIENT_ID
 const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI || API_CONFIG.REDIRECT_URL
-const AUTH_URL = 'https://auth.eagleeyenetworks.com/oauth2/authorize'
+const AUTH_URL = import.meta.env.VITE_EEN_AUTH_URL || 'https://auth.eagleeyenetworks.com/oauth2/authorize'
 
 export const getAuthUrl = () => {
   const params = new URLSearchParams({

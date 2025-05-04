@@ -4,7 +4,7 @@ import { useAuthStore } from '../stores/auth'
 export const createAuthApi = () => {
   // set Access-Control-Allow-Origin to the origin of the request
   return axios.create({
-    baseURL: 'https://een-login.klaushofrichter.workers.dev',
+    baseURL: import.meta.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333', // default to local VITE proxy
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
     }
