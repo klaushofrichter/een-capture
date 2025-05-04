@@ -67,8 +67,7 @@ export default {
             JSON.stringify({
               accessToken: tokens.access_token,
               expiresIn: tokens.expires_in,
-              httpsBaseUrl: tokens.httpsBaseUrl,
-              sessionId: sessionId
+              httpsBaseUrl: tokens.httpsBaseUrl
             }),
             {
               headers: {
@@ -97,14 +96,12 @@ export default {
     // this is where the frontend asks the proxy to use the refresh token to generate a new access token
     // The session Id is in the header - frontend needs to make sure it is provided. 
     if (url.pathname === '/proxy/refreshAccessToken') {
-      console.log('Cookie header:', request.headers.get('Cookie'))
       var sessionId = request.headers
         .get('Cookie')
         ?.split('; ')
         .find(cookie => cookie.startsWith('sessionId='))
         ?.split('=')[1]
       if (sessionId) {
-        console.log('sessionId found somewhere, trying to get refresh token')
         // this is where the session ID is used to find the refresh token
         const refreshToken = await env.EEN_LOGIN.get(sessionId)
         if (refreshToken) {

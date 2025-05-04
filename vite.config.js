@@ -67,7 +67,7 @@ const localOauthProxy = env => {
       if (data.refresh_token) {
         const sessionId = generateSessionId()
         sessions.set(sessionId, data.refresh_token)
-        console.log(`[Vite Plugin] Stored refresh token for session: ${sessionId}`); // DEBUG
+        //console.log(`[Vite Plugin] Stored refresh token for session: ${sessionId}`); // DEBUG
 
         // Set the cookie
         res.setHeader('Set-Cookie', `sessionId=${sessionId}; Path=/; HttpOnly; SameSite=Lax`)
@@ -79,8 +79,7 @@ const localOauthProxy = env => {
           JSON.stringify({
             accessToken: data.access_token,
             expiresIn: data.expires_in,
-            httpsBaseUrl: data.httpsBaseUrl,
-            sessionId: sessionId // Keep the fallback
+            httpsBaseUrl: data.httpsBaseUrl
           })
         )
       } else {
@@ -100,7 +99,7 @@ const localOauthProxy = env => {
     // console.log('[Vite Plugin] Intercepted /proxy/refreshAccessToken'); // DEBUG
     const queryParams = parse(req.url.split('?')[1] || '')
     
-    // Try to get sessionId from cookie first
+    // Try to get sessionId from cookie 
     let sessionId = req.headers.cookie
       ?.split('; ')
       .find(cookie => cookie.startsWith('sessionId='))
@@ -112,7 +111,6 @@ const localOauthProxy = env => {
       return res.end('Missing sessionId parameter')
     }
 
-    console.log('[Vite Plugin] Using sessionId:', sessionId)
     const refreshToken = sessions.get(sessionId)
 
     if (!refreshToken) {
