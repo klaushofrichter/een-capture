@@ -191,15 +191,6 @@ const userProfile = computed(() => authStore.userProfile)
 const pageTitle = computed(() => `${APP_NAME} - Profile`)
 const hasRefreshToken = computed(() => !!localStorage.getItem('refresh_token'))
 
-const tokenExpirationPercentage = computed(() => {
-  forceUpdate.value
-  const remaining = authStore.getTokenTimeRemaining()
-  if (remaining === null || remaining === undefined) return 50
-  if (remaining <= 0) return 0
-  const percentage = Math.round((remaining / 3600000) * 100)
-  return Math.min(100, Math.max(0, percentage))
-})
-
 const tokenExpirationText = computed(() => {
   forceUpdate.value
   const remaining = authStore.getTokenTimeRemaining()
@@ -286,7 +277,6 @@ async function handleRefresh() {
   try {
     const success = await refreshToken()
     if (success) {
-      //console.log('handleRefresh: success')
       forceUpdate.value++
       // Hide the token if it was shown
       showToken.value = false
