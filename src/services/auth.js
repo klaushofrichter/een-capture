@@ -98,7 +98,7 @@ export const refreshToken = async () => {
   // Construct path based on proxy target
   const relativePath = USE_LOCAL_VITE_PROXY ? '/proxy/refreshAccessToken' : '/refreshAccessToken'
   const requestUrl = `${AUTH_PROXY_URL}${relativePath}?sessionId=${sessionId}`
-  console.log(`[auth.js] Fetching: ${requestUrl}`)
+  //console.log(`[auth.js] Fetching: ${requestUrl}`)
 
   try {
     const response = await fetch(requestUrl, {
