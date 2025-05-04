@@ -5,7 +5,6 @@ import process from 'process'
 import fetch from 'node-fetch' // Need node-fetch for server-side requests
 import { parse } from 'node:querystring' // To parse query strings
 import { randomBytes } from 'node:crypto' // For session ID generation
-// import { APP_NAME, APP_DESCRIPTION } from './src/constants.js' // REMOVED - Unused
 
 // Define the proxy plugin
 const localOauthProxy = env => {
@@ -28,7 +27,7 @@ const localOauthProxy = env => {
     }
 
     const tokenUrl = env.VITE_EEN_TOKEN_URL || 'https://auth.eagleeyenetworks.com/oauth2/token'
-    const clientId = env.VITE_EEN_CLIENT_ID
+    const clientId = env.VITE_EEN_CLIENT_ID         // Make sure this is in your .env
     const clientSecret = env.VITE_EEN_CLIENT_SECRET // Make sure this is in your .env
 
     if (!clientSecret) {
@@ -68,7 +67,10 @@ const localOauthProxy = env => {
       if (data.refresh_token) {
         const sessionId = generateSessionId()
         sessions.set(sessionId, data.refresh_token)
-        // console.log(`[Vite Plugin] Stored refresh token for session: ${sessionId}`); // DEBUG
+        console.log(`[Vite Plugin] Stored refresh token for session: ${sessionId}`); // DEBUG
+
+        // Set the cookie
+        res.setHeader('Set-Cookie', `sessionId=${sessionId}; Path=/; HttpOnly; SameSite=Lax`)
 
         // Respond to the client
         res.setHeader('Content-Type', 'application/json')
@@ -77,8 +79,8 @@ const localOauthProxy = env => {
           JSON.stringify({
             accessToken: data.access_token,
             expiresIn: data.expires_in,
-            httpsBaseUrl: data.httpsBaseUrl, // Pass this through if EEN provides it
-            sessionId: sessionId // Send session ID back to client
+            httpsBaseUrl: data.httpsBaseUrl,
+            sessionId: sessionId // Keep the fallback
           })
         )
       } else {
@@ -97,7 +99,18 @@ const localOauthProxy = env => {
   const handleRefreshAccessToken = async (req, res /*, next */) => {
     // console.log('[Vite Plugin] Intercepted /proxy/refreshAccessToken'); // DEBUG
     const queryParams = parse(req.url.split('?')[1] || '')
-    const sessionId = queryParams.sessionId
+    
+    // Try to get sessionId from cookie first
+    let sessionId = req.headers.cookie
+      ?.split('; ')
+      .find(cookie => cookie.startsWith('sessionId='))
+      ?.split('=')[1]
+    
+    // Fallback to query parameter if cookie not found
+    if (!sessionId) {
+      console.log('[Vite Plugin] No sessionId found in cookie, trying query parameter')
+      sessionId = queryParams.sessionId
+    }
 
     if (!sessionId) {
       console.error('[Vite Plugin] Missing sessionId for refresh')
@@ -105,6 +118,7 @@ const localOauthProxy = env => {
       return res.end('Missing sessionId parameter')
     }
 
+    console.log('[Vite Plugin] Using sessionId:', sessionId)
     const refreshToken = sessions.get(sessionId)
 
     if (!refreshToken) {
