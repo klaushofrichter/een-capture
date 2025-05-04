@@ -1,10 +1,17 @@
 import { useAuthStore } from '../stores/auth'
-import { createAuthApi } from './api'
+// Remove createAuthApi import if no longer used elsewhere in this file
+// import { createAuthApi } from './api'
 import { API_CONFIG } from '../constants'
 
 const CLIENT_ID = import.meta.env.VITE_EEN_CLIENT_ID
 const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI || API_CONFIG.REDIRECT_URL
-const AUTH_URL = import.meta.env.VITE_EEN_AUTH_URL || 'https://auth.eagleeyenetworks.com/oauth2/authorize'
+const EEN_AUTH_URL = import.meta.env.VITE_EEN_AUTH_URL || 'https://auth.eagleeyenetworks.com/oauth2/authorize'
+
+// Determine if we are using the local Vite proxy based on the URL structure
+const AUTH_PROXY_URL = import.meta.env.VITE_AUTH_PROXY_URL || '';
+const USE_LOCAL_VITE_PROXY = AUTH_PROXY_URL.includes('127.0.0.1') || AUTH_PROXY_URL.includes('localhost');
+
+console.log(`[auth.js] Using ${USE_LOCAL_VITE_PROXY ? 'Local Vite Proxy' : 'Remote Proxy'} at ${AUTH_PROXY_URL}`);
 
 export const getAuthUrl = () => {
   const params = new URLSearchParams({
@@ -13,7 +20,7 @@ export const getAuthUrl = () => {
     response_type: 'code',
     scope: API_CONFIG.SCOPES
   })
-  const url = `${AUTH_URL}?${params.toString()}`
+  const url = `${EEN_AUTH_URL}?${params.toString()}`
   return url
 }
 
@@ -23,26 +30,23 @@ async function getAccessToken(code) {
     redirect_uri: REDIRECT_URI
   });
 
-  // Use fetch directly, targeting the /proxy path
-  const requestUrl = `/proxy/getAccessToken?${tokenParams.toString()}`;
+  // Construct path based on whether we target the local proxy or remote
+  const relativePath = USE_LOCAL_VITE_PROXY ? '/proxy/getAccessToken' : '/getAccessToken';
+  const requestUrl = `${AUTH_PROXY_URL}${relativePath}?${tokenParams.toString()}`;
   console.log(`[auth.js] Fetching: ${requestUrl}`);
 
   try {
     const response = await fetch(requestUrl, {
         method: 'POST',
         headers: {
-             // Content-Type might not be strictly needed for fetch if body is empty
-             // but keeping it doesn't hurt
             'Content-Type': 'application/x-www-form-urlencoded'
         }
-        // Body is empty, params are in URL
     });
 
     if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`Failed to get access token: ${response.status} ${errorText || response.statusText}`);
     }
-
     const data = await response.json();
 
     return {
@@ -60,39 +64,37 @@ async function getAccessToken(code) {
 
 export const handleAuthCallback = async code => {
   try {
-    // we pass the code to the proxy to get the tokens
-    const { token, expiresIn, httpsBaseUrl, sessionId } = await getAccessToken(code)
-
-    const authStore = useAuthStore()
-    authStore.setToken(token, expiresIn)
-    authStore.setBaseUrl(httpsBaseUrl)
-    authStore.setRefreshToken('present') // this marks that the refresh token is present at the proxy
-    authStore.setSessionId(sessionId)
-    return { token, httpsBaseUrl }
+    const { token, expiresIn, httpsBaseUrl, sessionId } = await getAccessToken(code);
+    const authStore = useAuthStore();
+    authStore.setToken(token, expiresIn);
+    authStore.setBaseUrl(httpsBaseUrl);
+    authStore.setRefreshToken('present');
+    authStore.setSessionId(sessionId);
+    return { token, httpsBaseUrl };
   } catch (error) {
-    console.error('Authentication error:', error)
-    throw error
+    console.error('Authentication error:', error);
+    throw error;
   }
-}
+};
 
 export const refreshToken = async () => {
-  const authStore = useAuthStore()
-  const refreshToken = authStore.refreshToken
-  const sessionId = authStore.sessionId
+  const authStore = useAuthStore();
+  const refreshTokenMarker = authStore.refreshToken;
+  const sessionId = authStore.sessionId;
 
-  if (!refreshToken || !sessionId) {
+  if (!refreshTokenMarker || !sessionId) {
       console.log('[auth.js] Missing refresh token marker or session ID for refresh.');
       return false;
   }
 
-  // Use fetch directly, targeting the /proxy path
-  const requestUrl = `/proxy/refreshAccessToken?sessionId=${sessionId}`;
+  // Construct path based on proxy target
+  const relativePath = USE_LOCAL_VITE_PROXY ? '/proxy/refreshAccessToken' : '/refreshAccessToken';
+  const requestUrl = `${AUTH_PROXY_URL}${relativePath}?sessionId=${sessionId}`;
   console.log(`[auth.js] Fetching: ${requestUrl}`);
 
   try {
      const response = await fetch(requestUrl, {
         method: 'POST',
-        // Include credentials (cookies) for the refresh request
         credentials: 'include',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
@@ -119,4 +121,4 @@ export const refreshToken = async () => {
     console.error('[auth.js] refreshToken fetch error:', error);
     return false;
   }
-}
+};
