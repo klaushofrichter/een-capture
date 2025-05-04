@@ -95,7 +95,6 @@ export const refreshToken = async () => {
   try {
      const response = await fetch(requestUrl, {
         method: 'POST',
-        credentials: 'include',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
         }

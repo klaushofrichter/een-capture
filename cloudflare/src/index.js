@@ -10,7 +10,7 @@ export default {
     if (request.method === 'OPTIONS') {
       if (origin) {
         const corsHeaders = {
-          'Access-Control-Allow-Origin': '*', // Or a specific origin
+          'Access-Control-Allow-Origin': origin,
           'Access-Control-Allow-Methods': 'POST, OPTIONS',
           'Access-Control-Allow-Headers': 'Content-Type, Authorization', // Add any other allowed headers
           'Access-Control-Allow-Credentials': 'true', // If you need to send/receive cookies or auth headers
@@ -73,7 +73,7 @@ export default {
             {
               headers: {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*', // Or a specific origin
+                'Access-Control-Allow-Origin': origin,
                 'Access-Control-Allow-Credentials': 'true' // If you need to send/receive cookies or auth headers
               }
             }
@@ -105,9 +105,11 @@ export default {
         ?.split('=')[1]
       if (!sessionId) {
         sessionId = url.searchParams.get('sessionId')
+	console.log("getting sessionId from the parameter",sessionId)
       }
       if (sessionId) {
         // this is where the session ID is used to find the refresh token
+	console.log("sessionId is:",sessionId)
         const refreshToken = await env.EEN_LOGIN.get(sessionId)
         if (refreshToken) {
           try {
@@ -139,7 +141,7 @@ export default {
               {
                 headers: {
                   'Content-Type': 'application/json',
-                  'Access-Control-Allow-Origin': '*',
+                  'Access-Control-Allow-Origin': origin,
                   'Access-Control-Allow-Credentials': 'true'
                 }
               }
