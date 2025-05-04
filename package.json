@@ -1,7 +1,7 @@
 {
   "name": "een-login",
-  "version": "0.0.117",
-  "lastCommit": "May 4, 2025, 07:27 AM CDT",
+  "version": "0.0.118",
+  "lastCommit": "May 4, 2025, 10:31 AM CDT",
   "private": true,
   "type": "module",
   "base": "/een-login/",
@@ -35,6 +35,7 @@
     "@vitejs/plugin-vue": "^5.0.3",
     "@vue/eslint-config-prettier": "^8.0.0",
     "autoprefixer": "^10.4.17",
+    "cookie": "^1.0.2",
     "dotenv": "^16.5.0",
     "eslint": "^8.56.0",
     "eslint-plugin-playwright": "^2.2.0",

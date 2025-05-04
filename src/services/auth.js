@@ -18,30 +18,43 @@ export const getAuthUrl = () => {
 }
 
 async function getAccessToken(code) {
-  // build the query string for the proxy
   const tokenParams = new URLSearchParams({
     code: code,
     redirect_uri: REDIRECT_URI
-  })
+  });
+
+  // Use fetch directly, targeting the /proxy path
+  const requestUrl = `/proxy/getAccessToken?${tokenParams.toString()}`;
+  console.log(`[auth.js] Fetching: ${requestUrl}`);
 
   try {
-    const api = createAuthApi() // for communication with the proxy
+    const response = await fetch(requestUrl, {
+        method: 'POST',
+        headers: {
+             // Content-Type might not be strictly needed for fetch if body is empty
+             // but keeping it doesn't hurt
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+        // Body is empty, params are in URL
+    });
 
-    const response = await api.post('/getAccessToken?' + tokenParams) // this is calling the proxy with the code
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to get access token: ${response.status} ${errorText || response.statusText}`);
+    }
+
+    const data = await response.json();
 
     return {
-      token: response.data.accessToken,
-      expiresIn: response.data.expiresIn,
-      httpsBaseUrl: response.data.httpsBaseUrl,
-      sessionId: response.data.sessionId
+      token: data.accessToken,
+      expiresIn: data.expiresIn,
+      httpsBaseUrl: data.httpsBaseUrl,
+      sessionId: data.sessionId
     }
   } catch (error) {
-    if (error.response) {
-      throw new Error(
-        `Failed to get access token: ${error.response.status} ${error.response.statusText}`
-      )
-    }
-    throw error
+    console.error('[auth.js] getAccessToken fetch error:', error);
+    // Rethrow a more specific error if needed, or the original
+    throw new Error(`Failed to get access token: ${error.message || error}`);
   }
 }
 
@@ -64,32 +77,46 @@ export const handleAuthCallback = async code => {
 
 export const refreshToken = async () => {
   const authStore = useAuthStore()
+  const refreshToken = authStore.refreshToken
+  const sessionId = authStore.sessionId
+
+  if (!refreshToken || !sessionId) {
+      console.log('[auth.js] Missing refresh token marker or session ID for refresh.');
+      return false;
+  }
+
+  // Use fetch directly, targeting the /proxy path
+  const requestUrl = `/proxy/refreshAccessToken?sessionId=${sessionId}`;
+  console.log(`[auth.js] Fetching: ${requestUrl}`);
+
   try {
-    // we do not have a refresh token, just an indication that the refresh token is present at the proxy
-    const refreshToken = authStore.refreshToken
+     const response = await fetch(requestUrl, {
+        method: 'POST',
+        // Include credentials (cookies) for the refresh request
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+     });
 
-    if (!refreshToken) return false // there is no refresh token at the proxy
-
-    // get the session ID from the store - this should not be needed because the session ID is in the cookie
-    const sessionId = authStore.sessionId
-
-    const api = createAuthApi() // for communication with the proxy
-    const response = await api.post('/refreshAccessToken?sessionId=' + sessionId, null, {
-      credentials: 'include'
-    })
-
-    // check if the response is valid
-    if (!response.data.accessToken || !response.data.expiresIn) {
-      console.error('Invalid response from the refresh call')
-      return false
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Token refresh failed: ${response.status} ${errorText || response.statusText}`);
     }
 
-    authStore.setToken(response.data.accessToken, response.data.expiresIn) // save the new token and expiresIn
-    authStore.setRefreshToken('present after refresh') // this marks that the refresh token is present at the proxy
+    const data = await response.json();
 
-    return true
+    if (!data.accessToken || !data.expiresIn) {
+      console.error('[auth.js] Invalid response data from refresh call:', data);
+      return false;
+    }
+
+    authStore.setToken(data.accessToken, data.expiresIn);
+    authStore.setRefreshToken('present after refresh');
+    return true;
+
   } catch (error) {
-    console.error('Token refresh error:', error)
-    return false
+    console.error('[auth.js] refreshToken fetch error:', error);
+    return false;
   }
 }
