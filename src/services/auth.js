@@ -37,7 +37,7 @@ async function getAccessToken(code) {
   })
 
   // Construct path based on whether we target the local proxy or remote
-  const relativePath = USE_LOCAL_VITE_PROXY ? '/proxy/getAccessToken' : '/getAccessToken'
+  const relativePath = USE_LOCAL_VITE_PROXY ? '/proxy/getAccessToken' : '/proxy/getAccessToken'
   const requestUrl = `${AUTH_PROXY_URL}${relativePath}?${tokenParams.toString()}`
   console.log(`[auth.js] Fetching: ${requestUrl}`)
 
@@ -46,7 +46,8 @@ async function getAccessToken(code) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
-      }
+      },
+      credentials: 'include'
     })
 
     if (!response.ok) {
@@ -96,7 +97,7 @@ export const refreshToken = async () => {
   }
 
   // Construct path based on proxy target
-  const relativePath = USE_LOCAL_VITE_PROXY ? '/proxy/refreshAccessToken' : '/refreshAccessToken'
+  const relativePath = USE_LOCAL_VITE_PROXY ? '/proxy/refreshAccessToken' : '/proxy/refreshAccessToken'
   const requestUrl = `${AUTH_PROXY_URL}${relativePath}?sessionId=${sessionId}`
   //console.log(`[auth.js] Fetching: ${requestUrl}`)
 
@@ -105,7 +106,8 @@ export const refreshToken = async () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
-      }
+      },
+      credentials: 'include'
     })
 
     if (!response.ok) {
