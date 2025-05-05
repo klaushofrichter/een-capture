@@ -15,25 +15,26 @@ for more information about the Eagle Eye Networks APIs.
 
 ## Features
 
--   **Secure EEN OAuth2 Authentication:** Implements the standard Authorization Code flow using a Cloudflare Worker proxy to protect secrets.
+-   **Secure EEN OAuth2 Authentication:** Implements the standard OAuth2 Authorization Code flow using proxies to protect secrets.
 -   **Direct Token Access:** Allows users to log in directly by providing an Access Token, Base URL, and Port.
 -   **Modern Frontend Stack:** Built with Vue 3 (Composition API), Vite, Pinia, and Tailwind CSS.
--   **Backend Proxy:** Includes a Cloudflare Worker (`./cloudflare`) for secure OAuth handling.
+-   **Backend Proxy:** Includes a Cloudflare Worker (`./cloudflare`) for secure OAuth handling and a local Vite solution.
 -   **Responsive Design:** Adapts to various screen sizes.
--   **State Management:** Uses Pinia (`authStore`, `themeStore`) for managing application state predictably.
+-   **State Management:** Uses Pinia (`authStore`, `themeStore`, etc) for managing application state predictably.
 -   **Routing:** Implements protected routes using Vue Router and navigation guards.
--   **User Profile Display:** Shows basic user information and allows copying of credentials.
--   **Theme Switching:** Supports Light, Dark, and System themes with persistence via `localStorage`.
+-   **User Profile Display:** Shows basic user information and allows access to system information.
+-   **Theme Switching:** Supports Light, Dark, and System themes with persistence.
 -   **Logout Flow:** Includes a countdown modal with options to cancel or logout immediately.
--   **Testing:** Comes with Playwright end-to-end tests covering key user flows.
+-   **Testing:** Comes with Playwright end-to-end tests covering key user flows with focus on authentication.
 
 ## Technology Stack
 
 -   **Frontend:** Vue 3, Vite, Pinia, Vue Router, Tailwind CSS
 -   **Authentication:** OAuth2 (Authorization Code Grant), Eagle Eye Networks API
 -   **Backend Proxy:** Cloudflare Workers
--   **State Persistence:** `localStorage` (for theme preference)
+-   **State Persistence:** `localStorage`
 -   **Testing:** Playwright
+-   **CI/CD:** Github based CI/CD pipeline including deployment at Github Pages
 
 ## Dual Proxy Implementation
 
