@@ -23,6 +23,7 @@ test.describe('Login and Navigation', () => {
   })
 
   test('should login successfully and navigate through pages', async ({ page }) => {
+    console.log(`\n▶️ Running Test: ${test.info().title}\n`);
     console.log('🔍 Starting login and navigation test')
     // Increase timeout for this test
     test.setTimeout(120000)

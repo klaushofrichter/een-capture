@@ -21,6 +21,7 @@ test.describe('Direct Page', () => {
   })
 
   test('direct page should have correct elements and consistent styling', async ({ page }) => {
+    console.log(`\n▶️ Running Test: ${test.info().title}\n`);
     console.log('🔍 Starting direct page elements test')
 
     // Navigate directly to the direct page
