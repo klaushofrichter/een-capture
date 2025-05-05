@@ -249,8 +249,8 @@ const localOauthProxy = env => {
       sessions.delete(sessionId)
       console.log(`[Vite Plugin] Deleted session: ${sessionId}`)
 
-      // Clear the cookie
-      res.setHeader('Set-Cookie', 'sessionId=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0')
+      // Remove the cookie by setting its expiration to 0
+      res.setHeader('Set-Cookie', `sessionId=; Path=/; HttpOnly; SameSite=Lax; Expires=Thu, 01 Jan 1970 00:00:00 GMT`)
 
       res.statusCode = 200
       res.end('Token revoked successfully')
