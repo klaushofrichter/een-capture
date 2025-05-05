@@ -188,6 +188,79 @@ const localOauthProxy = env => {
     }
   }
 
+  // Helper to handle /revoke
+  const handleRevoke = async (req, res /*, next */) => {
+    console.log('[Vite Plugin] Intercepted /proxy/revoke'); // DEBUG
+    
+    // Try to get sessionId from cookie 
+    let sessionId = req.headers.cookie
+      ?.split('; ')
+      .find(cookie => cookie.startsWith('sessionId='))
+      ?.split('=')[1]
+    
+    if (!sessionId) {
+      console.error('[Vite Plugin] Missing sessionId for revoke')
+      res.statusCode = 400
+      return res.end('Missing sessionId parameter')
+    }
+
+    const refreshToken = sessions.get(sessionId)
+    console.log('[Vite Plugin] Revoking token for session:', sessionId)
+
+    if (!refreshToken) {
+      console.error(`[Vite Plugin] No refresh token found for session: ${sessionId}`)
+      res.statusCode = 401 // Unauthorized or session expired
+      return res.end('Invalid or expired session.')
+    }
+
+    const revokeUrl = env.VITE_EEN_TOKEN_URL?.replace('/token', '/revoke') || 'https://auth.eagleeyenetworks.com/oauth2/revoke'
+    const clientId = env.VITE_EEN_CLIENT_ID
+    const clientSecret = env.VITE_EEN_CLIENT_SECRET
+
+    if (!clientSecret) {
+      console.error('[Vite Plugin] Missing VITE_EEN_CLIENT_SECRET in .env')
+      res.statusCode = 500
+      return res.end('Server configuration error: Missing client secret.')
+    }
+
+    // Create Basic Auth header
+    const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
+
+    try {
+      console.log('[Vite Plugin] Revoking token for session:', sessionId)
+      const eenResponse = await fetch(revokeUrl, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': `Basic ${auth}`
+        },
+        body: new URLSearchParams({
+          token: refreshToken
+        }).toString()
+      })
+
+      if (!eenResponse.ok) {
+        console.error(`[Vite Plugin] EEN Revoke Error ${eenResponse.status}`)
+        res.statusCode = eenResponse.status
+        return res.end('Failed to revoke token at EEN.')
+      }
+
+      // Remove the session regardless of EEN response
+      sessions.delete(sessionId)
+      console.log(`[Vite Plugin] Deleted session: ${sessionId}`)
+
+      // Clear the cookie
+      res.setHeader('Set-Cookie', 'sessionId=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0')
+
+      res.statusCode = 200
+      res.end('Token revoked successfully')
+    } catch (error) {
+      console.error('[Vite Plugin] Error revoking token:', error)
+      res.statusCode = 500
+      res.end(`Server error: ${error.message}`)
+    }
+  }
+
   return {
     name: 'local-oauth-proxy',
     configureServer(server) {
@@ -199,6 +272,9 @@ const localOauthProxy = env => {
         }
         if (req.method === 'POST' && req.url?.startsWith('/proxy/refreshAccessToken')) {
           return handleRefreshAccessToken(req, res, next)
+        }
+        if (req.method === 'POST' && req.url?.startsWith('/proxy/revoke')) {
+          return handleRevoke(req, res, next)
         }
         // If not matching our paths, pass control to the next middleware
         next()
