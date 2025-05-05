@@ -23,6 +23,7 @@ test.describe('Invalid Route Navigation', () => {
   test('should display not found page after login when navigating to invalid route', async ({
     page
   }) => {
+    console.log(`\n▶️ Running Test: ${test.info().title}\n`);
     console.log('🔍 Starting invalid route test')
     // Increase timeout for this test
     test.setTimeout(120000)
