@@ -115,6 +115,21 @@ export const useAuthStore = defineStore('auth', () => {
     return Math.max(0, remaining)
   }
 
+  async function revokeToken() {
+    try {
+      const response = await fetch('/proxy/revoke', {
+        method: 'POST',
+        credentials: 'include' // Important for sending the sessionId cookie
+      })
+      
+      if (!response.ok) {
+        console.error('Failed to revoke token:', response.status)
+      }
+    } catch (error) {
+      console.error('Error revoking token:', error)
+    }
+  }
+
   async function logout(onDelay) {
     // Store current credentials temporarily
     tempCredentials = {
@@ -149,7 +164,10 @@ export const useAuthStore = defineStore('auth', () => {
           if (remaining === 0) {
             clearInterval(logoutInterval)
             logoutInterval = null
-            resolve()
+            // Call revoke before resolving the promise
+            revokeToken().finally(() => {
+              resolve()
+            })
           }
         }, 50)
       })
@@ -211,6 +229,7 @@ export const useAuthStore = defineStore('auth', () => {
     getTokenExpirationTime,
     getTokenTimeRemaining,
     logout,
-    cancelLogout
+    cancelLogout,
+    revokeToken
   }
 })
