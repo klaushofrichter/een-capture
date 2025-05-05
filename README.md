@@ -60,8 +60,6 @@ Both implementations provide identical functionality and API endpoints, making t
 
 > **Development Tip**: Start with the Vite Plugin Proxy for local development. When ready for production, deploy the Cloudflare Worker and update your environment configuration accordingly.
 
-> **Note on Contributing**: This repository is intended to serve as a generic login framework for EEN applications. While forks are welcome for your own customization, pull requests should focus on enhancing the core authentication functionality, security, or developer experience. For application-specific features, we recommend cloning this repository as a starting point rather than forking.
-
 ## Prerequisites
 
 -   Node.js (v18 or higher recommended)
@@ -280,4 +278,92 @@ This flow uses the included Cloudflare Worker in `./cloudflare` for enhanced sec
 
 ## Cloudflare Worker OAuth Proxy (Included)
 
-[... rest of the original content, including all sections about Testing, Available Scripts, Extending the Application, Security Considerations, Contributing, License, and Environment Configuration ...]
+This application includes a Cloudflare Worker implementation (`./cloudflare`) designed to act as a secure proxy for the OAuth flow, significantly enhancing security compared to handling the token exchange directly in the frontend.
+
+-   **Purpose:** Intermediates communication between the frontend SPA and EEN, protecting sensitive credentials.
+-   **Included Functionality:**
+    -   Handles the `/api/auth/callback` endpoint to exchange the authorization code for tokens using secrets configured *only* in the worker environment.
+    -   Handles the `/api/auth/refresh` endpoint to securely use the refresh token (stored server-side by the worker) to obtain new access tokens.
+    -   Requires deployment using Wrangler CLI and secure configuration of `EEN_CLIENT_ID`, `EEN_CLIENT_SECRET`, and `REFRESH_TOKEN_SECRET` via `wrangler secret put`.
+-   **Benefits:**
+    -   **Client Secret Protection:** The `client_secret` never reaches the browser.
+    -   **Refresh Token Security:** Refresh tokens are managed securely by the worker, not stored in the browser.
+
+**Configuration:** Ensure the frontend's `.env` file has the correct `VITE_AUTH_PROXY_URL` pointing to your *deployed* worker URL. The functions in `src/services/auth.js` are designed to interact with these worker endpoints.
+
+## Running Tests
+
+This project uses Playwright for end-to-end testing.
+
+1.  **Ensure Test Credentials:** Make sure you have added valid `TEST_USER` and `TEST_PASSWORD` to your frontend `.env` file if you want to run the full login flow test.
+2.  **Run Tests:**
+    ```bash
+    # Run all tests in headless mode
+    npm run test
+
+    # Run tests with the Playwright UI (useful for debugging)
+    npm run test:ui
+
+    # Run tests in headed mode (shows browser window)
+    npm run test:headed
+
+    # Run tests in debug mode
+    npm run test:debug
+    ```
+
+The tests cover:
+-   Login page element rendering and styling.
+-   Direct Access page element rendering and styling.
+-   Full EEN OAuth login flow (requires test credentials).
+-   Navigation between authenticated pages (Home, Profile, About, Settings).
+-   Theme switching functionality.
+-   Logout flow (including modal interactions and redirection).
+-   Direct Access login flow using credentials captured during the OAuth test.
+
+## Available Scripts
+
+-   `npm run dev`: Start frontend development server.
+-   `npm run build`: Build frontend for production.
+-   `npm run preview`: Preview frontend production build.
+-   `npm run lint`: Lint frontend code.
+-   `npm run format`: Format frontend code.
+-   `npm run test`: Run frontend Playwright tests (headless).
+-   `npm run test:ui`: Run Playwright tests with UI mode.
+-   `npm run test:headed`: Run Playwright tests in headed mode.
+-   `npm run test:debug`: Run Playwright tests in debug mode.
+-   `npm run version:patch`: Increment frontend version.
+-   **(In ./cloudflare directory)** `wrangler deploy`: Deploy the Cloudflare worker.
+-   **(In ./cloudflare directory)** `wrangler dev`: Run the Cloudflare worker locally for development/testing.
+
+## Extending the Application
+
+-   **Adding New Pages/Views:** (Same as before)
+-   **Modifying UI:** (Same as before)
+-   **Changing Frontend State Management:** (Same as before)
+-   **Modifying Worker Logic:** Edit code in `cloudflare/src/index.js` and redeploy using `wrangler deploy`.
+-   **Interacting with More EEN APIs:** Add functions in `src/services/` to make authenticated calls (using the access token from `authStore`). The worker is generally only involved in the *authentication* part, not subsequent API calls.
+
+## Security Considerations
+
+-   **Client Secret:** Protected within the Cloudflare Worker environment secrets. **Do not** add it to the frontend `.env` file.
+-   **Refresh Token:** Managed securely by the Cloudflare Worker. **Do not** attempt to store or handle refresh tokens in the frontend browser storage.
+-   **Access Token:** Stored in the frontend's memory (Pinia store). While less sensitive than the refresh token, minimize its exposure and rely on short expiry times enforced by EEN.
+-   **Worker Security:** Ensure your worker code handles errors correctly and doesn't inadvertently log sensitive information.
+-   **HTTPS:** Essential for both the frontend application and the Cloudflare Worker URL.
+
+## Contributing
+
+Contributions are welcome! If you plan to contribute back to the original repository:
+
+1.  Check for existing issues or open a new issue to discuss your proposed changes.
+2.  Fork the repository.
+3.  Create your feature branch (`git checkout -b feature/your-feature-name`).
+4.  Commit your changes (`git commit -m 'Add some amazing feature'`). Ensure commit messages are descriptive.
+5.  Push to the branch (`git push origin feature/your-feature-name`).
+6.  Open a Pull Request, linking it to the relevant issue if applicable.
+7.  Ensure your code adheres to the existing style (ESLint, Prettier) and that tests pass.
+
+> **Note on Contributing**: This repository is intended to serve as a generic login framework for EEN applications. While forks are welcome for your own customization, pull requests should focus on enhancing the core authentication functionality, security, or developer experience. For application-specific features, we recommend cloning this repository as a starting point rather than forking.
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
