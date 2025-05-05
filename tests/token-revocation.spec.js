@@ -71,13 +71,17 @@ test.describe('Token Revocation Test', () => {
     // Wait for redirect back to our app and navigate to profile
     await page.waitForURL(/.*\/home$/, { timeout: 15000 })
     await expect(page.getByText('Welcome to EEN Login')).toBeVisible()
+    console.log('✅ Successfully logged in')
     
     // Navigate to Profile page
+    console.log('👤 Navigating to Profile page')
     await page.getByRole('navigation').getByRole('link', { name: 'Profile' }).click()
     await page.waitForURL(/.*\/profile$/, { timeout: 10000 })
     await expect(page.getByText('User Profile')).toBeVisible({ timeout: 10000 })
+    console.log('✅ Profile page loaded')
     
     // 3. Get access token and base URL
+    console.log('🔑 Getting access token and base URL')
     await page.getByRole('button', { name: 'Show & Copy' }).click()
     
     // Wait for the values to be visible
@@ -90,8 +94,10 @@ test.describe('Token Revocation Test', () => {
     const baseUrl = await page.locator('label:has-text("Base URL")').evaluate(label => {
       return label.nextElementSibling.value
     })
+    console.log('✅ Credentials captured successfully')
     
     // 4. Logout with full waiting time
+    console.log('🚪 Starting logout process - this will take 8 seconds')
     await page.getByRole('button', { name: 'Logout' }).click()
     
     // Wait for the logout to complete automatically
@@ -99,17 +105,21 @@ test.describe('Token Revocation Test', () => {
     await expect(page.getByText(/You will be logged out in \d+ seconds/)).toBeVisible()
     await expect(page).toHaveURL('/', { timeout: 15000 })
     await expect(page.getByText('Welcome to EEN Login')).toBeVisible()
+    console.log('✅ Logged out successfully')
     
     // 5. Navigate to direct access page
+    console.log('🔄 Testing revoked token via direct access')
     await page.goto('/direct')
     await expect(page.getByRole('heading', { name: /Direct Access to EEN Login/ })).toBeVisible()
     
     // 6. Fill in the previously obtained credentials
+    console.log('🔑 Attempting to use revoked credentials')
     await page.getByLabel('Access Token').fill(accessToken)
     await page.getByLabel('Base URL').fill(baseUrl)
     
     // 7. Click proceed and verify login fails
     await page.getByRole('button', { name: 'Proceed' }).click()
+    console.log('➡️ Clicked Proceed button')
     
     // Verify we're still on the direct page (login failed)
     await expect(page).toHaveURL('/direct')
@@ -119,5 +129,6 @@ test.describe('Token Revocation Test', () => {
     await expect(page.locator('.text-red-600.dark\\:text-red-400')).toHaveText(
       'The client caller does not have a valid authentication credential'
     )
+    console.log('✅ Verified token is properly revoked')
   })
 }) 
