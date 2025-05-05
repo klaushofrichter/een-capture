@@ -9,7 +9,8 @@ using OAuth2. The application provides two proxy implementations for handling th
 This dual-proxy approach allows developers to start working immediately with the local proxy while providing a production-ready Cloudflare Worker implementation when needed. The application also provides a direct access method for scenarios where an access token and API endpoint details are already known.
 
 This project serves as a foundation or starting point for applications needing to integrate with Eagle
-Eye Networks services securely. The application uses the EEN APIs, but is otherwise not supported 
+Eye Networks services securely. There is no guarantee for current or future functionality, or forward or backward compatibility. 
+The application uses the EEN APIs, but is otherwise not supported 
 by Eagle Eye Networks. Visit the [Eagle Eye Networks Developer Portal](https://developer.eagleeyenetworks.com/)
 for more information about the Eagle Eye Networks APIs. 
 
@@ -56,7 +57,8 @@ This application provides two different proxy implementations for handling the O
 - Requires a Cloudflare account and worker deployment
 - Located in `./cloudflare/src/index.js`
 
-Both implementations provide identical functionality and API endpoints, making them interchangeable from the frontend's perspective. The frontend code automatically adapts to whichever proxy is configured via the `VITE_AUTH_PROXY_URL` environment variable.
+Both implementations provide identical functionality and API endpoints, making them interchangeable from the frontend's perspective. 
+The frontend code automatically adapts to whichever proxy is configured via the `VITE_AUTH_PROXY_URL` environment variable.
 
 > **Development Tip**: Start with the Vite Plugin Proxy for local development. When ready for production, deploy the Cloudflare Worker and update your environment configuration accordingly.
 
@@ -73,7 +75,7 @@ Both implementations provide identical functionality and API endpoints, making t
 -   Cloudflare Account (for deploying the included Worker proxy)
 -   Wrangler CLI (for deploying the Cloudflare Worker): `npm install -g wrangler`
 
-> **Development Note**: While this application provides both local and production-ready proxy implementations, you still need valid EEN Client Credentials for development. These credentials are used differently in development (stored in `.env`) versus production (stored in Cloudflare Worker secrets).
+> **Development Tip**: While this application provides both local and production-ready proxy implementations, you still need valid EEN Client Credentials for development. These credentials are used differently in development (stored in `.env`) versus production (stored in Cloudflare Worker secrets).
 
 ## Setup
 
@@ -165,7 +167,7 @@ This is controlled by the `VITE_AUTH_PROXY_URL` variable in your root `.env` fil
         # Set to local server (or leave unset to default to local):
         VITE_AUTH_PROXY_URL=http://127.0.0.1:3333
         ```
-    *   When configured this way, the frontend will make requests to `/proxy/getAccessToken` and `/proxy/refreshAccessToken` on the Vite server, which are handled by the built-in plugin in `vite.config.js`.
+    *   When configured this way, the frontend will make requests to `/proxy/getAccessToken` and `/proxy/refreshAccessToken` on the Vite server, which are handled by the built-in plugin in `vite.config.js`. 
 
 *   **Using the Deployed Cloudflare Worker (Recommended for Production / Testing Deployment):**
     *   Set `VITE_AUTH_PROXY_URL` to the full URL of your deployed Cloudflare worker.
@@ -180,7 +182,7 @@ This is controlled by the `VITE_AUTH_PROXY_URL` variable in your root `.env` fil
     *   When configured this way, the frontend will make requests directly to `/getAccessToken` and `/refreshAccessToken` on your Cloudflare worker URL.
 
 **Important:**
-*   The `VITE_AUTH_PROXY_URL` variable **must be set** in your `.env` file for the authentication flow to function correctly. There is currently no default fallback if it is missing.
+*   The `VITE_AUTH_PROXY_URL` variable **must be set** in your `.env` file for the authentication flow to function correctly.
 *   If `VITE_AUTH_PROXY_URL` is **not set**, the application will default to using the **Local Vite Proxy** (`http://127.0.0.1:3333`). Ensure `VITE_EEN_CLIENT_SECRET` is also set in `.env` in this case.
 *   Remember to **restart the Vite development server** after changing the `.env` file for the changes to take effect.
 
