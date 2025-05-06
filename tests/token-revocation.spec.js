@@ -119,8 +119,8 @@ test.describe('Token Revocation Test', () => {
     console.log('✅ Logged out successfully')
     
     // Add extra wait after logout to ensure token revocation is complete
-    console.log('⏳ Waiting additional 10 seconds for token revocation to complete...')
-    await page.waitForTimeout(10000)
+    console.log('⏳ Waiting additional 2 seconds for token revocation to complete...')
+    await page.waitForTimeout(2000)
     console.log('✅ Extra wait completed')
     
     // 5. Navigate to direct access page
@@ -146,8 +146,8 @@ test.describe('Token Revocation Test', () => {
     console.log('✅ Still on direct page after using revoked token')
     
     // Debug: Log the page content
-    const pageContent = await page.content()
-    console.log('📄 Page content after login attempt:', pageContent)
+    //const pageContent = await page.content()
+    //console.log('📄 Page content after login attempt:', pageContent)
     
     // Look for error messages in multiple possible locations
     const errorSelectors = [
