@@ -117,10 +117,10 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function revokeToken() {
     // Only call revoke if we have a token expiration (indicating we have a refresh token)
-    if (!tokenExpiration.value) {
-      console.log('Skipping token revocation - no expiration time set (direct login)')
-      return
-    }
+    //if (!tokenExpiration.value) {
+    //  console.log('Skipping token revocation - no expiration time set (direct login)')
+    //  return
+    //}
 
     try {
       const response = await fetch('/proxy/revoke', {

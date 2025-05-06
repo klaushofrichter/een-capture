@@ -4,7 +4,22 @@ import dotenv from 'dotenv'
 // Load environment variables from .env file
 dotenv.config()
 
+let loggedBaseURL = false // Flag to ensure baseURL is logged only once
+
 test.describe('Token Revocation Test', () => {
+  test.beforeEach(async ({ page }) => {
+    // Log Base URL and Proxy URL once before the first test runs
+    if (!loggedBaseURL) {
+      const baseURL = page.context()._options.baseURL
+      const configuredProxyUrl = process.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333' // Default logic
+      if (baseURL) {
+        console.log(`\n🚀 Running tests against Service at URL: ${baseURL}`)
+        console.log(`🔒 Using Auth Proxy URL: ${configuredProxyUrl}\n`)
+      }
+      loggedBaseURL = true // Set flag so it doesn't log again
+    }
+  })
+
   test('should prevent login with revoked token', async ({ page }) => {
     console.log(`\n▶️ Running Test: ${test.info().title}\n`);
     console.log('🔍 Starting token revocation test')
