@@ -9,10 +9,6 @@ test.describe('Token Revocation Test', () => {
     console.log(`\n▶️ Running Test: ${test.info().title}\n`);
     console.log('🔍 Starting token revocation test')
 
-    // Debug: Log environment variables (without exposing password)
-    console.log('Test user:', process.env.TEST_USER ? 'Set' : 'Not set')
-    console.log('Test password:', process.env.TEST_PASSWORD ? 'Set' : 'Not set')
-
     // Increase timeout for this test
     test.setTimeout(120000)
 
