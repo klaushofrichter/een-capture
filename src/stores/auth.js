@@ -121,9 +121,16 @@ export const useAuthStore = defineStore('auth', () => {
     //  console.log('Skipping token revocation - no expiration time set (direct login)')
     //  return
     //}
+    // Determine proxy URL, defaulting to local Vite server if VITE_AUTH_PROXY_URL is not set
+    const AUTH_PROXY_URL = import.meta.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333'
+
+    // Construct path based on whether we target the local proxy or remote
+    const relativePath = '/proxy/revoke'
+    const requestUrl = `${AUTH_PROXY_URL}${relativePath}`
+    console.log(`[auth.js] Fetching: ${requestUrl}`)
 
     try {
-      const response = await fetch('/proxy/revoke', {
+      const response = await fetch(requestUrl, {
         method: 'POST',
         credentials: 'include' // Important for sending the sessionId cookie
       })
