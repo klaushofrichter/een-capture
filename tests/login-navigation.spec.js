@@ -246,21 +246,52 @@ test.describe('Login and Navigation', () => {
     await expect(refreshButtonAfterDirectLogin).toBeHidden()
     console.log('✅ Verified Refresh button is not available after direct login')
 
-    // Logout again, but this time use the OK button
-    console.log('🚪 Testing logout with OK button')
+    // Test full logout on the new page by waiting for timeout
+    console.log('🚪 Testing full logout with timeout on new page')
     await newPage.getByRole('button', { name: 'Logout' }).click()
 
     // Verify the logout modal is shown
     await expect(newPage.getByText('Goodbye!')).toBeVisible()
+    await expect(newPage.getByText(/You will be logged out in \d+ seconds/)).toBeVisible()
+    console.log('⏳ Waiting for automatic logout (8 seconds)')
 
-    // Click the OK button this time
-    await newPage.getByRole('button', { name: 'OK' }).click()
-    console.log('👆 Clicked OK button on logout modal')
-
-    // Verify we're back on the login page
-    await expect(newPage).toHaveURL('/', { timeout: 10000 })
+    // Wait for the logout to complete automatically by checking URL
+    await expect(newPage).toHaveURL('/', { timeout: 15000 })
     await expect(newPage.getByText('Welcome to EEN Login')).toBeVisible()
-    console.log('✅ Logout with OK button successful')
+    console.log('✅ Automatic logout completed successfully on new page')
+
+    // Now test full logout on the original page
+    console.log('🚪 Testing full logout with timeout on original page')
+    await page.getByRole('button', { name: 'Logout' }).click()
+
+    // Verify the logout modal is shown
+    await expect(page.getByText('Goodbye!')).toBeVisible()
+    await expect(page.getByText(/You will be logged out in \d+ seconds/)).toBeVisible()
+    console.log('⏳ Waiting for automatic logout (8 seconds)')
+
+    // Wait for the logout to complete automatically by checking URL
+    await expect(page).toHaveURL('/', { timeout: 15000 })
+    await expect(page.getByText('Welcome to EEN Login')).toBeVisible()
+    console.log('✅ Automatic logout completed successfully on original page')
+
+    // Now try to login again on the second page using the same credentials - should fail
+    console.log('🔑 Attempting to login with revoked token')
+    await newPage.goto('/direct')
+    await expect(newPage.getByRole('heading', { name: /Direct Access to EEN Login/ })).toBeVisible()
+
+    // Fill in the same credentials
+    await newPage.getByLabel('Access Token').fill(newAccessToken)
+    await newPage.getByLabel('Base URL').fill(baseUrl)
+    await newPage.getByLabel('Port').fill(port)
+
+    // Click the Proceed button
+    await newPage.getByRole('button', { name: 'Proceed' }).click()
+    console.log('➡️ Clicked Proceed button')
+
+    // Verify we're still on the direct page (login should fail)
+    await expect(newPage).toHaveURL('/direct')
+    await expect(newPage.getByRole('heading', { name: /Direct Access to EEN Login/ })).toBeVisible()
+    console.log('✅ Verified login failed with revoked token')
 
     // Close the new context
     await newContext.close()
