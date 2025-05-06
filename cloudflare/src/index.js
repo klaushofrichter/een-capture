@@ -150,6 +150,66 @@ export default {
         return new Response('Session ID cookie missing', { status: 401 })
       }
     }
+
+    // Handle token revocation
+    if (url.pathname === '/proxy/revoke') {
+      var sessionId = request.headers
+        .get('Cookie')
+        ?.split('; ')
+        .find(cookie => cookie.startsWith('sessionId='))
+        ?.split('=')[1]
+
+      if (!sessionId) {
+        return new Response('Session ID cookie missing', { status: 401 })
+      }
+
+      // Get the refresh token from KV storage
+      const refreshToken = await env.EEN_LOGIN.get(sessionId)
+      if (!refreshToken) {
+        return new Response('Invalid session', { status: 401 })
+      }
+
+      try {
+        // Call the EEN revoke endpoint
+        const revokeResponse = await fetch('https://auth.eagleeyenetworks.com/oauth2/revoke', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': `Basic ${btoa(`${env.CLIENT_ID}:${env.CLIENT_SECRET}`)}`
+          },
+          body: new URLSearchParams({
+            token: refreshToken
+          })
+        })
+
+        if (!revokeResponse.ok) {
+          throw new Error(`Revoke failed with status: ${revokeResponse.status}`)
+        }
+
+        // Delete the session from KV storage
+        await env.EEN_LOGIN.delete(sessionId)
+
+        // Return success response with cookie removal
+        const response = new Response('Token revoked successfully', {
+          status: 200,
+          headers: {
+            'Access-Control-Allow-Origin': origin,
+            'Access-Control-Allow-Credentials': 'true'
+          }
+        })
+
+        // Remove the cookie by setting its expiration to a past date
+        response.headers.append(
+          'Set-Cookie',
+          `sessionId=; Path=/; HttpOnly; SameSite=None; Secure; Expires=Thu, 01 Jan 1970 00:00:00 GMT`
+        )
+
+        return response
+      } catch (error) {
+        return new Response('Failed to revoke token', { status: 500 })
+      }
+    }
+
     return new Response('Not Found', { status: 404 })
   }
 }
