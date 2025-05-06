@@ -140,6 +140,7 @@ export const useAuthStore = defineStore('auth', () => {
     // Store current credentials temporarily
     tempCredentials = {
       token: token.value,
+      tokenExpiration: tokenExpiration.value,
       user: user.value,
       hostname: hostname.value,
       port: port.value,
@@ -176,13 +177,23 @@ export const useAuthStore = defineStore('auth', () => {
       })
     } // No else block needed - if onDelay is not passed, skip the wait
 
+    // Only call revoke if we have a token expiration (indicating we have a refresh token)
+    if (tempCredentials.tokenExpiration) {
+      try {
+        console.log("revoking token");
+        await revokeToken();
+      } catch (error) {
+       // Clear temporary credentials even if the revoke fails
+        tempCredentials = null
+        console.error('Error revoking token:', error)
+      }
+    } else {
+      console.log("no token expiration, skipping revoke");
+    }
+    
     // Clear temporary credentials after successful logout (or immediate if no delay)
     tempCredentials = null
 
-    // Call revoke (possibly without waiting, TBD);
-    console.log("revoking token");
-    await revokeToken();
-    
     // Use router.push for navigation to respect base path
     router.push('/')
   }
