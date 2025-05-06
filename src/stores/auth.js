@@ -170,10 +170,7 @@ export const useAuthStore = defineStore('auth', () => {
           if (remaining === 0) {
             clearInterval(logoutInterval)
             logoutInterval = null
-            // Call revoke before resolving the promise
-            revokeToken().finally(() => {
-              resolve()
-            })
+            resolve(); 
           }
         }, 50)
       })
@@ -182,6 +179,10 @@ export const useAuthStore = defineStore('auth', () => {
     // Clear temporary credentials after successful logout (or immediate if no delay)
     tempCredentials = null
 
+    // Call revoke (possibly without waiting, TBD);
+    console.log("revoking token");
+    await revokeToken();
+    
     // Use router.push for navigation to respect base path
     router.push('/')
   }
