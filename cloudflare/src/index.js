@@ -9,6 +9,7 @@ export default {
   //console.log('[Vite Plugin] Running version:', version)
 
   async fetch(request, env, ctx) {
+    console.log('[Cloudflare Plugin] Fetching request')
     const origin = request.headers.get('Origin')
 
     // Handle CORS preflight request
@@ -36,6 +37,7 @@ export default {
     // this is where the proxy gets called by the frontend with the "code" that enables the
     // proxy to get the actual tokens.
     if (url.pathname === '/proxy/getAccessToken') {
+      console.log('[Cloudflare Plugin] Getting access token')
       const code = url.searchParams.get('code')
       const redirectUri = url.searchParams.get('redirect_uri')
       if (code && redirectUri) {
@@ -101,6 +103,7 @@ export default {
     // this is where the frontend asks the proxy to use the refresh token to generate a new access token
     // The session Id is in the header - frontend needs to make sure it is provided. 
     if (url.pathname === '/proxy/refreshAccessToken') {
+      console.log('[Cloudflare Plugin] Refreshing access token')
       var sessionId = request.headers
         .get('Cookie')
         ?.split('; ')
@@ -158,13 +161,14 @@ export default {
 
     // Handle token revocation
     if (url.pathname === '/proxy/revoke') {
+      console.log('[Cloudflare Plugin] Revoking token')
       var sessionId = request.headers
         .get('Cookie')
         ?.split('; ')
         .find(cookie => cookie.startsWith('sessionId='))
         ?.split('=')[1]
 
-      console.log('[Vite Plugin] Revoking token for session:', sessionId);
+      console.log('[Cloudflare Plugin] Revoking token for session:', sessionId);
       if (!sessionId) {
         return new Response('Session ID cookie missing', { status: 401 })
       }
@@ -177,7 +181,7 @@ export default {
 
       try {
         // Call the EEN revoke endpoint
-        console.log('[Vite Plugin] Revoking token for session:', sessionId);
+        console.log('[Cloudflare Plugin] Revoking token for session:', sessionId);
         const revokeResponse = await fetch('https://auth.eagleeyenetworks.com/oauth2/revoke', {
           method: 'POST',
           headers: {
@@ -194,7 +198,7 @@ export default {
         }
 
         // Delete the session from KV storage
-        console.log('[Vite Plugin] Deleting session from KV storage:', sessionId);
+        console.log('[Cloudflare Plugin] Deleting session from KV storage:', sessionId);
         await env.EEN_LOGIN.delete(sessionId)
 
         // Return success response with cookie removal
@@ -207,7 +211,7 @@ export default {
         })
 
         // Remove the cookie by setting its expiration to a past date
-        console.log('[Vite Plugin] Removing cookie:', sessionId);
+        console.log('[Cloudflare Plugin] Removing cookie:', sessionId);
         response.headers.append(
           'Set-Cookie',
           `sessionId=; Path=/; HttpOnly; SameSite=None; Secure; Expires=Thu, 01 Jan 1970 00:00:00 GMT`
