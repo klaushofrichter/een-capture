@@ -31,6 +31,7 @@ test.describe('Mobile Navigation - Menu Functionality', () => {
   })
 
   test('should open and close mobile menu correctly', async ({ page }) => {
+    console.log(`\n▶️ Running Test: ${test.info().title}\n`);
     console.log('🔍 Starting mobile navigation test')
 
     // Verify we're on the home page after login

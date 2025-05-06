@@ -33,6 +33,7 @@ test.describe('Mobile Navigation - Page Navigation and Logout', () => {
   test('should navigate through pages via mobile menu and logout successfully', async ({
     page
   }) => {
+    console.log(`\n▶️ Running Test: ${test.info().title}\n`);
     console.log('🔍 Starting mobile navigation and logout test')
 
     // Verify we're on the home page after login

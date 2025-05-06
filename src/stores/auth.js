@@ -115,10 +115,39 @@ export const useAuthStore = defineStore('auth', () => {
     return Math.max(0, remaining)
   }
 
+  async function revokeToken() {
+    // Only call revoke if we have a token expiration (indicating we have a refresh token)
+    //if (!tokenExpiration.value) {
+    //  console.log('Skipping token revocation - no expiration time set (direct login)')
+    //  return
+    //}
+    // Determine proxy URL, defaulting to local Vite server if VITE_AUTH_PROXY_URL is not set
+    const AUTH_PROXY_URL = import.meta.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333'
+
+    // Construct path based on whether we target the local proxy or remote
+    const relativePath = '/proxy/revoke'
+    const requestUrl = `${AUTH_PROXY_URL}${relativePath}`
+    console.log(`[auth.js] Fetching: ${requestUrl}`)
+
+    try {
+      const response = await fetch(requestUrl, {
+        method: 'POST',
+        credentials: 'include' // Important for sending the sessionId cookie
+      })
+      
+      if (!response.ok) {
+        console.error('Failed to revoke token:', response.status)
+      }
+    } catch (error) {
+      console.error('Error revoking token:', error)
+    }
+  }
+
   async function logout(onDelay) {
     // Store current credentials temporarily
     tempCredentials = {
       token: token.value,
+      tokenExpiration: tokenExpiration.value,
       user: user.value,
       hostname: hostname.value,
       port: port.value,
@@ -149,12 +178,26 @@ export const useAuthStore = defineStore('auth', () => {
           if (remaining === 0) {
             clearInterval(logoutInterval)
             logoutInterval = null
-            resolve()
+            resolve(); 
           }
         }, 50)
       })
     } // No else block needed - if onDelay is not passed, skip the wait
 
+    // Only call revoke if we have a token expiration (indicating we have a refresh token)
+    if (tempCredentials.tokenExpiration) {
+      try {
+        console.log("revoking token");
+        await revokeToken();
+      } catch (error) {
+       // Clear temporary credentials even if the revoke fails
+        tempCredentials = null
+        console.error('Error revoking token:', error)
+      }
+    } else {
+      console.log("no token expiration, skipping revoke");
+    }
+    
     // Clear temporary credentials after successful logout (or immediate if no delay)
     tempCredentials = null
 
@@ -211,6 +254,7 @@ export const useAuthStore = defineStore('auth', () => {
     getTokenExpirationTime,
     getTokenTimeRemaining,
     logout,
-    cancelLogout
+    cancelLogout,
+    revokeToken
   }
 })

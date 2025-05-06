@@ -23,6 +23,7 @@ test.describe('Login Page', () => {
   })
 
   test('login page should have correct elements and consistent styling', async ({ page }) => {
+    console.log(`\n▶️ Running Test: ${test.info().title}\n`);
     console.log('🔍 Starting login page elements test')
 
     // Check if we're on the login page

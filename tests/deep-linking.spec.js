@@ -21,6 +21,7 @@ test.describe('Deep Linking', () => {
   })
 
   test('should redirect to settings page after login when deep linking', async ({ page }) => {
+    console.log(`\n▶️ Running Test: ${test.info().title}\n`);
     console.log('🔍 Starting deep linking test')
     // Increase timeout for this test
     test.setTimeout(120000)
@@ -78,7 +79,7 @@ test.describe('Deep Linking', () => {
     }
 
     // After successful login, we should be redirected to the settings page
-    await page.waitForURL(/.*\/settings$/, { timeout: 15000 })
+    await page.waitForURL(/.*\/settings$/, { timeout: 10000 })
     console.log('✅ Redirected to Settings page after login - deep linking successful!')
 
     // Verify we're on the Settings page
