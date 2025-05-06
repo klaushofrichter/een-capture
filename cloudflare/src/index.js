@@ -3,6 +3,11 @@
 export default {
   // this is the request from the Frontend coming in
   // eslint-disable-next-line no-unused-vars
+
+  // Get version info from KV store
+  //const version = await env.EEN_LOGIN.get("DEPLOY_VERSION")
+  //console.log('[Vite Plugin] Running version:', version)
+
   async fetch(request, env, ctx) {
     const origin = request.headers.get('Origin')
 
@@ -159,6 +164,7 @@ export default {
         .find(cookie => cookie.startsWith('sessionId='))
         ?.split('=')[1]
 
+      console.log('[Vite Plugin] Revoking token for session:', sessionId);
       if (!sessionId) {
         return new Response('Session ID cookie missing', { status: 401 })
       }
@@ -171,6 +177,7 @@ export default {
 
       try {
         // Call the EEN revoke endpoint
+        console.log('[Vite Plugin] Revoking token for session:', sessionId);
         const revokeResponse = await fetch('https://auth.eagleeyenetworks.com/oauth2/revoke', {
           method: 'POST',
           headers: {
@@ -187,6 +194,7 @@ export default {
         }
 
         // Delete the session from KV storage
+        console.log('[Vite Plugin] Deleting session from KV storage:', sessionId);
         await env.EEN_LOGIN.delete(sessionId)
 
         // Return success response with cookie removal
@@ -199,6 +207,7 @@ export default {
         })
 
         // Remove the cookie by setting its expiration to a past date
+        console.log('[Vite Plugin] Removing cookie:', sessionId);
         response.headers.append(
           'Set-Cookie',
           `sessionId=; Path=/; HttpOnly; SameSite=None; Secure; Expires=Thu, 01 Jan 1970 00:00:00 GMT`
