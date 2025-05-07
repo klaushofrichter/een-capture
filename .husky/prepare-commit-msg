@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Get the version from package.json
+VERSION=$(node -p "require('./package.json').version")
+
+# Read the commit message
+COMMIT_MSG_FILE=$1
+COMMIT_SOURCE=$2
+
+# Only add version if this is not a merge commit
+if [ "$COMMIT_SOURCE" != "merge" ]; then
+  # Read the current commit message
+  TEMP=$(cat "$COMMIT_MSG_FILE")
+  
+  # Check if the message already contains a version number
+  if ! grep -q "v$VERSION" "$COMMIT_MSG_FILE"; then
+    # Add version to the start of the commit message
+    echo "[v$VERSION] $TEMP" > "$COMMIT_MSG_FILE"
+  fi
+fi 
