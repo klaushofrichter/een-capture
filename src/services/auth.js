@@ -11,10 +11,13 @@ const EEN_AUTH_URL =
 const AUTH_PROXY_URL = import.meta.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333'
 
 console.log(
-  `[auth.js] Using ${AUTH_PROXY_URL} for the proxy`
+  `[auth.js] Using ${AUTH_PROXY_URL} for the proxy and ${REDIRECT_URI} for the redirect URI and ${CLIENT_ID} for the client ID`
 )
+//console.log(`[auth.js] Using ${REDIRECT_URI} for the redirect URI and ${CLIENT_ID} for the client ID`)
+
 
 export const getAuthUrl = () => {
+  console.log(`[auth.js] Using ${REDIRECT_URI} for the redirect URI`)
   const params = new URLSearchParams({
     client_id: CLIENT_ID,
     redirect_uri: REDIRECT_URI,

@@ -67,7 +67,7 @@ const isProcessingCallback = ref(false)
 
 const handleLogin = () => {
   const url = getAuthUrl()
-  // this will redirect to the EEN login page, and after login, the user will be redirected to the callback URL
+  // this will go to the to the EEN login page, and after login, the user will be redirected to the callback URL
   window.location.href = url
 }
 
