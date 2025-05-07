@@ -78,7 +78,6 @@ const hasOAuthCode = computed(() => !!route.query.code)
 
 onMounted(async () => {
   const code = route.query.code
-  // const storedRedirectPath = localStorage.getItem('redirectAfterLogin'); // No longer needed here
 
   if (code) {
     // Handling the redirect back FROM EEN
