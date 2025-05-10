@@ -26,10 +26,10 @@
       >
       <span class="text-gray-400 dark:text-gray-500">|</span>
       <a
-        href="https://github.com/klaushofrichter/een-login/blob/develop/README.md"
+        :href="readmeUrl"
         target="_blank"
         rel="noopener noreferrer"
-        class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400"
+        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-500 dark:hover:text-gray-400"
         title="View README"
       >
         README
@@ -75,6 +75,12 @@ const handleLogin = () => {
 // Disabling the unused variable since it's used in future logic extensions
 // eslint-disable-next-line no-unused-vars
 const hasOAuthCode = computed(() => !!route.query.code)
+
+const readmeUrl = computed(() =>
+  import.meta.env.DEV
+    ? 'https://github.com/klaushofrichter/een-login/blob/develop/README.md'
+    : `${import.meta.env.BASE_URL}README.md`
+)
 
 onMounted(async () => {
   const code = route.query.code
