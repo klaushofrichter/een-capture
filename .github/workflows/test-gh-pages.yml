@@ -60,6 +60,7 @@ jobs:
           VITE_AUTH_PROXY_URL: https://een-login.klaushofrichter.workers.dev
           TEST_USER: ${{ secrets.TEST_USER }}
           TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+          NODE_ENV: "production"
         run: |
           echo "🚀 Running tests against Base URL: ${{ env.PLAYWRIGHT_TEST_BASE_URL }}"
           echo "🔒 Using Redirect URI: ${{ env.VITE_REDIRECT_URI }}"
