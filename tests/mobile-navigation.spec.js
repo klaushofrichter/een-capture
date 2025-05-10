@@ -1,5 +1,11 @@
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
+import { 
+  navigateToHome, 
+  loginToApplication, 
+  isGitHubPagesEnvironment,
+  createUrlPattern
+} from './utils'
 
 // Load environment variables from .env file
 dotenv.config()
@@ -18,6 +24,10 @@ test.describe('Mobile Navigation - Menu Functionality', () => {
       if (baseURL) {
         console.log(`\n🚀 Running tests against Service at URL: ${baseURL}`)
         console.log(`🔒 Using Auth Proxy URL: ${configuredProxyUrl}\n`)
+        
+        // Log if we're in GitHub Pages or local environment
+        const environment = isGitHubPagesEnvironment(page) ? 'GitHub Pages' : 'local development';
+        console.log(`🔍 Testing in ${environment} environment\n`);
       }
       loggedBaseURL = true // Set flag so it doesn't log again
     }
@@ -26,8 +36,18 @@ test.describe('Mobile Navigation - Menu Functionality', () => {
     await page.setViewportSize(mobileViewport)
     console.log('📱 Set viewport to mobile size:', mobileViewport)
 
+    // Navigate to home page
+    await navigateToHome(page);
+    
+    // Get credentials from environment variables
+    const username = process.env.TEST_USER
+    const password = process.env.TEST_PASSWORD
+    
+    // Skip if no credentials
+    test.skip(!username || !password, 'Test credentials not found');
+    
     // Login before each test since we need to be authenticated to see the navigation
-    await loginUser(page)
+    await loginToApplication(page, username, password);
   })
 
   test('should open and close mobile menu correctly', async ({ page }) => {
@@ -106,11 +126,13 @@ test.describe('Mobile Navigation - Menu Functionality', () => {
 
     // Test closing by clicking a navigation item
     // Use very specific selector to make sure we get only the mobile menu's Profile link
-    await page.locator('#mobile-menu a[href="/profile"]').click()
+    await page.locator('#mobile-menu a[href*="/profile"]').click()
     console.log('👆 Clicked Profile navigation link in mobile menu')
 
     // Should navigate to Profile page and close menu
-    await page.waitForURL(/.*\/profile$/, { timeout: 10000 })
+    // Use our URL pattern utility for consistent URL matching in both environments
+    const profilePattern = createUrlPattern(page, '/profile');
+    await page.waitForURL(profilePattern, { timeout: 10000 })
     await expect(page.getByText('User Profile')).toBeVisible()
 
     // Menu should be hidden
@@ -121,60 +143,3 @@ test.describe('Mobile Navigation - Menu Functionality', () => {
     console.log('✅ Mobile navigation test completed successfully')
   })
 })
-
-// Helper function to login
-async function loginUser(page) {
-  console.log('🔑 Starting login process for test')
-
-  // Navigate to the login page
-  await page.goto('/')
-
-  // Get credentials from environment variables
-  const username = process.env.TEST_USER
-  const password = process.env.TEST_PASSWORD
-
-  // Ensure credentials are provided
-  if (!username || !password) {
-    throw new Error(
-      'Test credentials not found. Please set TEST_USER and TEST_PASSWORD environment variables.'
-    )
-  }
-
-  // Click the login button
-  await page.getByText('Sign in with Eagle Eye Networks').click()
-
-  // Wait for redirect to EEN login page
-  await page.waitForURL(/.*eagleeyenetworks.com.*/, { timeout: 30000 })
-
-  // Wait for the email field to be visible and ready
-  const emailInput = page.locator('#authentication--input__email')
-  await expect(emailInput).toBeVisible({ timeout: 15000 })
-  await emailInput.fill(username)
-
-  // Find and click the next button
-  const nextButton = page.getByRole('button', { name: 'Next' })
-  await expect(nextButton).toBeEnabled()
-  await nextButton.click()
-
-  // Wait for password field to appear and be ready
-  const passwordInput = page.locator('#authentication--input__password')
-  await expect(passwordInput).toBeVisible({ timeout: 10000 })
-  await passwordInput.fill(password)
-
-  // Click the sign in button (try both methods)
-  const signInButton = page.locator('#next')
-  const signInButtonByText = page.getByRole('button', { name: 'Sign in' })
-  await expect(signInButton.or(signInButtonByText)).toBeEnabled({ timeout: 5000 })
-
-  try {
-    await signInButton.click()
-  } catch (error) {
-    await signInButtonByText.click()
-  }
-
-  // Wait for redirect back to our app and verify we're on the home page
-  await page.waitForURL(/.*\/home$/, { timeout: 15000 })
-  await expect(page.getByText('Welcome to EEN Login')).toBeVisible()
-
-  console.log('✅ Login completed successfully')
-}

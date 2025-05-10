@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
+import { navigateToHome, isGitHubPagesEnvironment } from './utils'
 
 // Load environment variables from .env file
 dotenv.config()
@@ -15,11 +16,16 @@ test.describe('Login Page', () => {
       if (baseURL) {
         console.log(`\n🚀 Running tests against Service at URL: ${baseURL}`)
         console.log(`🔒 Using Auth Proxy URL: ${configuredProxyUrl}\n`)
+        
+        // Log if we're in GitHub Pages or local environment
+        const environment = isGitHubPagesEnvironment(page) ? 'GitHub Pages' : 'local development';
+        console.log(`🔍 Testing in ${environment} environment\n`);
       }
       loggedBaseURL = true // Set flag so it doesn't log again
     }
-    // Go to the login page before each test
-    await page.goto('/')
+    
+    // Go to the login page before each test using our utility function
+    await navigateToHome(page);
   })
 
   test('login page should have correct elements and consistent styling', async ({ page }) => {
@@ -51,10 +57,12 @@ test.describe('Login Page', () => {
     await expect(separator).toHaveText(/\|/)
     console.log('✅ Separator element verified')
 
-    // Check README link
+    // Check README link (account for both environments)
     await expect(readme).toHaveClass(
       /text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400/
     )
+    
+    // GitHub URLs should be the same in both environments
     await expect(readme).toHaveAttribute(
       'href',
       'https://github.com/klaushofrichter/een-login/blob/develop/README.md'
