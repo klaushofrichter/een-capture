@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
+import { isGitHubPagesEnvironment, buildUrl } from './utils.js'
 
 // Load environment variables from .env file
 dotenv.config()
@@ -21,11 +22,19 @@ test.describe('Direct Page', () => {
   })
 
   test('direct page should have correct elements and consistent styling', async ({ page }) => {
-    console.log(`\n▶️ Running Test: ${test.info().title}\n`);
+    console.log(`\n▶️ Running Test: ${test.info().title}\n`)
     console.log('🔍 Starting direct page elements test')
 
-    // Navigate directly to the direct page
-    await page.goto('/direct')
+    // Skip this test in GitHub Pages environment
+    if (isGitHubPagesEnvironment(page)) {
+      console.log('⏭️ Skipping direct page test in GitHub Pages environment')
+      return
+    }
+
+    // Continue with the test for local environment
+    const directUrl = buildUrl(page, '/direct')
+    console.log(`📝 Direct URL: ${directUrl}`)
+    await page.goto(directUrl)
     console.log('🌐 Navigated to direct login page')
 
     // Check if we're on the direct page

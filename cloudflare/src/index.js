@@ -8,9 +8,10 @@ export default {
   //const version = await env.EEN_LOGIN.get("DEPLOY_VERSION")
   //console.log('[Vite Plugin] Running version:', version)
 
-  async fetch(request, env, ctx) {
-    console.log('[Cloudflare Plugin] Fetching request')
+  async fetch(request, env) {
+    // console.log('[Cloudflare Plugin] Fetching request'); // Removed
     const origin = request.headers.get('Origin')
+    // console.log('[Cloudflare Plugin] Request Origin Header:', origin); // Removed
 
     // Handle CORS preflight request
     if (request.method === 'OPTIONS') {
@@ -22,11 +23,13 @@ export default {
           'Access-Control-Allow-Credentials': 'true', // If you need to send/receive cookies or auth headers
           'Access-Control-Max-Age': '86400' // 24 hours
         }
+        // console.log('[Cloudflare Plugin] OPTIONS Preflight CORS Headers:', JSON.stringify(corsHeaders)); // Removed
         return new Response(null, {
           status: 204, // No Content
           headers: corsHeaders
         })
       } else {
+        // console.log('[Cloudflare Plugin] OPTIONS Preflight: No Origin header found.'); // Removed
         return new Response(null, { status: 403 }) // Forbidden if no origin
       }
     }
@@ -37,7 +40,7 @@ export default {
     // this is where the proxy gets called by the frontend with the "code" that enables the
     // proxy to get the actual tokens.
     if (url.pathname === '/proxy/getAccessToken') {
-      console.log('[Cloudflare Plugin] Getting access token')
+      // console.log('[Cloudflare Plugin] Getting access token'); // Removed
       const code = url.searchParams.get('code')
       const redirectUri = url.searchParams.get('redirect_uri')
       if (code && redirectUri) {
@@ -70,6 +73,12 @@ export default {
           })
 
           // the proxy sets a session cookie and returns the access token to the frontend
+          const responseHeaders = {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': origin,
+            'Access-Control-Allow-Credentials': 'true' // Enable credentials
+          }
+          // console.log('[Cloudflare Plugin] /proxy/getAccessToken Response Headers:', JSON.stringify(responseHeaders)); // Removed
           const response = new Response(
             JSON.stringify({
               accessToken: tokens.access_token,
@@ -77,11 +86,7 @@ export default {
               httpsBaseUrl: tokens.httpsBaseUrl
             }),
             {
-              headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': origin,
-                'Access-Control-Allow-Credentials': 'true' // Enable credentials
-              }
+              headers: responseHeaders
             }
           )
 
@@ -101,9 +106,9 @@ export default {
     }
 
     // this is where the frontend asks the proxy to use the refresh token to generate a new access token
-    // The session Id is in the header - frontend needs to make sure it is provided. 
+    // The session Id is in the header - frontend needs to make sure it is provided.
     if (url.pathname === '/proxy/refreshAccessToken') {
-      console.log('[Cloudflare Plugin] Refreshing access token')
+      // console.log('[Cloudflare Plugin] Refreshing access token'); // Removed
       var sessionId = request.headers
         .get('Cookie')
         ?.split('; ')
@@ -134,20 +139,23 @@ export default {
             })
 
             // this is the response to the Frontend
+            const refreshResponseHeaders = {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': origin,
+              'Access-Control-Allow-Credentials': 'true'
+            }
+            // console.log('[Cloudflare Plugin] /proxy/refreshAccessToken Response Headers:', JSON.stringify(refreshResponseHeaders)); // Removed
             return new Response(
               JSON.stringify({
                 accessToken: newTokens.access_token,
                 expiresIn: newTokens.expires_in
               }),
               {
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Access-Control-Allow-Origin': origin,
-                  'Access-Control-Allow-Credentials': 'true'
-                }
+                headers: refreshResponseHeaders
               }
             )
           } catch (error) {
+            // console.error('[Cloudflare Plugin] /proxy/refreshAccessToken Error:', error); // Removed
             // Optionally clear the session ID cookie on refresh failure
             return new Response('Refresh token exchange failed', { status: 401 })
           }
@@ -161,32 +169,32 @@ export default {
 
     // Handle token revocation
     if (url.pathname === '/proxy/revoke') {
-      console.log('[Cloudflare Plugin] Revoking token')
-      var sessionId = request.headers
+      // console.log('[Cloudflare Plugin] Revoking token'); // Removed
+      var revokeSessionId = request.headers
         .get('Cookie')
         ?.split('; ')
         .find(cookie => cookie.startsWith('sessionId='))
         ?.split('=')[1]
 
-      console.log('[Cloudflare Plugin] Revoking token for session:', sessionId);
-      if (!sessionId) {
+      // console.log('[Cloudflare Plugin] Revoking token for session:', revokeSessionId); // Removed
+      if (!revokeSessionId) {
         return new Response('Session ID cookie missing', { status: 401 })
       }
 
       // Get the refresh token from KV storage
-      const refreshToken = await env.EEN_LOGIN.get(sessionId)
+      const refreshToken = await env.EEN_LOGIN.get(revokeSessionId)
       if (!refreshToken) {
         return new Response('Invalid session', { status: 401 })
       }
 
       try {
         // Call the EEN revoke endpoint
-        console.log('[Cloudflare Plugin] Revoking token for session:', sessionId);
+        // console.log('[Cloudflare Plugin] Revoking token for session:', revokeSessionId); // Removed
         const revokeResponse = await fetch('https://auth.eagleeyenetworks.com/oauth2/revoke', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
-            'Authorization': `Basic ${btoa(`${env.CLIENT_ID}:${env.CLIENT_SECRET}`)}`
+            Authorization: `Basic ${btoa(`${env.CLIENT_ID}:${env.CLIENT_SECRET}`)}`
           },
           body: new URLSearchParams({
             token: refreshToken
@@ -198,20 +206,22 @@ export default {
         }
 
         // Delete the session from KV storage
-        console.log('[Cloudflare Plugin] Deleting session from KV storage:', sessionId);
-        await env.EEN_LOGIN.delete(sessionId)
+        // console.log('[Cloudflare Plugin] Deleting session from KV storage:', revokeSessionId); // Removed
+        await env.EEN_LOGIN.delete(revokeSessionId)
 
         // Return success response with cookie removal
+        const revokeResponseHeaders = {
+          'Access-Control-Allow-Origin': origin,
+          'Access-Control-Allow-Credentials': 'true'
+        }
+        // console.log('[Cloudflare Plugin] /proxy/revoke Response Headers:', JSON.stringify(revokeResponseHeaders)); // Removed
         const response = new Response('Token revoked successfully', {
           status: 200,
-          headers: {
-            'Access-Control-Allow-Origin': origin,
-            'Access-Control-Allow-Credentials': 'true'
-          }
+          headers: revokeResponseHeaders
         })
 
         // Remove the cookie by setting its expiration to a past date
-        console.log('[Cloudflare Plugin] Removing cookie:', sessionId);
+        // console.log('[Cloudflare Plugin] Removing cookie:', revokeSessionId); // Removed
         response.headers.append(
           'Set-Cookie',
           `sessionId=; Path=/; HttpOnly; SameSite=None; Secure; Expires=Thu, 01 Jan 1970 00:00:00 GMT`

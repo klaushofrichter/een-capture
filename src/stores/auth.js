@@ -134,7 +134,7 @@ export const useAuthStore = defineStore('auth', () => {
         method: 'POST',
         credentials: 'include' // Important for sending the sessionId cookie
       })
-      
+
       if (!response.ok) {
         console.error('Failed to revoke token:', response.status)
       }
@@ -152,7 +152,7 @@ export const useAuthStore = defineStore('auth', () => {
       hostname: hostname.value,
       port: port.value,
       userProfile: userProfile.value,
-      refreshToken: refreshToken.value,
+      refreshToken: refreshToken.value
     }
 
     // Clear store values
@@ -163,7 +163,7 @@ export const useAuthStore = defineStore('auth', () => {
     userProfile.value = null
     tokenExpiration.value = null
     refreshToken.value = null
-    
+
     // Clear all localStorage items synchronously
     localStorage.clear()
 
@@ -178,7 +178,7 @@ export const useAuthStore = defineStore('auth', () => {
           if (remaining === 0) {
             clearInterval(logoutInterval)
             logoutInterval = null
-            resolve(); 
+            resolve()
           }
         }, 50)
       })
@@ -187,17 +187,17 @@ export const useAuthStore = defineStore('auth', () => {
     // Only call revoke if we have a token expiration (indicating we have a refresh token)
     if (tempCredentials.tokenExpiration) {
       try {
-        console.log("revoking token");
-        await revokeToken();
+        console.log('revoking token')
+        await revokeToken()
       } catch (error) {
-       // Clear temporary credentials even if the revoke fails
+        // Clear temporary credentials even if the revoke fails
         tempCredentials = null
         console.error('Error revoking token:', error)
       }
     } else {
-      console.log("no token expiration, skipping revoke");
+      console.log('no token expiration, skipping revoke')
     }
-    
+
     // Clear temporary credentials after successful logout (or immediate if no delay)
     tempCredentials = null
 
