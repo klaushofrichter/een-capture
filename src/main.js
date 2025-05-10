@@ -8,16 +8,16 @@ import { APP_NAME, APP_DESCRIPTION } from './constants'
 
 // Handle 404 redirects from GitHub Pages
 const handleGitHubPagesRedirect = () => {
-  const redirect = new URLSearchParams(window.location.search).get('redirect');
+  const redirect = new URLSearchParams(window.location.search).get('redirect')
   if (redirect) {
     // Remove the query parameter to avoid infinite loops
-    const newUrl = window.location.href.split('?')[0];
-    window.history.replaceState(null, null, newUrl);
-    
+    const newUrl = window.location.href.split('?')[0]
+    window.history.replaceState(null, null, newUrl)
+
     // Navigate to the original path
-    router.push(redirect);
+    router.push(redirect)
   }
-};
+}
 
 const app = createApp(App)
 
@@ -33,7 +33,7 @@ document.title = APP_NAME
 document.querySelector('meta[name="description"]').setAttribute('content', APP_DESCRIPTION)
 
 // Handle GitHub Pages 404 redirect before mounting the app
-handleGitHubPagesRedirect();
+handleGitHubPagesRedirect()
 
 // Mount the app
 app.mount('#app')

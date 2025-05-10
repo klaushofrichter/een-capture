@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
-import { 
-  navigateToHome, 
-  loginToApplication, 
+import {
+  navigateToHome,
+  loginToApplication,
   logoutFromApplication,
   isGitHubPagesEnvironment,
   createUrlPattern
@@ -25,10 +25,10 @@ test.describe('Mobile Navigation - Page Navigation', () => {
       if (baseURL) {
         console.log(`\n🚀 Running tests against Service at URL: ${baseURL}`)
         console.log(`🔒 Using Auth Proxy URL: ${configuredProxyUrl}\n`)
-        
+
         // Log if we're in GitHub Pages or local environment
-        const environment = isGitHubPagesEnvironment(page) ? 'GitHub Pages' : 'local development';
-        console.log(`🔍 Testing in ${environment} environment\n`);
+        const environment = isGitHubPagesEnvironment(page) ? 'GitHub Pages' : 'local development'
+        console.log(`🔍 Testing in ${environment} environment\n`)
       }
       loggedBaseURL = true // Set flag so it doesn't log again
     }
@@ -38,21 +38,23 @@ test.describe('Mobile Navigation - Page Navigation', () => {
     console.log('📱 Set viewport to mobile size:', mobileViewport)
 
     // Navigate to home page
-    await navigateToHome(page);
-    
+    await navigateToHome(page)
+
     // Get credentials from environment variables
     const username = process.env.TEST_USER
     const password = process.env.TEST_PASSWORD
-    
+
     // Skip if no credentials
-    test.skip(!username || !password, 'Test credentials not found');
-    
+    if (!username || !password) {
+      throw new Error('Test credentials not found')
+    }
+
     // Login before each test
-    await loginToApplication(page, username, password);
+    await loginToApplication(page, username, password)
   })
 
   test('should navigate through all pages via mobile menu', async ({ page }) => {
-    console.log(`\n▶️ Running Test: ${test.info().title}\n`);
+    console.log(`\n▶️ Running Test: ${test.info().title}\n`)
     console.log('🔍 Starting mobile page navigation test')
 
     // Verify we're on the home page after login
@@ -71,9 +73,9 @@ test.describe('Mobile Navigation - Page Navigation', () => {
     // Navigate to Profile page
     console.log('👤 Navigating to Profile page')
     await page.locator('#mobile-menu a[href*="/profile"]').click()
-    
+
     // Use our URL pattern utility
-    const profilePattern = createUrlPattern(page, '/profile');
+    const profilePattern = createUrlPattern(page, '/profile')
     await page.waitForURL(profilePattern, { timeout: 10000 })
     await expect(page.getByText('User Profile')).toBeVisible()
     console.log('✅ Profile page loaded successfully')
@@ -86,9 +88,9 @@ test.describe('Mobile Navigation - Page Navigation', () => {
     // Navigate to About page
     console.log('ℹ️ Navigating to About page')
     await page.locator('#mobile-menu a[href*="/about"]').click()
-    
+
     // Use our URL pattern utility
-    const aboutPattern = createUrlPattern(page, '/about');
+    const aboutPattern = createUrlPattern(page, '/about')
     await page.waitForURL(aboutPattern, { timeout: 10000 })
     await expect(page.getByText('About EEN Login')).toBeVisible()
     console.log('✅ About page loaded successfully')
@@ -101,9 +103,9 @@ test.describe('Mobile Navigation - Page Navigation', () => {
     // Navigate to Settings page
     console.log('⚙️ Navigating to Settings page')
     await page.locator('#mobile-menu a[href*="/settings"]').click()
-    
+
     // Use our URL pattern utility
-    const settingsPattern = createUrlPattern(page, '/settings');
+    const settingsPattern = createUrlPattern(page, '/settings')
     await page.waitForURL(settingsPattern, { timeout: 10000 })
     await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
     console.log('✅ Settings page loaded successfully')
@@ -116,9 +118,9 @@ test.describe('Mobile Navigation - Page Navigation', () => {
     // Navigate back to Home page
     console.log('🏠 Navigating back to Home page')
     await page.locator('#mobile-menu a[href*="/home"]').click()
-    
+
     // Use our URL pattern utility
-    const homePattern = createUrlPattern(page, '/home');
+    const homePattern = createUrlPattern(page, '/home')
     await page.waitForURL(homePattern, { timeout: 10000 })
     await expect(page.getByText('Welcome to EEN Login')).toBeVisible()
     console.log('✅ Home page loaded successfully')

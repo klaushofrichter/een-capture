@@ -1,12 +1,11 @@
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
-import { 
-  navigateToHome, 
-  loginToApplication, 
+import {
+  navigateToHome,
+  loginToApplication,
   isGitHubPagesEnvironment,
-  createUrlPattern,
-  buildUrl
-} from './utils'
+  logoutFromApplication
+} from './utils.js'
 
 // Load environment variables from .env file
 dotenv.config()
@@ -22,17 +21,17 @@ test.describe('Token Revocation', () => {
       if (baseURL) {
         console.log(`\n🚀 Running tests against Service at URL: ${baseURL}`)
         console.log(`🔒 Using Auth Proxy URL: ${configuredProxyUrl}\n`)
-        
+
         // Log if we're in GitHub Pages or local environment
-        const environment = isGitHubPagesEnvironment(page) ? 'GitHub Pages' : 'local development';
-        console.log(`🔍 Testing in ${environment} environment\n`);
+        const environment = isGitHubPagesEnvironment(page) ? 'GitHub Pages' : 'local development'
+        console.log(`🔍 Testing in ${environment} environment\n`)
       }
       loggedBaseURL = true // Set flag so it doesn't log again
     }
   })
 
   test('should perform token revocation during logout', async ({ page }) => {
-    console.log(`\n▶️ Running Test: ${test.info().title}\n`);
+    console.log(`\n▶️ Running Test: ${test.info().title}\n`)
     console.log('🔍 Starting token revocation test')
     // Increase timeout for this test
     test.setTimeout(120000)
@@ -42,18 +41,18 @@ test.describe('Token Revocation', () => {
     const password = process.env.TEST_PASSWORD
 
     // Ensure credentials are provided
-    // eslint-disable-next-line playwright/no-skipped-test
-    test.skip(
-      !username || !password,
-      'Test credentials not found. Please set TEST_USER and TEST_PASSWORD environment variables.'
-    )
+    if (!username || !password) {
+      throw new Error(
+        'Test credentials not found. Please set TEST_USER and TEST_PASSWORD environment variables.'
+      )
+    }
 
     // Navigate to home page
-    await navigateToHome(page);
-    
+    await navigateToHome(page)
+
     // Login to the application
-    await loginToApplication(page, username, password);
-    
+    await loginToApplication(page, username, password)
+
     // Wait for home page to load
     await expect(page.getByText('Welcome to EEN Login')).toBeVisible()
     console.log('✅ Successfully logged in')
@@ -79,37 +78,43 @@ test.describe('Token Revocation', () => {
       // 1. Redirect to the EEN login page (eagleeyenetworks.com)
       // 2. The home page loads and we see the login button (not logged in)
       // 3. The home page loads but we DON'T see the user dashboard (not logged in)
-      
+
       await Promise.race([
         page.waitForURL(/.*eagleeyenetworks.com.*/, { timeout: 5000 }),
-        page.getByText('Sign in with Eagle Eye Networks').waitFor({ state: 'visible', timeout: 5000 }),
+        page
+          .getByText('Sign in with Eagle Eye Networks')
+          .waitFor({ state: 'visible', timeout: 5000 }),
         page.getByText('Welcome to EEN Login').waitFor({ state: 'visible', timeout: 5000 })
-      ]);
-      
+      ])
+
       // Check if we're on the home page but not logged in
-      const isLoggedIn = await page.getByText('You have successfully logged in').isVisible()
-        .catch(() => false);
-      
+      const isLoggedIn = await page
+        .getByText('You have successfully logged in')
+        .isVisible()
+        .catch(() => false)
+
       if (isLoggedIn) {
-        throw new Error('Still appears to be logged in after token revocation');
+        throw new Error('Still appears to be logged in after token revocation')
       }
-      
-      console.log('✅ Session correctly ended - not logged in after revocation');
+
+      console.log('✅ Session correctly ended - not logged in after revocation')
     } catch (error) {
       if (error.message.includes('Still appears to be logged in')) {
-        throw error;
+        throw error
       }
       // We might get here if the race condition timeout happens, which is fine
       // as long as we're not logged in
-      const isLoggedIn = await page.getByText('You have successfully logged in').isVisible()
-        .catch(() => false);
-      
+      const isLoggedIn = await page
+        .getByText('You have successfully logged in')
+        .isVisible()
+        .catch(() => false)
+
       if (isLoggedIn) {
-        throw new Error('Still appears to be logged in after token revocation');
+        throw new Error('Still appears to be logged in after token revocation')
       }
-      console.log('✅ Session correctly ended - not logged in after revocation');
+      console.log('✅ Session correctly ended - not logged in after revocation')
     }
 
     console.log('✅ Token revocation test completed successfully')
   })
-}) 
+})

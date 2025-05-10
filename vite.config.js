@@ -5,6 +5,7 @@ import process from 'process'
 import fetch from 'node-fetch' // Need node-fetch for server-side requests
 import { parse } from 'node:querystring' // To parse query strings
 import { randomBytes } from 'node:crypto' // For session ID generation
+import { Buffer } from 'buffer'
 
 // Define the proxy plugin
 const localOauthProxy = env => {
@@ -16,9 +17,11 @@ const localOauthProxy = env => {
   // Helper to handle /getAccessToken
   const handleGetAccessToken = async (req, res /*, next */) => {
     // console.log('[Vite Plugin] Intercepted /proxy/getAccessToken'); // DEBUG
-    const queryParams = parse(req.url.split('?')[1] || '')
-    const code = queryParams.code
-    const redirectUri = queryParams.redirect_uri || env.VITE_REDIRECT_URI || 'http://127.0.0.1:3333'
+    const code = parse(req.url.split('?')[1] || '').code
+    const redirectUri =
+      parse(req.url.split('?')[1] || '').redirect_uri ||
+      env.VITE_REDIRECT_URI ||
+      'http://127.0.0.1:3333'
 
     if (!code) {
       console.error('[Vite Plugin] Missing code parameter')
@@ -27,7 +30,7 @@ const localOauthProxy = env => {
     }
 
     const tokenUrl = env.VITE_EEN_TOKEN_URL || 'https://auth.eagleeyenetworks.com/oauth2/token'
-    const clientId = env.VITE_EEN_CLIENT_ID         // Make sure this is in your .env
+    const clientId = env.VITE_EEN_CLIENT_ID // Make sure this is in your .env
     const clientSecret = env.VITE_EEN_CLIENT_SECRET // Make sure this is in your .env
 
     if (!clientSecret) {
@@ -98,13 +101,13 @@ const localOauthProxy = env => {
   const handleRefreshAccessToken = async (req, res /*, next */) => {
     // console.log('[Vite Plugin] Intercepted /proxy/refreshAccessToken'); // DEBUG
     const queryParams = parse(req.url.split('?')[1] || '')
-    
-    // Try to get sessionId from cookie 
+
+    // Try to get sessionId from cookie
     let sessionId = req.headers.cookie
       ?.split('; ')
       .find(cookie => cookie.startsWith('sessionId='))
       ?.split('=')[1]
-    
+
     if (!sessionId) {
       console.error('[Vite Plugin] Missing sessionId for refresh')
       res.statusCode = 400
@@ -190,14 +193,14 @@ const localOauthProxy = env => {
 
   // Helper to handle /revoke
   const handleRevoke = async (req, res /*, next */) => {
-    console.log('[Vite Plugin] Intercepted /proxy/revoke'); // DEBUG
-    
-    // Try to get sessionId from cookie 
+    console.log('[Vite Plugin] Intercepted /proxy/revoke') // DEBUG
+
+    // Try to get sessionId from cookie
     let sessionId = req.headers.cookie
       ?.split('; ')
       .find(cookie => cookie.startsWith('sessionId='))
       ?.split('=')[1]
-    
+
     if (!sessionId) {
       console.error('[Vite Plugin] Missing sessionId for revoke')
       res.statusCode = 400
@@ -213,7 +216,9 @@ const localOauthProxy = env => {
       return res.end('Invalid or expired session.')
     }
 
-    const revokeUrl = env.VITE_EEN_TOKEN_URL?.replace('/token', '/revoke') || 'https://auth.eagleeyenetworks.com/oauth2/revoke'
+    const revokeUrl =
+      env.VITE_EEN_TOKEN_URL?.replace('/token', '/revoke') ||
+      'https://auth.eagleeyenetworks.com/oauth2/revoke'
     const clientId = env.VITE_EEN_CLIENT_ID
     const clientSecret = env.VITE_EEN_CLIENT_SECRET
 
@@ -230,9 +235,9 @@ const localOauthProxy = env => {
       console.log('[Vite Plugin] Revoking token for session:', sessionId)
       const eenResponse = await fetch(revokeUrl, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          'Authorization': `Basic ${auth}`
+          Authorization: `Basic ${auth}`
         },
         body: new URLSearchParams({
           token: refreshToken
@@ -250,7 +255,10 @@ const localOauthProxy = env => {
       console.log(`[Vite Plugin] Deleted session: ${sessionId}`)
 
       // Remove the cookie by setting its expiration to 0
-      res.setHeader('Set-Cookie', `sessionId=; Path=/; HttpOnly; SameSite=Lax; Expires=Thu, 01 Jan 1970 00:00:00 GMT`)
+      res.setHeader(
+        'Set-Cookie',
+        `sessionId=; Path=/; HttpOnly; SameSite=Lax; Expires=Thu, 01 Jan 1970 00:00:00 GMT`
+      )
 
       res.statusCode = 200
       res.end('Token revoked successfully')

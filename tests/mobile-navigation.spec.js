@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
-import { 
-  navigateToHome, 
-  loginToApplication, 
+import {
+  navigateToHome,
+  loginToApplication,
   isGitHubPagesEnvironment,
   createUrlPattern
 } from './utils'
@@ -24,10 +24,10 @@ test.describe('Mobile Navigation - Menu Functionality', () => {
       if (baseURL) {
         console.log(`\n🚀 Running tests against Service at URL: ${baseURL}`)
         console.log(`🔒 Using Auth Proxy URL: ${configuredProxyUrl}\n`)
-        
+
         // Log if we're in GitHub Pages or local environment
-        const environment = isGitHubPagesEnvironment(page) ? 'GitHub Pages' : 'local development';
-        console.log(`🔍 Testing in ${environment} environment\n`);
+        const environment = isGitHubPagesEnvironment(page) ? 'GitHub Pages' : 'local development'
+        console.log(`🔍 Testing in ${environment} environment\n`)
       }
       loggedBaseURL = true // Set flag so it doesn't log again
     }
@@ -37,21 +37,23 @@ test.describe('Mobile Navigation - Menu Functionality', () => {
     console.log('📱 Set viewport to mobile size:', mobileViewport)
 
     // Navigate to home page
-    await navigateToHome(page);
-    
+    await navigateToHome(page)
+
     // Get credentials from environment variables
     const username = process.env.TEST_USER
     const password = process.env.TEST_PASSWORD
-    
+
     // Skip if no credentials
-    test.skip(!username || !password, 'Test credentials not found');
-    
+    if (!username || !password) {
+      throw new Error('Test credentials not found')
+    }
+
     // Login before each test since we need to be authenticated to see the navigation
-    await loginToApplication(page, username, password);
+    await loginToApplication(page, username, password)
   })
 
   test('should open and close mobile menu correctly', async ({ page }) => {
-    console.log(`\n▶️ Running Test: ${test.info().title}\n`);
+    console.log(`\n▶️ Running Test: ${test.info().title}\n`)
     console.log('🔍 Starting mobile navigation test')
 
     // Verify we're on the home page after login
@@ -131,7 +133,7 @@ test.describe('Mobile Navigation - Menu Functionality', () => {
 
     // Should navigate to Profile page and close menu
     // Use our URL pattern utility for consistent URL matching in both environments
-    const profilePattern = createUrlPattern(page, '/profile');
+    const profilePattern = createUrlPattern(page, '/profile')
     await page.waitForURL(profilePattern, { timeout: 10000 })
     await expect(page.getByText('User Profile')).toBeVisible()
 

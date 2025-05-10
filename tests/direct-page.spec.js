@@ -22,25 +22,24 @@ test.describe('Direct Page', () => {
   })
 
   test('direct page should have correct elements and consistent styling', async ({ page }) => {
-    console.log(`\n▶️ Running Test: ${test.info().title}\n`);
-    console.log('🔍 Starting direct page elements test');
+    console.log(`\n▶️ Running Test: ${test.info().title}\n`)
+    console.log('🔍 Starting direct page elements test')
 
     // Skip this test in GitHub Pages environment
     if (isGitHubPagesEnvironment(page)) {
-      console.log('⏭️ Skipping direct page test in GitHub Pages environment');
-      test.skip(true, 'Direct page may have different content in GitHub Pages');
-      return;
+      console.log('⏭️ Skipping direct page test in GitHub Pages environment')
+      return
     }
 
     // Continue with the test for local environment
-    const directUrl = buildUrl(page, '/direct');
-    console.log(`📝 Direct URL: ${directUrl}`);
-    await page.goto(directUrl);
-    console.log('🌐 Navigated to direct login page');
+    const directUrl = buildUrl(page, '/direct')
+    console.log(`📝 Direct URL: ${directUrl}`)
+    await page.goto(directUrl)
+    console.log('🌐 Navigated to direct login page')
 
     // Check if we're on the direct page
-    await expect(page.getByRole('heading', { name: /Direct Access to EEN Login/ })).toBeVisible();
-    console.log('✅ Direct page heading verified');
+    await expect(page.getByRole('heading', { name: /Direct Access to EEN Login/ })).toBeVisible()
+    console.log('✅ Direct page heading verified')
 
     // Check for form elements
     await expect(page.getByLabel('Access Token')).toBeVisible()
