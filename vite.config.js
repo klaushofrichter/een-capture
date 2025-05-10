@@ -6,6 +6,7 @@ import fetch from 'node-fetch' // Need node-fetch for server-side requests
 import { parse } from 'node:querystring' // To parse query strings
 import { randomBytes } from 'node:crypto' // For session ID generation
 import { Buffer } from 'buffer'
+import { viteStaticCopy } from 'vite-plugin-static-copy'
 
 // Define the proxy plugin
 const localOauthProxy = env => {
@@ -303,7 +304,15 @@ export default defineConfig(({ command, mode }) => {
     plugins: [
       vue(),
       // Add the proxy plugin instance, passing loaded env variables
-      localOauthProxy(env)
+      localOauthProxy(env),
+      viteStaticCopy({
+        targets: [
+          {
+            src: 'README.md',
+            dest: '.'
+          }
+        ]
+      })
     ],
     resolve: {
       alias: {
