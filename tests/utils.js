@@ -8,8 +8,8 @@
  * @returns {boolean} True if we're testing against GitHub Pages
  */
 export function isGitHubPagesEnvironment(page) {
-  const baseURL = page.context()._options.baseURL;
-  return baseURL && baseURL.includes('github.io');
+  const baseURL = page.context()._options.baseURL
+  return baseURL && baseURL.includes('github.io')
 }
 
 /**
@@ -19,19 +19,19 @@ export function isGitHubPagesEnvironment(page) {
  * @returns {string} The full URL to use
  */
 export function buildUrl(page, path) {
-  const baseURL = page.context()._options.baseURL;
-  
+  const baseURL = page.context()._options.baseURL
+
   if (isGitHubPagesEnvironment(page)) {
     // GitHub Pages environment
     if (baseURL.endsWith('/een-login')) {
-      return `${baseURL}${path}`;
+      return `${baseURL}${path}`
     } else if (!baseURL.includes('/een-login/')) {
-      return `${baseURL}/een-login${path}`;
+      return `${baseURL}/een-login${path}`
     }
   }
-  
+
   // Local development or already correct structure
-  return new URL(path, baseURL).toString();
+  return new URL(path, baseURL).toString()
 }
 
 /**
@@ -42,9 +42,9 @@ export function buildUrl(page, path) {
  */
 export function createUrlPattern(page, pathSuffix) {
   if (isGitHubPagesEnvironment(page)) {
-    return new RegExp(`.*\/een-login${pathSuffix}$`);
+    return new RegExp(`.*\/een-login${pathSuffix}$`)
   }
-  return new RegExp(`.*${pathSuffix}$`);
+  return new RegExp(`.*${pathSuffix}$`)
 }
 
 /**
@@ -52,9 +52,9 @@ export function createUrlPattern(page, pathSuffix) {
  * @param {import('@playwright/test').Page} page - Playwright page object
  */
 export async function navigateToHome(page) {
-  const homeUrl = buildUrl(page, '/');
-  console.log(`📝 Navigating to Home URL: ${homeUrl}`);
-  await page.goto(homeUrl);
+  const homeUrl = buildUrl(page, '/')
+  console.log(`📝 Navigating to Home URL: ${homeUrl}`)
+  await page.goto(homeUrl)
 }
 
 /**
@@ -64,42 +64,42 @@ export async function navigateToHome(page) {
  * @param {string} password - The password to log in with
  */
 export async function loginToApplication(page, username, password) {
-  console.log('🔑 Starting login process');
-  
+  console.log('🔑 Starting login process')
+
   // Find and click login button
-  const loginButton = page.getByText('Sign in with Eagle Eye Networks');
-  await loginButton.click();
-  
+  const loginButton = page.getByText('Sign in with Eagle Eye Networks')
+  await loginButton.click()
+
   // Wait for redirect to EEN
-  await page.waitForURL(/.*eagleeyenetworks.com.*/, { timeout: 15000 });
-  console.log('✅ Redirected to EEN login page');
-  
+  await page.waitForURL(/.*eagleeyenetworks.com.*/, { timeout: 15000 })
+  console.log('✅ Redirected to EEN login page')
+
   // Fill email
-  const emailInput = page.locator('#authentication--input__email');
-  await emailInput.waitFor({ state: 'visible', timeout: 15000 });
-  await emailInput.fill(username);
-  
+  const emailInput = page.locator('#authentication--input__email')
+  await emailInput.waitFor({ state: 'visible', timeout: 15000 })
+  await emailInput.fill(username)
+
   // Click next
-  await page.getByRole('button', { name: 'Next' }).click();
-  
+  await page.getByRole('button', { name: 'Next' }).click()
+
   // Fill password
-  const passwordInput = page.locator('#authentication--input__password');
-  await passwordInput.waitFor({ state: 'visible', timeout: 10000 });
-  await passwordInput.fill(password);
-  
+  const passwordInput = page.locator('#authentication--input__password')
+  await passwordInput.waitFor({ state: 'visible', timeout: 10000 })
+  await passwordInput.fill(password)
+
   // Click sign in
-  const signInButton = page.locator('#next');
-  const signInButtonByText = page.getByRole('button', { name: 'Sign in' });
+  const signInButton = page.locator('#next')
+  const signInButtonByText = page.getByRole('button', { name: 'Sign in' })
   try {
-    await signInButton.click();
+    await signInButton.click()
   } catch (error) {
-    await signInButtonByText.click();
+    await signInButtonByText.click()
   }
-  
+
   // Wait for home page
-  const homePattern = createUrlPattern(page, '/home');
-  await page.waitForURL(homePattern, { timeout: 20000 });
-  console.log('✅ Successfully logged in');
+  const homePattern = createUrlPattern(page, '/home')
+  await page.waitForURL(homePattern, { timeout: 20000 })
+  console.log('✅ Successfully logged in')
 }
 
 /**
@@ -108,59 +108,61 @@ export async function loginToApplication(page, username, password) {
  * @param {boolean} fromMobile - Whether the logout is from the mobile menu
  */
 export async function logoutFromApplication(page, fromMobile = false) {
-  console.log('🚪 Starting logout process');
-  
+  console.log('🚪 Starting logout process')
+
   if (!fromMobile) {
     // Regular logout flow
-    await page.getByRole('button', { name: 'Logout' }).click();
+    await page.getByRole('button', { name: 'Logout' }).click()
   }
   // If fromMobile is true, we assume the logout button was already clicked
-  
+
   try {
     // Verify logout modal with timeout
-    await page.getByText('Goodbye!').waitFor({ state: 'visible', timeout: 5000 });
-    console.log('✅ Logout modal displayed');
-    
+    await page.getByText('Goodbye!').waitFor({ state: 'visible', timeout: 5000 })
+    console.log('✅ Logout modal displayed')
+
     // If the OK button is visible, click it for immediate logout
     try {
-      const okButton = page.getByRole('button', { name: 'OK' });
+      const okButton = page.getByRole('button', { name: 'OK' })
       if (await okButton.isVisible({ timeout: 2000 })) {
-        await okButton.click();
-        console.log('👆 Clicked OK button to speed up logout');
+        await okButton.click()
+        console.log('👆 Clicked OK button to speed up logout')
       }
     } catch (e) {
       // OK button might not be available, continue with auto-logout
-      console.log('⏳ Waiting for auto-logout');
+      console.log('⏳ Waiting for auto-logout')
     }
   } catch (e) {
-    console.log('⚠️ Logout modal not displayed or already closed, continuing');
+    console.log('⚠️ Logout modal not displayed or already closed, continuing')
   }
-  
+
   // Wait for logout to complete with more flexible approach
   try {
-    const rootPattern = isGitHubPagesEnvironment(page) 
-      ? /.*\/een-login\/?$/ 
-      : /\/?$/;
-    await page.waitForURL(rootPattern, { timeout: 10000 });
-    console.log('✅ Logout successful');
+    const rootPattern = isGitHubPagesEnvironment(page) ? /.*\/een-login\/?$/ : /\/?$/
+    await page.waitForURL(rootPattern, { timeout: 10000 })
+    console.log('✅ Logout successful')
   } catch (e) {
-    console.log('⚠️ URL check failed, checking login state another way');
-    
+    console.log('⚠️ URL check failed, checking login state another way')
+
     // Alternate check: look for login button
     try {
-      await page.getByText('Sign in with Eagle Eye Networks').waitFor({ state: 'visible', timeout: 5000 });
-      console.log('✅ Login button found, logout was successful');
+      await page
+        .getByText('Sign in with Eagle Eye Networks')
+        .waitFor({ state: 'visible', timeout: 5000 })
+      console.log('✅ Login button found, logout was successful')
     } catch (err) {
       // Check if we're still showing logged in content
-      const isLoggedIn = await page.getByText('You have successfully logged in').isVisible()
-        .catch(() => false);
-      
+      const isLoggedIn = await page
+        .getByText('You have successfully logged in')
+        .isVisible()
+        .catch(() => false)
+
       if (isLoggedIn) {
-        throw new Error('Still appears to be logged in after logout attempt');
+        throw new Error('Still appears to be logged in after logout attempt')
       }
-      
+
       // If we can't determine state conclusively, assume success
-      console.log('✅ No logged-in content found, assuming logout was successful');
+      console.log('✅ No logged-in content found, assuming logout was successful')
     }
   }
-} 
+}
