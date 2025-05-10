@@ -16,20 +16,20 @@ test.describe('Login Page', () => {
       if (baseURL) {
         console.log(`\n🚀 Running tests against Service at URL: ${baseURL}`)
         console.log(`🔒 Using Auth Proxy URL: ${configuredProxyUrl}\n`)
-        
+
         // Log if we're in GitHub Pages or local environment
-        const environment = isGitHubPagesEnvironment(page) ? 'GitHub Pages' : 'local development';
-        console.log(`🔍 Testing in ${environment} environment\n`);
+        const environment = isGitHubPagesEnvironment(page) ? 'GitHub Pages' : 'local development'
+        console.log(`🔍 Testing in ${environment} environment\n`)
       }
       loggedBaseURL = true // Set flag so it doesn't log again
     }
-    
+
     // Go to the login page before each test using our utility function
-    await navigateToHome(page);
+    await navigateToHome(page)
   })
 
   test('login page should have correct elements and consistent styling', async ({ page }) => {
-    console.log(`\n▶️ Running Test: ${test.info().title}\n`);
+    console.log(`\n▶️ Running Test: ${test.info().title}\n`)
     console.log('🔍 Starting login page elements test')
 
     // Check if we're on the login page
@@ -61,7 +61,7 @@ test.describe('Login Page', () => {
     await expect(readme).toHaveClass(
       /text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400/
     )
-    
+
     // GitHub URLs should be the same in both environments
     await expect(readme).toHaveAttribute(
       'href',

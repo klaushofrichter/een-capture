@@ -15,7 +15,6 @@ console.log(
 )
 //console.log(`[auth.js] Using ${REDIRECT_URI} for the redirect URI and ${CLIENT_ID} for the client ID`)
 
-
 export const getAuthUrl = () => {
   console.log(`[auth.js] Using ${REDIRECT_URI} for the redirect URI`)
   const params = new URLSearchParams({
