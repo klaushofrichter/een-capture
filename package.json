@@ -1,7 +1,7 @@
 {
   "name": "een-login",
-  "version": "0.1.31",
-  "lastCommit": "May 10, 2025, 08:41 AM CDT",
+  "version": "0.1.33",
+  "lastCommit": "May 10, 2025, 03:47 PM CDT",
   "private": true,
   "type": "module",
   "base": "/een-login/",
@@ -46,7 +46,8 @@
     "postcss": "^8.4.35",
     "prettier": "^3.2.5",
     "tailwindcss": "^3.4.1",
-    "vite": "^5.0.11"
+    "vite": "^5.0.11",
+    "vite-plugin-static-copy": "^3.0.0"
   },
   "engines": {
     "node": ">=16.0.0"
