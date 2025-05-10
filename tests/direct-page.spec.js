@@ -78,7 +78,7 @@ test.describe('Direct Page', () => {
     const isDev = process.env.NODE_ENV !== 'production'
     const expectedReadmeHref = isDev
       ? 'https://github.com/klaushofrichter/een-login/blob/develop/README.md'
-      : `${page.context()._options.baseURL || '/een-login/'}README.md`
+      : 'https://github.com/klaushofrichter/een-login/blob/gh-pages/README.md'
     await expect(readme).toHaveAttribute('href', expectedReadmeHref)
     console.log('✅ README link verified')
     console.log('✅ Direct page test completed successfully')
