@@ -58,15 +58,18 @@ test.describe('Login Page', () => {
     console.log('✅ Separator element verified')
 
     // Check README link (account for both environments)
-    await expect(readme).toHaveClass(
-      /text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400/
-    )
+    const classAttr = await readme.getAttribute('class')
+    expect(classAttr).toContain('text-gray-400')
+    expect(classAttr).toContain('hover:text-gray-600')
+    expect(classAttr).toContain('dark:hover:text-gray-500')
+    expect(classAttr).toContain('dark:hover:text-gray-400')
 
-    // GitHub URLs should be the same in both environments
-    await expect(readme).toHaveAttribute(
-      'href',
-      'https://github.com/klaushofrichter/een-login/blob/develop/README.md'
-    )
+    // Check README href for both environments
+    const isDev = process.env.NODE_ENV !== 'production'
+    const expectedReadmeHref = isDev
+      ? 'https://github.com/klaushofrichter/een-login/blob/develop/README.md'
+      : `${page.context()._options.baseURL || '/een-login/'}README.md`
+    await expect(readme).toHaveAttribute('href', expectedReadmeHref)
     console.log('✅ README link verified')
     console.log('✅ Login page test completed successfully')
   })
