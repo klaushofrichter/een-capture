@@ -1,10 +1,10 @@
 {
-  "name": "een-login",
-  "version": "0.1.36",
-  "lastCommit": "May 10, 2025, 04:33 PM CDT",
+  "name": "een-capture",
+  "version": "0.0.2",
+  "lastCommit": "May 10, 2025, 05:15 PM CDT",
   "private": true,
   "type": "module",
-  "base": "/een-login/",
+  "base": "/een-capture/",
   "scripts": {
     "dev": "vite",
     "build": "vite build && node scripts/prepare-dist-package.js",
