@@ -2,6 +2,12 @@
  * Helper functions for Playwright tests to work with both local and GitHub Pages environments
  */
 
+// Whitelist of allowed GitHub Pages hosts
+const GITHUB_PAGES_HOSTS = [
+  'klaushofrichter.github.io'
+  // Add more allowed hosts here as needed
+];
+
 /**
  * Determines if we're testing against GitHub Pages
  * @param {import('@playwright/test').Page} page - Playwright page object
@@ -12,7 +18,7 @@ export function isGitHubPagesEnvironment(page) {
   if (!baseURL) return false;
   try {
     const { host } = new URL(baseURL);
-    return host.endsWith('github.io');
+    return GITHUB_PAGES_HOSTS.includes(host);
   } catch {
     return false;
   }
