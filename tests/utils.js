@@ -9,7 +9,13 @@
  */
 export function isGitHubPagesEnvironment(page) {
   const baseURL = page.context()._options.baseURL
-  return baseURL && baseURL.includes('github.io')
+  if (!baseURL) return false;
+  try {
+    const { host } = new URL(baseURL);
+    return host.endsWith('github.io');
+  } catch {
+    return false;
+  }
 }
 
 /**
