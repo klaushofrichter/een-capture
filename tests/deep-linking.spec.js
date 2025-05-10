@@ -1,5 +1,13 @@
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
+import { 
+  navigateToHome, 
+  loginToApplication, 
+  logoutFromApplication, 
+  buildUrl, 
+  createUrlPattern,
+  isGitHubPagesEnvironment
+} from './utils.js'
 
 // Load environment variables from .env file
 dotenv.config()
@@ -25,13 +33,21 @@ function buildFullUrl(page, path) {
 
 test.describe('Deep Linking', () => {
   test.beforeEach(async ({ page }) => {
-    // Log Base URL info once
+    // Log Base URL and Proxy URL once before the first test runs
     if (!loggedBaseURL) {
       const baseURL = page.context()._options.baseURL
+      const configuredProxyUrl = process.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333' // Default logic
+      const redirectUri = process.env.VITE_REDIRECT_URI || 'http://127.0.0.1:3333'
       if (baseURL) {
         console.log(`\n🚀 Running tests against Service at URL: ${baseURL}`)
+        console.log(`🔒 Using Auth Proxy URL: ${configuredProxyUrl}\n`)
+        console.log(`🔒 Using Redirect URI: ${redirectUri}\n`)
+        
+        // Log if we're in GitHub Pages or local environment
+        const environment = isGitHubPagesEnvironment(page) ? 'GitHub Pages' : 'local development';
+        console.log(`🔍 Testing in ${environment} environment\n`);
       }
-      loggedBaseURL = true
+      loggedBaseURL = true // Set flag so it doesn't log again
     }
   })
 
@@ -44,75 +60,22 @@ test.describe('Deep Linking', () => {
     const password = process.env.TEST_PASSWORD
     test.skip(!username || !password, 'Test credentials not found')
 
-    // Determine environment
-    const baseURL = page.context()._options.baseURL;
-    const isGitHubPages = baseURL && baseURL.includes('github.io');
-    console.log(`🔍 Testing in ${isGitHubPages ? 'GitHub Pages' : 'local'} environment`);
-
-    // APPROACH: Start from root, login first, then navigate to settings
-    console.log('🌐 Starting with the app home page');
-    const homeUrl = buildFullUrl(page, '/');
-    console.log(`📝 Home URL: ${homeUrl}`);
-    await page.goto(homeUrl);
-    
-    // Verify we're on the login page
-    await expect(page.getByText('Welcome to EEN Login')).toBeVisible({ timeout: 10000 });
-    console.log('✅ Successfully loaded the app home page');
+    // Start from home page
+    await navigateToHome(page);
     
     // Login through the normal flow
-    console.log('🔑 Starting login process');
-    const loginButton = page.getByText('Sign in with Eagle Eye Networks');
-    await expect(loginButton).toBeVisible();
-    await loginButton.click();
-    
-    // Wait for redirect to EEN
-    await page.waitForURL(/.*eagleeyenetworks.com.*/, { timeout: 15000 });
-    console.log('✅ Redirected to EEN login page');
-    
-    // Complete the login process - Email
-    const emailInput = page.locator('#authentication--input__email');
-    await expect(emailInput).toBeVisible({ timeout: 15000 });
-    console.log('👤 Filling email field');
-    await emailInput.fill(username);
-    
-    // Next button
-    const nextButton = page.getByRole('button', { name: 'Next' });
-    await expect(nextButton).toBeEnabled();
-    await nextButton.click();
-    
-    // Password
-    const passwordInput = page.locator('#authentication--input__password');
-    await expect(passwordInput).toBeVisible({ timeout: 10000 });
-    console.log('🔑 Filling password field');
-    await passwordInput.fill(password);
-    
-    // Sign in
-    const signInButton = page.locator('#next');
-    const signInButtonByText = page.getByRole('button', { name: 'Sign in' });
-    await expect(signInButton.or(signInButtonByText)).toBeEnabled({ timeout: 5000 });
-    console.log('🔐 Clicking Sign in button');
-    try {
-      await signInButton.click();
-    } catch (error) {
-      await signInButtonByText.click();
-    }
-    
-    // After login, expect to land on home page
-    const homePattern = isGitHubPages ? /.*\/een-login\/home$/ : /.*\/home$/;
-    await page.waitForURL(homePattern, { timeout: 20000 });
-    console.log('✅ Successfully logged in and landed on home page');
+    await loginToApplication(page, username, password);
     
     // Now navigate to settings page using UI navigation
     console.log('🧭 Now navigating to settings page');
     
-    // Find the Settings link in the navigation
-    // This selector will need to be adjusted based on your actual UI
+    // Find the Settings link in the navigation - be specific to avoid duplicate matches
     const settingsLink = page.getByRole('navigation').getByRole('link', { name: 'Settings' });
     await expect(settingsLink).toBeVisible({ timeout: 5000 });
     await settingsLink.click();
     
     // Verify we reached settings page
-    const settingsPattern = isGitHubPages ? /.*\/een-login\/settings$/ : /.*\/settings$/;
+    const settingsPattern = createUrlPattern(page, '/settings');
     await page.waitForURL(settingsPattern, { timeout: 10000 });
     console.log('✅ Successfully navigated to Settings page');
     
@@ -128,9 +91,8 @@ test.describe('Deep Linking', () => {
     await page.getByRole('button', { name: 'Light' }).click();
     await expect(page.locator('html')).not.toHaveClass(/dark/);
     
-    // Test navigation to an invalid route and back
-    if (!isGitHubPages) {
-      // Only test invalid route handling in local environment
+    // Test navigation to an invalid route and back - only in local environment
+    if (!isGitHubPagesEnvironment(page)) {
       const invalidRoute = '/ABCDEFG';
       console.log(`🚫 Navigating to invalid route: ${invalidRoute}`);
       await page.goto(invalidRoute);
@@ -145,7 +107,7 @@ test.describe('Deep Linking', () => {
       await backButton.click();
       
       // Verify we're back on Settings
-      await page.waitForURL(/.*\/settings$/, { timeout: 10000 });
+      await page.waitForURL(settingsPattern, { timeout: 10000 });
       await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
       console.log('✅ Successfully returned to Settings page');
     } else {
@@ -153,18 +115,6 @@ test.describe('Deep Linking', () => {
     }
     
     // Logout to end the test
-    console.log('🚪 Starting logout process');
-    const logoutButton = page.getByRole('button', { name: 'Logout' });
-    await expect(logoutButton).toBeVisible();
-    await logoutButton.click();
-    
-    // Verify logout modal and wait for auto-logout
-    await expect(page.getByText('Goodbye!')).toBeVisible();
-    await expect(page.getByText(/You will be logged out in \d+ seconds/)).toBeVisible();
-    
-    // Wait for logout to complete
-    const rootPattern = isGitHubPages ? /.*\/een-login\/?$/ : /\/?$/;
-    await page.waitForURL(rootPattern, { timeout: 15000 });
-    console.log('✅ Logout successful, test complete');
+    await logoutFromApplication(page);
   });
 });
