@@ -133,8 +133,8 @@ test.describe('Mobile Navigation - Page Navigation', () => {
     console.log('🚪 Clicking logout in mobile menu')
     await page.locator('#mobile-menu button:has-text("Logout")').click()
 
-    // We can now use our logout utility to verify the rest of the logout process
-    await logoutFromApplication(page);
+    // Call our logout utility function with the fromMobile parameter set to true
+    await logoutFromApplication(page, true)
     console.log('✅ Mobile page navigation test completed successfully')
   })
 })

@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
+import { isGitHubPagesEnvironment } from './utils.js'
 
 // Load environment variables from .env file
 dotenv.config()
@@ -24,7 +25,15 @@ test.describe('Invalid Route Navigation', () => {
     page
   }) => {
     console.log(`\n▶️ Running Test: ${test.info().title}\n`);
-    console.log('🔍 Starting invalid route test')
+    console.log('🔍 Starting invalid route test');
+    
+    // Skip test in GitHub Pages environment
+    if (isGitHubPagesEnvironment(page)) {
+      console.log('⏭️ Skipping invalid route test in GitHub Pages environment');
+      test.skip(true, 'This test is not applicable to GitHub Pages without proper 404.html configuration');
+      return;
+    }
+    
     // Increase timeout for this test
     test.setTimeout(120000)
 
