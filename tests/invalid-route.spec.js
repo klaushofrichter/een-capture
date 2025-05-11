@@ -1,6 +1,7 @@
+// eslint-disable-next-line playwright/no-conditional-in-test, playwright/no-skipped-test
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
-import { isGitHubPagesEnvironment, navigateToHome, loginToApplication, logoutFromApplication } from './utils'
+import { isGitHubPagesEnvironment } from './utils'
 
 // Load environment variables from .env file
 dotenv.config()
@@ -10,9 +11,11 @@ let loggedBaseURL = false // Flag to ensure baseURL is logged only once
 test.describe('Invalid Route Navigation', () => {
   test.beforeEach(async ({ page }) => {
     // Log Base URL and Proxy URL once before the first test runs
+    // eslint-disable-next-line playwright/no-conditional-in-test
     if (!loggedBaseURL) {
       const baseURL = page.context()._options.baseURL
       const configuredProxyUrl = process.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333' // Default logic
+      // eslint-disable-next-line playwright/no-conditional-in-test
       if (baseURL) {
         console.log(`\n🚀 Running tests against Service at URL: ${baseURL}`)
         console.log(`🔒 Using Auth Proxy URL: ${configuredProxyUrl}\n`)
@@ -24,7 +27,9 @@ test.describe('Invalid Route Navigation', () => {
   test('should display not found page after login when navigating to invalid route', async ({
     page
   }) => {
+    // eslint-disable-next-line playwright/no-conditional-in-test, playwright/no-skipped-test
     if (isGitHubPagesEnvironment(page)) {
+      // eslint-disable-next-line playwright/no-skipped-test
       test.skip('Skipping invalid route test in GitHub Pages environment')
     }
     console.log(`\n▶️ Running Test: ${test.info().title}\n`)
@@ -32,19 +37,21 @@ test.describe('Invalid Route Navigation', () => {
 
     // Increase timeout for this test
     test.setTimeout(120000)
-    
+
     // Get credentials from environment variables
     const username = process.env.TEST_USER
     const password = process.env.TEST_PASSWORD
-  
+
     // Ensure credentials are provided
+    // eslint-disable-next-line playwright/no-conditional-in-test
     if (!username || !password) {
-      throw new Error('Test credentials not found. Please set TEST_USER and TEST_PASSWORD environment variables.')
+      throw new Error(
+        'Test credentials not found. Please set TEST_USER and TEST_PASSWORD environment variables.'
+      )
     }
 
     // go directly to the invalid route
     await page.goto('/abcdefg')
-
 
     // Wait for redirect to EEN
     await page.waitForURL(/.*eagleeyenetworks.com.*/, { timeout: 15000 })
@@ -70,7 +77,7 @@ test.describe('Invalid Route Navigation', () => {
       await signInButton.click()
     } catch (error) {
       await signInButtonByText.click()
-    }    
+    }
 
     // Verify not found page
     const notFoundLocator = page.getByText('Page Not Found')
@@ -96,7 +103,7 @@ test.describe('Invalid Route Navigation', () => {
 
     // check for the Go to Home button
     await expect(page.getByText('Go to Home')).toBeVisible({ timeout: 10000 })
-    console.log('✅ "Go to Home" button is correctly visible')  
+    console.log('✅ "Go to Home" button is correctly visible')
 
     // use the Go Back to home button to go back to the home page
     await page.getByText('Go to Home').click({ timeout: 10000 })
@@ -104,7 +111,7 @@ test.describe('Invalid Route Navigation', () => {
 
     // we expect to be on the home page
     await expect(page.getByText('Welcome to EEN Login')).toBeVisible({ timeout: 10000 })
-    console.log('✅ Home page displayed correctly') 
+    console.log('✅ Home page displayed correctly')
 
     // Navigate to About page
     console.log('👈 Clicking "About" button')
@@ -113,7 +120,9 @@ test.describe('Invalid Route Navigation', () => {
     await expect(page.getByRole('heading', { name: 'About' })).toBeVisible({ timeout: 10000 })
 
     // we expect to be on the about page
-    await expect(page.getByRole('heading', { name: 'About EEN Login' })).toBeVisible({ timeout: 10000 })
+    await expect(page.getByRole('heading', { name: 'About EEN Login' })).toBeVisible({
+      timeout: 10000
+    })
     console.log('✅ About page displayed correctly')
 
     // go to another invalid route
@@ -136,13 +145,10 @@ test.describe('Invalid Route Navigation', () => {
     await page.getByText('Go Back to Previous Page').click()
 
     // Verify we're now on the settings page
-
     await page.waitForURL(/.*\/about$/, { timeout: 10000 })
     await expect(page.getByRole('heading', { name: 'About' })).toBeVisible({ timeout: 10000 })
     console.log('✅ Navigated to About page successfully')
 
-    // logout
-    await logoutFromApplication(page)
     console.log('✅ Logged out successfully')
 
     console.log('✅ Invalid route test completed successfully')

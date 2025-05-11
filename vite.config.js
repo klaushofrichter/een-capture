@@ -101,7 +101,8 @@ const localOauthProxy = env => {
   // Helper to handle /refreshAccessToken
   const handleRefreshAccessToken = async (req, res /*, next */) => {
     // console.log('[Vite Plugin] Intercepted /proxy/refreshAccessToken'); // DEBUG
-    const queryParams = parse(req.url.split('?')[1] || '')
+    // Remove the following line as 'queryParams' is unused
+    // const queryParams = parse(req.url.split('?')[1] || '')
 
     // Try to get sessionId from cookie
     let sessionId = req.headers.cookie

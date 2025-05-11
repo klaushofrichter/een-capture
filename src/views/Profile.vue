@@ -102,6 +102,7 @@
                       <div class="flex-1">
                         <input
                           :type="showToken ? 'text' : 'password'"
+                          :id="'access-token'"
                           :value="authStore.token"
                           readonly
                           class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm sm:text-sm dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-0 focus:border-gray-300 dark:focus:border-gray-600"

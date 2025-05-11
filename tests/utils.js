@@ -6,7 +6,7 @@
 const GITHUB_PAGES_HOSTS = [
   'klaushofrichter.github.io'
   // Add more allowed hosts here as needed
-];
+]
 
 /**
  * Determines if we're testing against GitHub Pages
@@ -15,12 +15,12 @@ const GITHUB_PAGES_HOSTS = [
  */
 export function isGitHubPagesEnvironment(page) {
   const baseURL = page.context()._options.baseURL
-  if (!baseURL) return false;
+  if (!baseURL) return false
   try {
-    const { host } = new URL(baseURL);
-    return GITHUB_PAGES_HOSTS.includes(host);
+    const { host } = new URL(baseURL)
+    return GITHUB_PAGES_HOSTS.includes(host)
   } catch {
-    return false;
+    return false
   }
 }
 
@@ -113,7 +113,7 @@ export async function loginToApplication(page, username, password) {
     // Wait for redirect back to our app with code parameter
     await page.waitForURL(/.*\/een-login\/\?code=.*/, { timeout: 15000 })
     console.log('✅ Redirected back to app with code')
-    
+
     // Wait for the code to be processed and redirect to home
     await page.waitForURL(/.*\/een-login\/home/, { timeout: 15000 })
     console.log('✅ Code processed, redirected to home')
@@ -130,8 +130,8 @@ export async function loginToApplication(page, username, password) {
  * @param {import('@playwright/test').Page} page - Playwright page object
  * @param {boolean} fromMobile - Whether the logout is from the mobile menu
  */
-export async function logoutFromApplication(page, fromMobile = false) {
-  console.log('🚪 Starting logout process')
+export async function logoutFromApplication(page, fromMobile = false, fast = false) {
+  console.log('🚪 Starting logout process. FromMobile:', fromMobile)
   if (!fromMobile) {
     // Regular logout flow
     try {
@@ -148,21 +148,22 @@ export async function logoutFromApplication(page, fromMobile = false) {
   // If fromMobile is true, we assume the logout button was already clicked
 
   // Wait for the logout modal, but don't fail if it doesn't appear
-  try {
-    await page.getByText('Logout Confirmation').waitFor({ state: 'visible', timeout: 5000 })
-    console.log('✅ Logout modal displayed')
+  await page.getByText('Goodbye!').waitFor({ state: 'visible', timeout: 5000 })
+  console.log('✅ Logout modal displayed')
+
     // Click OK to confirm logout
+  if (fast) {
     await page.getByRole('button', { name: 'OK' }).click()
     console.log('👆 Clicked OK button to speed up logout')
-  } catch (e) {
-    console.log('⚠️ Logout modal did not appear, continuing')
-  }
+  } 
 
   // Wait for redirect to login page
   try {
+    console.log('🔍 Waiting for redirect to login page')
     await page.waitForURL(/.*\/$/, { timeout: 10000 })
     console.log('✅ Logout successful')
   } catch (e) {
-    console.log('⚠️ Did not detect redirect to login page, continuing')
+    console.log('⚠️ Did not detect redirect to login page')
+    throw new Error('Failed to logout')
   }
 }
