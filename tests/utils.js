@@ -156,11 +156,16 @@ export async function logoutFromApplication(page, fromMobile = false, fast = fal
     await page.getByRole('button', { name: 'OK' }).click()
     console.log('👆 Clicked OK button to speed up logout')
   } 
+  else {
+    // Wait for the logout modal to be visible
+    console.log('🔍 Waiting for logout modal to timeout')
+    await page.waitForTimeout(5000) 
+  }
 
   // Wait for redirect to login page
   try {
     console.log('🔍 Waiting for redirect to login page')
-    await page.waitForURL(/.*\/$/, { timeout: 10000 })
+    await page.getByText('Sign in with Eagle Eye Networks').waitFor({ state: 'visible', timeout: 10000 })
     console.log('✅ Logout successful')
   } catch (e) {
     console.log('⚠️ Did not detect redirect to login page')

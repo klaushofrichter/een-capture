@@ -62,7 +62,7 @@ test.describe('Token Revocation', () => {
     console.log('✅ Home page displayed correctly')
 
     // go to the profile page
-    await page.goto('/profile')
+    await page.goto('/profile')  // this does not click the button in the navigation bar
     await expect(page.getByRole('heading', { name: 'Profile' })).toBeVisible({ timeout: 10000 })
     console.log('✅ Profile page displayed correctly')
 
