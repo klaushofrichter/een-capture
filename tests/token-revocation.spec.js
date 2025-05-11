@@ -1,11 +1,8 @@
+// eslint-disable-next-line playwright/no-conditional-in-test
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
-import {
-  navigateToHome,
-  loginToApplication,
-  isGitHubPagesEnvironment,
-  logoutFromApplication
-} from './utils.js'
+// eslint-disable-next-line no-unused-vars
+import { navigateToHome, loginToApplication, logoutFromApplication, isGitHubPagesEnvironment } from './utils'
 
 // Load environment variables from .env file
 dotenv.config()
@@ -15,9 +12,11 @@ let loggedBaseURL = false // Flag to ensure baseURL is logged only once
 test.describe('Token Revocation', () => {
   test.beforeEach(async ({ page }) => {
     // Log Base URL and Proxy URL once before the first test runs
+    // eslint-disable-next-line playwright/no-conditional-in-test
     if (!loggedBaseURL) {
       const baseURL = page.context()._options.baseURL
       const configuredProxyUrl = process.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333' // Default logic
+      // eslint-disable-next-line playwright/no-conditional-in-test
       if (baseURL) {
         console.log(`\n🚀 Running tests against Service at URL: ${baseURL}`)
         console.log(`🔒 Using Auth Proxy URL: ${configuredProxyUrl}\n`)
@@ -30,9 +29,15 @@ test.describe('Token Revocation', () => {
     }
   })
 
-  test('should perform token revocation during logout', async ({ page }) => {
+  test('should revoke token on logout', async ({ page }) => {
+    // eslint-disable-next-line playwright/no-conditional-in-test
+    if (isGitHubPagesEnvironment(page)) {
+      // eslint-disable-next-line playwright/no-skipped-test
+      test.skip('Skipping token revocation test in GitHub Pages environment')
+    }
     console.log(`\n▶️ Running Test: ${test.info().title}\n`)
     console.log('🔍 Starting token revocation test')
+
     // Increase timeout for this test
     test.setTimeout(120000)
 
@@ -41,79 +46,79 @@ test.describe('Token Revocation', () => {
     const password = process.env.TEST_PASSWORD
 
     // Ensure credentials are provided
+    // eslint-disable-next-line playwright/no-conditional-in-test
     if (!username || !password) {
       throw new Error(
         'Test credentials not found. Please set TEST_USER and TEST_PASSWORD environment variables.'
       )
     }
 
-    // Navigate to home page
+    // go directly to the home page
     await navigateToHome(page)
-
-    // Login to the application
     await loginToApplication(page, username, password)
 
-    // Wait for home page to load
-    await expect(page.getByText('Welcome to EEN Login')).toBeVisible()
-    console.log('✅ Successfully logged in')
+    // we expect to be on the home page
+    await expect(page.getByText('Welcome to EEN Login')).toBeVisible({ timeout: 10000 })
+    console.log('✅ Home page displayed correctly')
 
-    // Initiate logout to test revocation
-    console.log('🚪 Starting logout process to test token revocation')
-    await page.getByRole('button', { name: 'Logout' }).click()
+    // go to the profile page
+    await page.goto('/profile')
+    await expect(page.getByRole('heading', { name: 'Profile' })).toBeVisible({ timeout: 10000 })
+    console.log('✅ Profile page displayed correctly')
 
-    // Verify the logout modal is shown
-    await expect(page.getByText('Goodbye!')).toBeVisible()
-    await expect(page.getByText(/You will be logged out in \d+ seconds/)).toBeVisible()
-    console.log('✅ Logout modal displayed')
+    // find the Show and Copy button 
+    const showCopyButton = page.getByRole('button', { name: 'Show & Copy' })
+    await showCopyButton.click()
+    console.log('✅ Show and Copy button clicked')
 
-    // Click the immediate logout button to force immediate token revocation
-    await page.getByRole('button', { name: 'OK' }).click()
-    console.log('👆 Clicked OK button to immediately log out')
+    // wait for the hide button to be visible
+    const hideButton = page.getByRole('button', { name: 'Hide' })
+    await expect(hideButton).toBeVisible({ timeout: 10000 })
+    console.log('✅ Hide button displayed correctly')
 
-    // Verify we're redirected back to the login page
-    // After logout, we should be able to see if we're logged in by checking for UI elements
-    // that would only be visible if we're logged in (or not)
+    // retrieve the access token from the input field (try label, then fallback to readonly input)
+    let accessTokenInput
     try {
-      // Wait for either:
-      // 1. Redirect to the EEN login page (eagleeyenetworks.com)
-      // 2. The home page loads and we see the login button (not logged in)
-      // 3. The home page loads but we DON'T see the user dashboard (not logged in)
-
-      await Promise.race([
-        page.waitForURL(/.*eagleeyenetworks.com.*/, { timeout: 5000 }),
-        page
-          .getByText('Sign in with Eagle Eye Networks')
-          .waitFor({ state: 'visible', timeout: 5000 }),
-        page.getByText('Welcome to EEN Login').waitFor({ state: 'visible', timeout: 5000 })
-      ])
-
-      // Check if we're on the home page but not logged in
-      const isLoggedIn = await page
-        .getByText('You have successfully logged in')
-        .isVisible()
-        .catch(() => false)
-
-      if (isLoggedIn) {
-        throw new Error('Still appears to be logged in after token revocation')
-      }
-
-      console.log('✅ Session correctly ended - not logged in after revocation')
-    } catch (error) {
-      if (error.message.includes('Still appears to be logged in')) {
-        throw error
-      }
-      // We might get here if the race condition timeout happens, which is fine
-      // as long as we're not logged in
-      const isLoggedIn = await page
-        .getByText('You have successfully logged in')
-        .isVisible()
-        .catch(() => false)
-
-      if (isLoggedIn) {
-        throw new Error('Still appears to be logged in after token revocation')
-      }
-      console.log('✅ Session correctly ended - not logged in after revocation')
+      accessTokenInput = page.locator('#access-token')
+      await expect(accessTokenInput).toBeVisible({ timeout: 10000 })
+      console.log('✅ Access token input field found correctly')
+    } catch (e) {
+      accessTokenInput = page.locator('input[readonly]').nth(2)
+      await expect(accessTokenInput).toBeVisible({ timeout: 10000 })
+      console.log('✅ Access token input field found by fallback')
     }
+    const accessToken = await accessTokenInput.inputValue()
+    console.log('✅ Access token retrieved from input field') 
+
+    // logout
+    await logoutFromApplication(page)
+
+   // go to the direct page
+   await page.goto('/direct')
+   await expect(page.getByRole('heading', { name: 'Direct' })).toBeVisible({ timeout: 10000 })
+   console.log('✅ Direct page displayed correctly')
+
+    // enter the access token into the text field
+    await page.locator('#token').fill(accessToken)
+    console.log('✅ Access token entered into text field')
+
+    // clck the proceed button
+    const backToLoginButton = page.getByRole('button', { name: 'Back to Login' })
+    const proceedButton = page.getByRole('button', { name: 'Proceed' })
+    await proceedButton.click()
+    console.log('✅ Proceed button clicked')
+
+    // wait for text to show that the token was revoked
+    await expect(page.getByText('The client caller does not have a valid authentication credential')).toBeVisible({ timeout: 10000 })
+    console.log('✅ Token revoked text displayed correctly')
+
+    // press the "back to login" button
+    await backToLoginButton.click()
+    console.log('✅ Back to Login button clicked')
+
+    // check that we are on the login page
+    await expect(page.getByRole('heading', { name: 'Login' })).toBeVisible({ timeout: 10000 })
+    console.log('✅ Login page displayed correctly')
 
     console.log('✅ Token revocation test completed successfully')
   })

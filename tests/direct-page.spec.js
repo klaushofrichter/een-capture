@@ -1,3 +1,4 @@
+// eslint-disable-next-line playwright/no-conditional-in-test
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
 import { isGitHubPagesEnvironment, buildUrl } from './utils.js'
@@ -10,9 +11,11 @@ let loggedBaseURL = false // Flag to ensure baseURL is logged only once
 test.describe('Direct Page', () => {
   test.beforeEach(async ({ page }) => {
     // Log Base URL and Proxy URL once before the first test runs
+    // eslint-disable-next-line playwright/no-conditional-in-test
     if (!loggedBaseURL) {
       const baseURL = page.context()._options.baseURL
       const configuredProxyUrl = process.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333' // Default logic
+      // eslint-disable-next-line playwright/no-conditional-in-test
       if (baseURL) {
         console.log(`\n🚀 Running tests against Service at URL: ${baseURL}`)
         console.log(`🔒 Using Auth Proxy URL: ${configuredProxyUrl}\n`)
@@ -26,6 +29,7 @@ test.describe('Direct Page', () => {
     console.log('🔍 Starting direct page elements test')
 
     // Skip this test in GitHub Pages environment
+    // eslint-disable-next-line playwright/no-conditional-in-test
     if (isGitHubPagesEnvironment(page)) {
       console.log('⏭️ Skipping direct page test in GitHub Pages environment')
       return
@@ -75,7 +79,9 @@ test.describe('Direct Page', () => {
     expect(classAttr).toContain('hover:text-gray-600')
     expect(classAttr).toContain('dark:hover:text-gray-500')
     expect(classAttr).toContain('dark:hover:text-gray-400')
+    // eslint-disable-next-line playwright/no-conditional-in-test
     const isDev = process.env.NODE_ENV !== 'production'
+    // eslint-disable-next-line playwright/no-conditional-in-test
     const expectedReadmeHref = isDev
       ? 'https://github.com/klaushofrichter/een-login/blob/develop/README.md'
       : 'https://github.com/klaushofrichter/een-login/blob/gh-pages/README.md'

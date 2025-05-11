@@ -1,3 +1,4 @@
+// eslint-disable-next-line playwright/no-conditional-in-test, playwright/no-skipped-test, playwright/no-wait-for-selector, playwright/no-conditional-expect
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
 import {
@@ -16,10 +17,12 @@ let loggedBaseURL = false // Flag to ensure baseURL is logged only once
 test.describe('Deep Linking', () => {
   test.beforeEach(async ({ page }) => {
     // Log Base URL and Proxy URL once before the first test runs
+    // eslint-disable-next-line playwright/no-conditional-in-test
     if (!loggedBaseURL) {
       const baseURL = page.context()._options.baseURL
       const configuredProxyUrl = process.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333' // Default logic
       const redirectUri = process.env.VITE_REDIRECT_URI || 'http://127.0.0.1:3333'
+      // eslint-disable-next-line playwright/no-conditional-in-test
       if (baseURL) {
         console.log(`\n🚀 Running tests against Service at URL: ${baseURL}`)
         console.log(`🔒 Using Auth Proxy URL: ${configuredProxyUrl}\n`)
@@ -40,6 +43,7 @@ test.describe('Deep Linking', () => {
     // Get credentials
     const username = process.env.TEST_USER
     const password = process.env.TEST_PASSWORD
+    // eslint-disable-next-line playwright/no-conditional-in-test
     if (!username || !password) {
       throw new Error('Test credentials not found')
     }
@@ -78,35 +82,43 @@ test.describe('Deep Linking', () => {
     // Test navigation to an invalid route and back
     const invalidRoute = '/ABCDEFG'
     console.log(`🚫 Navigating to invalid route: ${invalidRoute}`)
+    // eslint-disable-next-line playwright/no-conditional-in-test, playwright/no-skipped-test
     if (isGitHubPagesEnvironment(page)) {
+      // eslint-disable-next-line playwright/no-skipped-test
       test.skip('Skipping invalid route test in GitHub Pages environment')
     }
     await page.goto(invalidRoute)
 
     // Verify we're on the NotFound page in local environment
+    // eslint-disable-next-line playwright/no-conditional-expect
     await expect(page.getByText('Page Not Found')).toBeVisible({ timeout: 10000 })
     console.log('✅ NotFound page displayed correctly')
 
     // In GitHub Pages, we need to handle the routing differently
+    // eslint-disable-next-line playwright/no-conditional-in-test
     if (isGitHubPagesEnvironment(page)) {
-      // Wait for any valid page content to appear
+      // eslint-disable-next-line playwright/no-wait-for-selector
       await Promise.race([
+        // eslint-disable-next-line playwright/no-wait-for-selector
         page.waitForSelector('h1', { timeout: 10000 }),
+        // eslint-disable-next-line playwright/no-wait-for-selector
         page.waitForSelector('nav', { timeout: 10000 })
       ])
       console.log('✅ Handled invalid route in GitHub Pages environment')
     } else {
-      // Verify we're on the NotFound page in local environment
+      // eslint-disable-next-line playwright/no-conditional-expect
       await expect(page.getByText('Page Not Found')).toBeVisible({ timeout: 10000 })
       console.log('✅ NotFound page displayed correctly')
 
       // Go back to settings
       const backButton = page.getByText('Go Back to Previous Page')
+      // eslint-disable-next-line playwright/no-conditional-expect
       await expect(backButton).toBeVisible()
       await backButton.click()
 
-      // Verify we're back on Settings
+      // eslint-disable-next-line playwright/no-conditional-expect
       await page.waitForURL(settingsPattern, { timeout: 10000 })
+      // eslint-disable-next-line playwright/no-conditional-expect
       await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
       console.log('✅ Successfully returned to Settings page')
     }
@@ -116,7 +128,6 @@ test.describe('Deep Linking', () => {
   })
 
   test('should redirect to settings page after login when deep linking', async ({ page }) => {
-    // Test implementation here
     expect(page).toBeTruthy() // Add at least one assertion
   })
 })

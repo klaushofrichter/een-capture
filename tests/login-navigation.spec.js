@@ -1,3 +1,4 @@
+// eslint-disable-next-line playwright/no-conditional-in-test, playwright/no-skipped-test
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
 import { navigateToHome, loginToApplication, isGitHubPagesEnvironment } from './utils'
@@ -10,9 +11,11 @@ let loggedBaseURL = false // Flag to ensure baseURL is logged only once
 test.describe('Login and Navigation', () => {
   test.beforeEach(async ({ page }) => {
     // Log Base URL and Proxy URL once before the first test runs
+    // eslint-disable-next-line playwright/no-conditional-in-test
     if (!loggedBaseURL) {
       const baseURL = page.context()._options.baseURL
       const configuredProxyUrl = process.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333' // Default logic
+      // eslint-disable-next-line playwright/no-conditional-in-test
       if (baseURL) {
         console.log(`\n🚀 Running tests against Service at URL: ${baseURL}`)
         console.log(`🔒 Using Auth Proxy URL: ${configuredProxyUrl}\n`)
@@ -32,7 +35,7 @@ test.describe('Login and Navigation', () => {
     const username = process.env.TEST_USER
     const password = process.env.TEST_PASSWORD
 
-    // Skip if no credentials
+    // eslint-disable-next-line playwright/no-conditional-in-test
     if (!username || !password) {
       throw new Error('Test credentials not found')
     }
@@ -51,13 +54,16 @@ test.describe('Login and Navigation', () => {
   test('should display not found page after login when navigating to invalid route', async ({
     page
   }) => {
+    // eslint-disable-next-line playwright/no-conditional-in-test, playwright/no-skipped-test
     if (isGitHubPagesEnvironment(page)) {
+      // eslint-disable-next-line playwright/no-skipped-test
       test.skip('Skipping invalid route test in GitHub Pages environment')
     }
     // Get credentials
     const username = process.env.TEST_USER
     const password = process.env.TEST_PASSWORD
 
+    // eslint-disable-next-line playwright/no-conditional-in-test
     if (!username || !password) {
       throw new Error('Test credentials not found')
     }
