@@ -344,14 +344,6 @@ The tests cover:
 -   **(In ./cloudflare directory)** `wrangler deploy`: Deploy the Cloudflare worker.
 -   **(In ./cloudflare directory)** `wrangler dev`: Run the Cloudflare worker locally for development/testing.
 
-## Extending the Application
-
--   **Adding New Pages/Views:** (Same as before)
--   **Modifying UI:** (Same as before)
--   **Changing Frontend State Management:** (Same as before)
--   **Modifying Worker Logic:** Edit code in `cloudflare/src/index.js` and redeploy using `wrangler deploy`.
--   **Interacting with More EEN APIs:** Add functions in `src/services/` to make authenticated calls (using the access token from `authStore`). The worker is generally only involved in the *authentication* part, not subsequent API calls.
-
 ## Security Considerations
 
 -   **Client Secret:** Protected within the Cloudflare Worker environment secrets. **Do not** add it to the frontend `.env` file.
@@ -360,9 +352,53 @@ The tests cover:
 -   **Worker Security:** Ensure your worker code handles errors correctly and doesn't inadvertently log sensitive information.
 -   **HTTPS:** Essential for both the frontend application and the Cloudflare Worker URL.
 
+## Extending the Application
+
+This application does not provide a lot of functionality, it is intended as a framework for other
+applications. For example:
+
+-   **Adding New Pages/Views:** Change Views in `src/views` and extend the router 
+-   **Modifying UI:** Add Views in `src/views` and Components in `src/components`
+-   **Interacting with More EEN APIs:** Add functions in `src/services/` to make authenticated calls (using the access token from `authStore`)
+-   **Testing:** Add tests in 'tests'
+
+You may not need to change the proxy as this is usually doing only authentication. 
+
+However, you may want to stay connected to the original sources to be able to import any changes. 
+[Here is an overview to repository management strategies](repository-management.pdf) to accomplish this. 
+The document describes several strategies. The recommended strategy was tested and is called **Independent Repository with Upstream Tracking**. The idea is to include the original repository as upstream 
+source and merge the original repository when appropriate. Please read the document for details, here 
+is a summary of the steps:
+
+- create a new EMPTY repository in github
+- Create a Local Bare Clone of the Original Repository
+- Clone this new repository locally with this command
+`git clone --bare https://github.com/klaushofrichter/een-login.git een-login-original.git`
+- Push the Mirrored History to Your New Repository as mirror: 
+`git push --mirror https://github.com/YOUR_USERNAME/my-een-login-extended.git`
+- Remove the local repository that was cloned with --bare above
+- Clone the new repository again, but without --bare `git clone https://github.com/YOUR_USERNAME/YOUR_NEW_REPO.git`
+- Add the original repository as remote repo: `git remote add upstream-original https://github.com/klaushofrichter/een-login.git`
+- Do whatever work needs to be done in the new repository, including these steps: 
+  - Create the `.env` and all other configuration
+  - Change the app name and version number in `package.json`
+  - Change the app name also in `src/constants.js`
+  - Add features as desired.  
+- Commit your changes in the new repository
+- In order to get any changes that happened in the original sources, perform these steps
+  - `git checkout develop`
+  - `git pull origin develop`
+  - `git fetch upstream-original` - this imports the changes from the original
+  - `git merge upstream-original/develop`
+  - resolve any conflicts, and add/commit any changes
+  - `git push origin main` to push any files that have been changed
+
+More details and instructins are in the document. 
+
+
 ## Contributing
 
-Contributions are welcome! If you plan to contribute back to the original repository:
+If you plan to contribute back to the original repository:
 
 1.  Check for existing issues or open a new issue to discuss your proposed changes.
 2.  Fork the repository.
@@ -373,6 +409,8 @@ Contributions are welcome! If you plan to contribute back to the original reposi
 7.  Ensure your code adheres to the existing style (ESLint, Prettier) and that tests pass.
 
 > **Note on Contributing**: This repository is intended to serve as a generic login framework for EEN applications. While forks are welcome for your own customization, pull requests should focus on enhancing the core authentication functionality, security, or developer experience. For application-specific features, we recommend cloning this repository as a starting point rather than forking.
+
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
