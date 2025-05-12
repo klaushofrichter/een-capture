@@ -36,14 +36,14 @@ test.describe('Deep Linking', () => {
 
   test('should navigate to settings with direct link', async ({ page }) => {
     console.log(`\n▶️ Running Test: ${test.info().title}\n`)
-    console.log( "  this test uses a deep link with and without previous login. ")
+    console.log( "  this test uses a deep link without previous login. ")
     test.setTimeout(30000) // max 30 seconds overall 
 
     // Start from home page
     console.log('🧭 Now navigating to settings page with direct link without previous login')
     await page.goto(basePath+'/settings') 
 
-    // verify that we are on the een signin page
+    // verify that we are on the een signin page (because we are using a deep link w/o previous login)
     await page.waitForURL(/.*eagleeyenetworks.com.*/, { timeout: 15000 })
     console.log('✅ Successfully navigated to EEN signin page')
 
