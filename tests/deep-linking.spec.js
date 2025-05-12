@@ -1,5 +1,6 @@
 // eslint-disable-next-line playwright/no-conditional-in-test, playwright/no-skipped-test, playwright/no-wait-for-selector, playwright/no-conditional-expect
 import { test, expect } from '@playwright/test'
+import dotenv from 'dotenv'
 import {
   navigateToLogin,
   loginToApplication,
@@ -9,6 +10,7 @@ import {
   loginWithEEN
 } from './utils.js'
 
+dotenv.config()  // for .env variables
 let loggedBaseURL = false // Flag to ensure baseURL is logged only once
 let basePath = ''
 
