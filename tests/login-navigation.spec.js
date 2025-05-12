@@ -1,10 +1,11 @@
 // eslint-disable-next-line playwright/no-conditional-in-test, playwright/no-skipped-test
-import { test } from '@playwright/test'
-import dotenv from 'dotenv'
-import { navigateToLogin, loginToApplication, clickNavButton, getLastPartOfUrl, logoutFromApplication } from './utils'
-
-// Load environment variables from .env file
-dotenv.config()
+import { test, expect } from '@playwright/test'
+import { 
+  navigateToLogin, 
+  loginToApplication, 
+  clickNavButton, 
+  getLastPartOfUrl, 
+  logoutFromApplication } from './utils'
 
 let loggedBaseURL = false // Flag to ensure baseURL is logged only once
 
@@ -46,6 +47,18 @@ test.describe('Login and Navigation', () => {
 
     // click the "settings" button in the navigation bar
     await clickNavButton(page, 'Settings')
+
+    // Verify settings page content
+    // This test could move to another test file about settings page
+    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Light' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Dark' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'System' })).toBeVisible()
+    console.log('🎨 Testing theme switching')
+    await page.getByRole('button', { name: 'Dark' }).click()
+    await expect(page.locator('html')).toHaveClass(/dark/)
+    await page.getByRole('button', { name: 'Light' }).click()
+    await expect(page.locator('html')).not.toHaveClass(/dark/)
 
     // click the "profile" button in the navigation bar
     await clickNavButton(page, 'Profile')
