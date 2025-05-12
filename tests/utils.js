@@ -67,7 +67,7 @@ export function createUrlPattern(page, pathSuffix) {
  * @param {import('@playwright/test').Page} page - Playwright page object
  */
 export async function navigateToHome(page) {
-  console.log(`📝 Navigating to Home URL: ${homeUrl} - REPLACED BY NAVIGATE TO LOGIN PAGE`)
+  console.log(`📝 Navigating to Home - REPLACED BY NAVIGATE TO LOGIN PAGE`)
   await navigateToLogin(page)
 }
 
@@ -204,7 +204,7 @@ export async function logoutFromApplication(page, fromMobile = false, fast = fal
   } 
   else {
     // Wait for the logout modal to be visible
-    console.log('🔍 Waiting for logout modal to timeout')
+    console.log('🔍 Waiting for logout modal to timeout - this will take 10+ seconds')
     await page.waitForTimeout(5000) 
   }
 

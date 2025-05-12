@@ -2,12 +2,19 @@
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
 // eslint-disable-next-line no-unused-vars
-import { navigateToHome, loginToApplication, logoutFromApplication, isGitHubPagesEnvironment } from './utils'
+import { 
+  navigateToLogin,
+  loginToApplication, 
+  logoutFromApplication, 
+  isGitHubPagesEnvironment,
+  getLastPartOfUrl
+} from './utils'
 
 // Load environment variables from .env file
-dotenv.config()
+dotenv.config()  // for .env variables
 
 let loggedBaseURL = false // Flag to ensure baseURL is logged only once
+let basePath = ''
 
 test.describe('Token Revocation', () => {
   test.beforeEach(async ({ page }) => {
@@ -16,53 +23,38 @@ test.describe('Token Revocation', () => {
     if (!loggedBaseURL) {
       const baseURL = page.context()._options.baseURL
       const configuredProxyUrl = process.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333' // Default logic
+      const redirectUri = process.env.VITE_REDIRECT_URI || 'http://127.0.0.1:3333'
+      basePath = getLastPartOfUrl(baseURL)
       // eslint-disable-next-line playwright/no-conditional-in-test
       if (baseURL) {
         console.log(`\n🚀 Running tests against Service at URL: ${baseURL}`)
         console.log(`🔒 Using Auth Proxy URL: ${configuredProxyUrl}\n`)
-
-        // Log if we're in GitHub Pages or local environment
-        const environment = isGitHubPagesEnvironment(page) ? 'GitHub Pages' : 'local development'
-        console.log(`🔍 Testing in ${environment} environment\n`)
+        console.log(`🔒 Using Redirect URI: ${redirectUri}\n`)
+        console.log(`🔒 Using basePath: ${basePath}\n`)
       }
       loggedBaseURL = true // Set flag so it doesn't log again
     }
   })
 
   test('should revoke token on logout', async ({ page }) => {
-    // eslint-disable-next-line playwright/no-conditional-in-test
-    if (isGitHubPagesEnvironment(page)) {
-      // eslint-disable-next-line playwright/no-skipped-test
-      test.skip('Skipping token revocation test in GitHub Pages environment')
-    }
+
+
     console.log(`\n▶️ Running Test: ${test.info().title}\n`)
     console.log('🔍 Starting token revocation test')
     console.log('  This test performs a login, retrieves an access token, and then logs out. ')
     console.log('  Then it goes to the direct page and enters the access token to check if it is revoked. ')
-    test.setTimeout(120000)
-
-    // Get credentials from environment variables
-    const username = process.env.TEST_USER
-    const password = process.env.TEST_PASSWORD
-
-    // Ensure credentials are provided
-    // eslint-disable-next-line playwright/no-conditional-in-test
-    if (!username || !password) {
-      throw new Error(
-        'Test credentials not found. Please set TEST_USER and TEST_PASSWORD environment variables.'
-      )
-    }
+    test.setTimeout(30000)  // 30 sec max for this test
 
     // go directly to the home page
-    await navigateToHome(page)
-    await loginToApplication(page, username, password)
+    await navigateToLogin(page)
+    await loginToApplication(page)
 
     // we expect to be on the home page
-    await expect(page.getByText('Welcome to EEN Login')).toBeVisible({ timeout: 10000 })
+    await expect(page.getByText('You have successfully logged in to your Eagle Eye Networks account')).toBeVisible({ timeout: 10000 })
     console.log('✅ Home page displayed correctly')
 
     // go to the profile page
-    await page.goto('/profile')  // this does not click the button in the navigation bar
+    await page.goto(basePath+'/profile')  // this does not click the button in the navigation bar
     await expect(page.getByRole('heading', { name: 'Profile' })).toBeVisible({ timeout: 10000 })
     console.log('✅ Profile page displayed correctly')
 
@@ -77,24 +69,21 @@ test.describe('Token Revocation', () => {
     console.log('✅ Hide button displayed correctly')
 
     // retrieve the access token from the input field (try label, then fallback to readonly input)
-    let accessTokenInput
-    try {
-      accessTokenInput = page.locator('#access-token')
-      await expect(accessTokenInput).toBeVisible({ timeout: 10000 })
-      console.log('✅ Access token input field found correctly')
-    } catch (e) {
-      accessTokenInput = page.locator('input[readonly]').nth(2)
-      await expect(accessTokenInput).toBeVisible({ timeout: 10000 })
-      console.log('✅ Access token input field found by fallback')
-    }
+    const accessTokenInput = page.locator('#access-token')
+    await expect(accessTokenInput).toBeVisible({ timeout: 10000 })
+    console.log('✅ Access token input field found correctly')
+
+    // get the access token from the input field
     const accessToken = await accessTokenInput.inputValue()
     console.log('✅ Access token retrieved from input field') 
 
     // logout
     await logoutFromApplication(page)
+    console.log('✅ Logged out from application with extra timeout')
+    await page.waitForTimeout(5000)
 
    // go to the direct page
-   await page.goto('/direct')
+   await page.goto(basePath+'/direct')
    await expect(page.getByRole('heading', { name: 'Direct' })).toBeVisible({ timeout: 10000 })
    console.log('✅ Direct page displayed correctly')
 
