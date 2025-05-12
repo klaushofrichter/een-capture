@@ -37,8 +37,8 @@ test.describe('Token Revocation', () => {
     }
     console.log(`\n▶️ Running Test: ${test.info().title}\n`)
     console.log('🔍 Starting token revocation test')
-
-    // Increase timeout for this test
+    console.log('  This test performs a login, retrieves an access token, and then logs out. ')
+    console.log('  Then it goes to the direct page and enters the access token to check if it is revoked. ')
     test.setTimeout(120000)
 
     // Get credentials from environment variables
