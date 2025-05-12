@@ -2,6 +2,8 @@
  * Helper functions for Playwright tests to work with both local and GitHub Pages environments
  */
 
+import { expect } from '@playwright/test'
+
 // Whitelist of allowed GitHub Pages hosts
 const GITHUB_PAGES_HOSTS = [
   'klaushofrichter.github.io'
@@ -64,9 +66,18 @@ export function createUrlPattern(page, pathSuffix) {
  * @param {import('@playwright/test').Page} page - Playwright page object
  */
 export async function navigateToHome(page) {
-  const homeUrl = buildUrl(page, '/')
-  console.log(`📝 Navigating to Home URL: ${homeUrl}`)
-  await page.goto(homeUrl)
+  console.log(`📝 Navigating to Home URL: ${homeUrl} - REPLACED BY NAVIGATE TO LOGIN PAGE`)
+  await navigateToLogin(page)
+}
+
+/**
+ * Navigates to the app's login page as a starting point
+ * @param {import('@playwright/test').Page} page - Playwright page object
+ */
+export async function navigateToLogin(page) {
+  const loginUrl = buildUrl(page, '/')
+  console.log(`📝 Navigating to Login URL: ${loginUrl}`)
+  await page.goto(loginUrl) 
 }
 
 /**
@@ -75,8 +86,17 @@ export async function navigateToHome(page) {
  * @param {string} username - The username to log in with
  * @param {string} password - The password to log in with
  */
-export async function loginToApplication(page, username, password) {
+export async function loginToApplication(page) {
   console.log('🔑 Starting login process')
+
+  // Get credentials
+   const username = process.env.TEST_USER
+   const password = process.env.TEST_PASSWORD
+
+   // eslint-disable-next-line playwright/no-conditional-in-test
+   if (!username || !password) {
+     throw new Error('Test credentials not found')
+   }
 
   // Find and click login button
   const loginButton = page.getByText('Sign in with Eagle Eye Networks')
@@ -166,9 +186,42 @@ export async function logoutFromApplication(page, fromMobile = false, fast = fal
   try {
     console.log('🔍 Waiting for redirect to login page')
     await page.getByText('Sign in with Eagle Eye Networks').waitFor({ state: 'visible', timeout: 10000 })
-    console.log('✅ Logout successful')
+    console.log('✅ Successfully logged out')
   } catch (e) {
     console.log('⚠️ Did not detect redirect to login page')
     throw new Error('Failed to logout')
   }
+}
+
+/**
+ * Extracts the last part of a URL pathname
+ * @param {string} url - The URL to extract the last part from
+ * @returns {string} The last part of the URL pathname
+ */
+export function getLastPartOfUrl(url) {
+  try {
+    const parsedUrl = new URL(url);
+    const pathname = parsedUrl.pathname;
+
+    if (pathname === "/") {
+      return "";
+    }
+
+    const parts = pathname.split('/');
+    return parts[parts.length - 1];
+  } catch (error) {
+    // Handle cases where the input is not a valid URL
+    console.error("Invalid URL:", error);
+    return ""; // Or you could return null or throw an error
+  }
+}
+
+
+export async function clickNavButton(page, buttonName) { 
+    // click the "about" button in the navigation bar
+    const button = page.getByRole('link', { name: buttonName }).first()
+    await button.click()
+    await expect(page.getByRole('heading', { name: buttonName })).toBeVisible({ timeout: 10000 }) 
+    expect(page.url()).toContain(buttonName.toLowerCase())
+    console.log(`✅ Successfully navigated to ${buttonName} page`)
 }
