@@ -1,24 +1,28 @@
 // eslint-disable-next-line playwright/no-conditional-in-test, playwright/no-skipped-test
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
-import { isGitHubPagesEnvironment } from './utils'
+import { getLastPartOfUrl, loginWithEEN, logoutFromApplication } from './utils'
 
 // Load environment variables from .env file
 dotenv.config()
 
 let loggedBaseURL = false // Flag to ensure baseURL is logged only once
+let basePath = ''
 
 test.describe('Invalid Route Navigation', () => {
   test.beforeEach(async ({ page }) => {
     // Log Base URL and Proxy URL once before the first test runs
-    // eslint-disable-next-line playwright/no-conditional-in-test
     if (!loggedBaseURL) {
       const baseURL = page.context()._options.baseURL
       const configuredProxyUrl = process.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333' // Default logic
+      const redirectUri = process.env.VITE_REDIRECT_URI || 'http://127.0.0.1:3333'
+      basePath = getLastPartOfUrl(baseURL)
       // eslint-disable-next-line playwright/no-conditional-in-test
       if (baseURL) {
         console.log(`\n🚀 Running tests against Service at URL: ${baseURL}`)
         console.log(`🔒 Using Auth Proxy URL: ${configuredProxyUrl}\n`)
+        console.log(`🔒 Using Redirect URI: ${redirectUri}\n`)
+        console.log(`🔒 Using basePath: ${basePath}\n`)
       }
       loggedBaseURL = true // Set flag so it doesn't log again
     }
@@ -28,70 +32,27 @@ test.describe('Invalid Route Navigation', () => {
     page
   }) => {
     // eslint-disable-next-line playwright/no-conditional-in-test, playwright/no-skipped-test
-    if (isGitHubPagesEnvironment(page)) {
-      // eslint-disable-next-line playwright/no-skipped-test
-      test.skip('Skipping invalid route test in GitHub Pages environment')
-    }
+
     console.log(`\n▶️ Running Test: ${test.info().title}\n`)
+    console.log('🔍 this test uses an invalid route with and without previous login. ')
     console.log('🔍 Starting invalid route test')
 
     // Increase timeout for this test
-    test.setTimeout(120000)
-
-    // Get credentials from environment variables
-    const username = process.env.TEST_USER
-    const password = process.env.TEST_PASSWORD
-
-    // Ensure credentials are provided
-    // eslint-disable-next-line playwright/no-conditional-in-test
-    if (!username || !password) {
-      throw new Error(
-        'Test credentials not found. Please set TEST_USER and TEST_PASSWORD environment variables.'
-      )
-    }
-
-    // go directly to the invalid route
-    await page.goto('/abcdefg')
+    test.setTimeout(30000) // 30 sec max for this test
+    
+    // go directly to the invalid route before login
+    await page.goto(basePath+'/abcdefg')
 
     // Wait for redirect to EEN
     await page.waitForURL(/.*eagleeyenetworks.com.*/, { timeout: 15000 })
     console.log('✅ Redirected to EEN login page')
 
-    // Fill email
-    var emailInput = page.locator('#authentication--input__email')
-    await emailInput.waitFor({ state: 'visible', timeout: 15000 })
-    await emailInput.fill(username)
+     // login with EEN
+     await loginWithEEN(page)
 
-    // Click next
-    await page.getByRole('button', { name: 'Next' }).click()
-
-    // Fill password
-    var passwordInput = page.locator('#authentication--input__password')
-    await passwordInput.waitFor({ state: 'visible', timeout: 10000 })
-    await passwordInput.fill(password)
-
-    // Click sign in
-    var signInButton = page.locator('#next')
-    var signInButtonByText = page.getByRole('button', { name: 'Sign in' })
-    try {
-      await signInButton.click()
-    } catch (error) {
-      await signInButtonByText.click()
-    }
-
-    // Verify not found page
+    // Verify not found page after login
     const notFoundLocator = page.getByText('Page Not Found')
-    try {
-      await expect(notFoundLocator).toBeVisible({ timeout: 5000 })
-    } catch (e) {
-      const currentUrl = page.url()
-      const bodyText = await page.locator('body').innerText()
-      console.log('❌ "Page Not Found" not visible!')
-      console.log('Current URL:', currentUrl)
-      console.log('Page content snippet:', bodyText.slice(0, 500))
-      throw e
-    }
-    expect(page.url()).toContain('/abcdefg')
+    await expect(notFoundLocator).toBeVisible({ timeout: 5000 })
 
     // we expect to be on the Not Found page
     await expect(page.getByText('Page Not Found')).toBeVisible({ timeout: 10000 })
@@ -126,7 +87,7 @@ test.describe('Invalid Route Navigation', () => {
     console.log('✅ About page displayed correctly')
 
     // go to another invalid route
-    await page.goto('/hijhlm')
+    await page.goto(basePath+'/hijhlm')
 
     // Verify we're on the NotFound page
     await expect(page.getByText('Page Not Found')).toBeVisible({ timeout: 10000 })
@@ -149,6 +110,8 @@ test.describe('Invalid Route Navigation', () => {
     await expect(page.getByRole('heading', { name: 'About' })).toBeVisible({ timeout: 10000 })
     console.log('✅ Navigated to About page successfully')
 
+    // logout
+    await logoutFromApplication(page)
     console.log('✅ Logged out successfully')
 
     console.log('✅ Invalid route test completed successfully')
