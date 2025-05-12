@@ -106,31 +106,8 @@ export async function loginToApplication(page) {
   const loginButton = page.getByText('Sign in with Eagle Eye Networks')
   await loginButton.click()
 
-  // Wait for redirect to EEN
-  await page.waitForURL(/.*eagleeyenetworks.com.*/, { timeout: 15000 })
-  console.log('✅ Redirected to EEN login page')
-
-  // Fill email
-  const emailInput = page.locator('#authentication--input__email')
-  await emailInput.waitFor({ state: 'visible', timeout: 15000 })
-  await emailInput.fill(username)
-
-  // Click next
-  await page.getByRole('button', { name: 'Next' }).click()
-
-  // Fill password
-  const passwordInput = page.locator('#authentication--input__password')
-  await passwordInput.waitFor({ state: 'visible', timeout: 10000 })
-  await passwordInput.fill(password)
-
-  // Click sign in
-  const signInButton = page.locator('#next')
-  const signInButtonByText = page.getByRole('button', { name: 'Sign in' })
-  try {
-    await signInButton.click()
-  } catch (error) {
-    await signInButtonByText.click()
-  }
+  // login with EEN
+  await loginWithEEN(page)
 
   // In GitHub Pages, we need to handle the OAuth flow
   if (isGitHubPagesEnvironment(page)) {

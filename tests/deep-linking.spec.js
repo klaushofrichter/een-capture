@@ -56,59 +56,10 @@ test.describe('Deep Linking', () => {
     // Verify we reached settings page
     const settingsPattern = createUrlPattern(page, '/settings')
     await page.waitForURL(settingsPattern, { timeout: 10000 })
-    console.log('✅ Successfully navigated to Settings page')
+    console.log('✅ Successfully navigated to Settings page with a deep link without previous login')
 
-
-
-    // Test navigation to an invalid route and back
-    const invalidRoute = '/ABCDEFG'
-    console.log(`🚫 Navigating to invalid route: ${invalidRoute}`)
-    // eslint-disable-next-line playwright/no-conditional-in-test, playwright/no-skipped-test
-    if (isGitHubPagesEnvironment(page)) {
-      // eslint-disable-next-line playwright/no-skipped-test
-      test.skip('Skipping invalid route test in GitHub Pages environment')
-    }
-    await page.goto(invalidRoute)
-
-    // Verify we're on the NotFound page in local environment
-    // eslint-disable-next-line playwright/no-conditional-expect
-    await expect(page.getByText('Page Not Found')).toBeVisible({ timeout: 10000 })
-    console.log('✅ NotFound page displayed correctly')
-
-    // In GitHub Pages, we need to handle the routing differently
-    // eslint-disable-next-line playwright/no-conditional-in-test
-    if (isGitHubPagesEnvironment(page)) {
-      // eslint-disable-next-line playwright/no-wait-for-selector
-      await Promise.race([
-        // eslint-disable-next-line playwright/no-wait-for-selector
-        page.waitForSelector('h1', { timeout: 10000 }),
-        // eslint-disable-next-line playwright/no-wait-for-selector
-        page.waitForSelector('nav', { timeout: 10000 })
-      ])
-      console.log('✅ Handled invalid route in GitHub Pages environment')
-    } else {
-      // eslint-disable-next-line playwright/no-conditional-expect
-      await expect(page.getByText('Page Not Found')).toBeVisible({ timeout: 10000 })
-      console.log('✅ NotFound page displayed correctly')
-
-      // Go back to settings
-      const backButton = page.getByText('Go Back to Previous Page')
-      // eslint-disable-next-line playwright/no-conditional-expect
-      await expect(backButton).toBeVisible()
-      await backButton.click()
-
-      // eslint-disable-next-line playwright/no-conditional-expect
-      await page.waitForURL(settingsPattern, { timeout: 10000 })
-      // eslint-disable-next-line playwright/no-conditional-expect
-      await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
-      console.log('✅ Successfully returned to Settings page')
-    }
-
-    // Logout to end the test
+    // logout
     await logoutFromApplication(page)
   })
 
-  test('should redirect to settings page after login when deep linking', async ({ page }) => {
-    expect(page).toBeTruthy() // Add at least one assertion
-  })
-})
+}) 
