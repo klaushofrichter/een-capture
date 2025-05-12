@@ -3,6 +3,7 @@
  */
 
 import { expect } from '@playwright/test'
+import dotenv from 'dotenv'
 
 // Whitelist of allowed GitHub Pages hosts
 const GITHUB_PAGES_HOSTS = [
@@ -89,6 +90,9 @@ export async function navigateToLogin(page) {
 export async function loginToApplication(page) {
   console.log('🔑 Starting login process')
 
+  // Load environment variables from .env file
+  dotenv.config()
+
   // Get credentials
    const username = process.env.TEST_USER
    const password = process.env.TEST_PASSWORD
@@ -144,6 +148,51 @@ export async function loginToApplication(page) {
   }
   console.log('✅ Successfully logged in')
 }
+
+
+export async function loginWithEEN(page) {
+  console.log('🔑 Starting login with EEN')
+
+  // Load environment variables from .env file
+  dotenv.config()
+
+  // Get credentials
+   const username = process.env.TEST_USER
+   const password = process.env.TEST_PASSWORD
+
+   // eslint-disable-next-line playwright/no-conditional-in-test
+   if (!username || !password) {
+     throw new Error('Test credentials not found')
+   }
+
+  // Wait for redirect to EEN
+  await page.waitForURL(/.*eagleeyenetworks.com.*/, { timeout: 15000 })
+  console.log('✅ Reached EEN signin page')
+
+  // Fill email
+  const emailInput = page.locator('#authentication--input__email')
+  await emailInput.waitFor({ state: 'visible', timeout: 15000 })
+  await emailInput.fill(username)
+
+  // Click next
+  await page.getByRole('button', { name: 'Next' }).click()
+
+  // Fill password
+  const passwordInput = page.locator('#authentication--input__password')
+  await passwordInput.waitFor({ state: 'visible', timeout: 10000 })
+  await passwordInput.fill(password)
+
+  // Click sign in
+  const signInButton = page.locator('#next')
+  const signInButtonByText = page.getByRole('button', { name: 'Sign in' })
+  try {
+    await signInButton.click()
+  } catch (error) {
+    await signInButtonByText.click()
+  }
+  console.log('✅ Finished EEN login')
+}
+
 
 /**
  * Logs out of the application
@@ -208,7 +257,7 @@ export function getLastPartOfUrl(url) {
     }
 
     const parts = pathname.split('/');
-    return parts[parts.length - 1];
+    return '/'+parts[parts.length - 1];
   } catch (error) {
     // Handle cases where the input is not a valid URL
     console.error("Invalid URL:", error);

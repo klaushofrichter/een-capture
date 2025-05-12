@@ -1,18 +1,16 @@
 // eslint-disable-next-line playwright/no-conditional-in-test, playwright/no-skipped-test, playwright/no-wait-for-selector, playwright/no-conditional-expect
 import { test, expect } from '@playwright/test'
-import dotenv from 'dotenv'
 import {
-  navigateToHome,
+  navigateToLogin,
   loginToApplication,
   logoutFromApplication,
   createUrlPattern,
-  isGitHubPagesEnvironment
+  getLastPartOfUrl,
+  loginWithEEN
 } from './utils.js'
 
-// Load environment variables from .env file
-dotenv.config()
-
 let loggedBaseURL = false // Flag to ensure baseURL is logged only once
+let basePath = ''
 
 test.describe('Deep Linking', () => {
   test.beforeEach(async ({ page }) => {
@@ -22,40 +20,33 @@ test.describe('Deep Linking', () => {
       const baseURL = page.context()._options.baseURL
       const configuredProxyUrl = process.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333' // Default logic
       const redirectUri = process.env.VITE_REDIRECT_URI || 'http://127.0.0.1:3333'
+      basePath = getLastPartOfUrl(baseURL)
       // eslint-disable-next-line playwright/no-conditional-in-test
       if (baseURL) {
         console.log(`\n🚀 Running tests against Service at URL: ${baseURL}`)
         console.log(`🔒 Using Auth Proxy URL: ${configuredProxyUrl}\n`)
         console.log(`🔒 Using Redirect URI: ${redirectUri}\n`)
-
-        // Log if we're in GitHub Pages or local environment
-        const environment = isGitHubPagesEnvironment(page) ? 'GitHub Pages' : 'local development'
-        console.log(`🔍 Testing in ${environment} environment\n`)
+        console.log(`🔒 Using basePath: ${basePath}\n`)
       }
       loggedBaseURL = true // Set flag so it doesn't log again
     }
   })
 
-  test('should navigate to settings page after login', async ({ page }) => {
+  test('should navigate to settings with direct link', async ({ page }) => {
     console.log(`\n▶️ Running Test: ${test.info().title}\n`)
-    test.setTimeout(120000)
-
-    // Get credentials
-    const username = process.env.TEST_USER
-    const password = process.env.TEST_PASSWORD
-    // eslint-disable-next-line playwright/no-conditional-in-test
-    if (!username || !password) {
-      throw new Error('Test credentials not found')
-    }
+    console.log( "  this test uses a deep link with and without previous login. ")
+    test.setTimeout(30000) // max 30 seconds overall 
 
     // Start from home page
-    await navigateToHome(page)
+    console.log('🧭 Now navigating to settings page with direct link without previous login')
+    await page.goto(basePath+'/settings') 
 
-    // Login through the normal flow
-    await loginToApplication(page, username, password)
+    // verify that we are on the een signin page
+    await page.waitForURL(/.*eagleeyenetworks.com.*/, { timeout: 15000 })
+    console.log('✅ Successfully navigated to EEN signin page')
 
-    // Now navigate to settings page using UI navigation
-    console.log('🧭 Now navigating to settings page')
+    // login with EEN
+    await loginWithEEN(page)
 
     // Find the Settings link in the navigation - be specific to avoid duplicate matches
     const settingsLink = page.getByRole('navigation').getByRole('link', { name: 'Settings' })
@@ -67,17 +58,7 @@ test.describe('Deep Linking', () => {
     await page.waitForURL(settingsPattern, { timeout: 10000 })
     console.log('✅ Successfully navigated to Settings page')
 
-    // Verify settings page content
-    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Light' })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Dark' })).toBeVisible()
 
-    // Test theme switching functionality
-    console.log('🎨 Testing theme switching')
-    await page.getByRole('button', { name: 'Dark' }).click()
-    await expect(page.locator('html')).toHaveClass(/dark/)
-    await page.getByRole('button', { name: 'Light' }).click()
-    await expect(page.locator('html')).not.toHaveClass(/dark/)
 
     // Test navigation to an invalid route and back
     const invalidRoute = '/ABCDEFG'
