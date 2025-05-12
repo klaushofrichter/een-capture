@@ -86,7 +86,7 @@ const showBackButton = computed(() => {
   return true
 })
 
-// Map of route paths to friendly names
+// Map of route paths to friendly names. this should be a computed property TODO:
 const routeNameMap = {
   '/': 'Login',
   '/home': 'Home',
