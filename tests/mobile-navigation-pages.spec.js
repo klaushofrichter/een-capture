@@ -40,7 +40,7 @@ test.describe('Mobile Navigation - Page Navigation', () => {
     console.log(`\n▶️ Running Test: ${test.info().title}\n`)
     console.log('🔍 Starting mobile page navigation test')
 
-    // Navigate to home page
+    // Navigate to login page
     await navigateToHome(page)
 
     // Login before each test
