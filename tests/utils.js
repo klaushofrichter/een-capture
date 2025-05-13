@@ -252,11 +252,25 @@ export async function clickNavButton(page, buttonName) {
     console.log(`✅ Successfully navigated to ${buttonName} page`)
 }
 
-export async function clickMobileNavButton(page, buttonName) { 
-  // click the "about" button in the navigation bar
-  const button = page.getByRole('link', { name: buttonName }).first()
-  await button.click()
-  await expect(page.getByRole('heading', { name: buttonName })).toBeVisible({ timeout: 10000 }) 
-  //await expect(page.url()).toContain(buttonName.toLowerCase(), { timeout: 10000 })
-  console.log(`✅ Successfully navigated to ${buttonName} page`)
+
+export async function clickMobileNavButton(page, buttonName, basePath, expectedText=null) { 
+  const hamburgerButton = page.locator('button[aria-controls="mobile-menu"]')
+  await expect(hamburgerButton).toBeVisible()
+  await hamburgerButton.click()
+  console.log('👆 Opened the mobile menu')
+
+  // Wait for menu to be visible
+  await page.locator('#mobile-menu a').first().waitFor({ state: 'visible' })
+
+  // Navigate to the page
+  console.log('👤 Navigating to '+buttonName+" page")
+  await page.locator('#mobile-menu a[href*="/'+buttonName.toLowerCase()+'"]').click()
+
+  // Use our URL pattern utility
+  const profileUrl= basePath + '/' + buttonName.toLowerCase()
+  await page.waitForURL(profileUrl, { timeout: 10000 })
+  if (expectedText) {
+    await expect(page.getByText(expectedText)).toBeVisible()
+  }
+  console.log('✅ '+buttonName+' page loaded successfully')
 }

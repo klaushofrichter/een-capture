@@ -4,7 +4,8 @@ import {
   navigateToHome,
   loginToApplication,
   logoutFromApplication,
-  getLastPartOfUrl
+  getLastPartOfUrl,
+  clickMobileNavButton
 } from './utils'
 
 // Load environment variables from .env file
@@ -46,72 +47,20 @@ test.describe('Mobile Navigation - Page Navigation', () => {
     // Login before each test
     await loginToApplication(page)
 
-    // Open the mobile menu
-    const hamburgerButton = page.locator('button[aria-controls="mobile-menu"]')
-    await expect(hamburgerButton).toBeVisible()
-    await hamburgerButton.click()
-    console.log('👆 Opened the mobile menu')
+    // test the profile page
+    await clickMobileNavButton(page, 'Profile', basePath, 'User Profile')
 
-    // Wait for menu to be visible
-    await page.locator('#mobile-menu a').first().waitFor({ state: 'visible' })
+    // test the about page
+    await clickMobileNavButton(page, 'About', basePath, 'About EEN Login')
 
-    // Navigate to Profile page
-    console.log('👤 Navigating to Profile page')
-    await page.locator('#mobile-menu a[href*="/profile"]').click()
+    // test the settings page
+    await clickMobileNavButton(page, 'Settings', basePath)  // no expected text because it's not unique
 
-    // Use our URL pattern utility
-    const profileUrl= basePath + '/profile'
-    await page.waitForURL(profileUrl, { timeout: 10000 })
-    await expect(page.getByText('User Profile')).toBeVisible()
-    console.log('✅ Profile page loaded successfully')
-
-    // Reopen the menu
-    await hamburgerButton.click()
-    console.log('👆 Reopened the menu')
-    await page.locator('#mobile-menu a').first().waitFor({ state: 'visible' })
-
-    // Navigate to About page
-    console.log('ℹ️ Navigating to About page')
-    await page.locator('#mobile-menu a[href*="/about"]').click()
-
-    // Use our URL pattern utility
-    const aboutUrl = basePath + '/about'
-    await page.waitForURL(aboutUrl, { timeout: 10000 })
-    await expect(page.getByText('About EEN Login')).toBeVisible()
-    console.log('✅ About page loaded successfully')
-
-    // Reopen the menu
-    await hamburgerButton.click()
-    console.log('👆 Reopened the menu')
-    await page.locator('#mobile-menu a').first().waitFor({ state: 'visible' })
-
-    // Navigate to Settings page
-    console.log('⚙️ Navigating to Settings page')
-    await page.locator('#mobile-menu a[href*="/settings"]').click()
-
-    // Use our URL pattern utility
-    const settingsUrl = basePath + '/settings'
-    await page.waitForURL(settingsUrl, { timeout: 10000 })
-    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
-    console.log('✅ Settings page loaded successfully')
-
-    // Reopen the menu
-    await hamburgerButton.click()
-    console.log('👆 Reopened the menu')
-    await page.locator('#mobile-menu a').first().waitFor({ state: 'visible' })
-
-    // Navigate back to Home page
-    console.log('🏠 Navigating back to Home page')
-    await page.locator('#mobile-menu a[href*="/home"]').click()
-
-    // Use our URL pattern utility
-    const homeUrl = basePath + '/home'
-    await page.waitForURL(homeUrl, { timeout: 10000 })
-    await expect(page.getByText('Welcome to EEN Login')).toBeVisible()
-    console.log('✅ Home page loaded successfully')
+    // test the home page
+    await clickMobileNavButton(page, 'Home', basePath, 'Welcome to EEN Login')
 
     // Test logout from mobile menu
-    // Reopen the menu
+    const hamburgerButton = page.locator('button[aria-controls="mobile-menu"]')
     await hamburgerButton.click()
     console.log('👆 Reopened the menu')
     await page.locator('#mobile-menu a').first().waitFor({ state: 'visible' })
