@@ -7,6 +7,7 @@ import {
   getLastPartOfUrl,
   clickMobileNavButton
 } from './utils'
+import { APP_NAME } from '../src/constants.js'
 
 // Load environment variables from .env file
 dotenv.config()
@@ -57,7 +58,10 @@ test.describe('Mobile Navigation - Page Navigation', () => {
     await clickMobileNavButton(page, 'Settings', basePath)  // no expected text because it's not unique
 
     // test the home page
-    await clickMobileNavButton(page, 'Home', basePath, 'Welcome to EEN Login')
+    await clickMobileNavButton(page, 'Home', basePath, `Welcome to ${APP_NAME}`)
+
+    // Check if we're on the home page
+    await expect(page.getByText(`Welcome to ${APP_NAME}`)).toBeVisible({ timeout: 10000 })
 
     // Test logout from mobile menu
     const hamburgerButton = page.locator('button[aria-controls="mobile-menu"]')
@@ -71,6 +75,9 @@ test.describe('Mobile Navigation - Page Navigation', () => {
 
     // Call our logout utility function with the fromMobile parameter set to true
     await logoutFromApplication(page, true)
+
+    // Check if we're on the home page again
+    await expect(page.getByText(`Welcome to ${APP_NAME}`)).toBeVisible({ timeout: 10000 })
     console.log('✅ Mobile page navigation test completed successfully')
   })
 })

@@ -4,6 +4,8 @@
 
 import { expect } from '@playwright/test'
 import dotenv from 'dotenv'
+import pkg from '../package.json' assert { type: 'json' }
+
 
 // Whitelist of allowed GitHub Pages hosts
 const GITHUB_PAGES_HOSTS = [
@@ -38,10 +40,10 @@ export function buildUrl(page, path) {
 
   if (isGitHubPagesEnvironment(page)) {
     // GitHub Pages environment
-    if (baseURL.endsWith('/een-login')) {
+    if (baseURL.endsWith(`/${pkg.name}`)) {
       return `${baseURL}${path}`
-    } else if (!baseURL.includes('/een-login/')) {
-      return `${baseURL}/een-login${path}`
+    } else if (!baseURL.includes(`/${pkg.name}/`)) {
+      return `${baseURL}/${pkg.name}${path}`
     }
   }
 
@@ -57,7 +59,7 @@ export function buildUrl(page, path) {
  */
 export function createUrlPattern(page, pathSuffix) {
   if (isGitHubPagesEnvironment(page)) {
-    return new RegExp(`.*/een-login${pathSuffix}$`)
+    return new RegExp(`.*/${pkg.name}${pathSuffix}$`)
   }
   return new RegExp(`.*${pathSuffix}$`)
 }

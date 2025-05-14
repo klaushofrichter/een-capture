@@ -3,6 +3,7 @@ import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
 import { isGitHubPagesEnvironment, buildUrl, getLastPartOfUrl } from './utils.js'
 import pkg from '../package.json' assert { type: 'json' }
+import { APP_NAME } from '../src/constants.js'
 
 // Load environment variables from .env file
 dotenv.config()
@@ -48,7 +49,7 @@ test.describe('Direct Page', () => {
     console.log('🌐 Navigated to direct login page')
 
     // Check if we're on the direct page
-    await expect(page.getByRole('heading', { name: /Direct Access to EEN Login/ })).toBeVisible()
+    await expect(page.getByRole('heading', { name: new RegExp(`Direct Access to ${APP_NAME}`) })).toBeVisible()
     console.log('✅ Direct page heading verified')
 
     // Check for form elements
