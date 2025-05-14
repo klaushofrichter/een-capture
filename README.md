@@ -414,3 +414,25 @@ If you plan to contribute back to the original repository:
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Slack Integration
+
+This project integrates with Slack to notify you about important events, such as new production builds and workflow executions.
+
+### Setup
+
+1. **Create a Slack Webhook:**
+   - Go to [Slack.com](https://slack.com) and navigate to your workspace.
+   - Create a new webhook for a specific channel where you want to receive notifications.
+   - Copy the webhook URL provided by Slack.
+
+2. **Set Up GitHub Action Secret:**
+   - In your GitHub repository, go to **Settings** > **Secrets and variables** > **Actions**.
+   - Create a new secret named `GITHUB_WEBHOOK_URL` and paste the Slack webhook URL as the value.
+
+### Notifications
+
+- **New Production Build:** You will receive a Slack message whenever a new production build is released.
+- **Workflow Execution:** You will also receive notifications when the `test-gh-pages.yml` workflow is executed.
+
+This integration helps keep your team informed about important updates and changes in the project.
