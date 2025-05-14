@@ -1,7 +1,7 @@
 // eslint-disable-next-line playwright/no-conditional-in-test
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
-import { isGitHubPagesEnvironment, buildUrl, getLastPartOfUrl } from './utils.js'
+import { getLastPartOfUrl } from './utils.js'
 import pkg from '../package.json' assert { type: 'json' }
 import { APP_NAME } from '../src/constants.js'
 
@@ -35,17 +35,8 @@ test.describe('Direct Page', () => {
     console.log(`\n▶️ Running Test: ${test.info().title}\n`)
     console.log('🔍 Starting direct page elements test')
 
-    // Skip this test in GitHub Pages environment
-    // eslint-disable-next-line playwright/no-conditional-in-test
-    if (isGitHubPagesEnvironment(page)) {
-      console.log('⏭️ Skipping direct page test in GitHub Pages environment')
-      return
-    }
-
     // Continue with the test for local environment
-    const directUrl = buildUrl(page, '/direct')
-    console.log(`📝 Direct URL: ${directUrl}`)
-    await page.goto(directUrl)
+    await page.goto(basePath + '/direct')
     console.log('🌐 Navigated to direct login page')
 
     // Check if we're on the direct page

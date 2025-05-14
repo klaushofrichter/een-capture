@@ -45,8 +45,8 @@ test.describe('Token Revocation', () => {
     test.setTimeout(30000)  // 30 sec max for this test
 
     // go directly to the home page
-    await navigateToLogin(page)
-    await loginToApplication(page)
+    await navigateToLogin(page, basePath)
+    await loginToApplication(page, basePath)
 
     // we expect to be on the home page
     await expect(page.getByText('You have successfully logged in to your Eagle Eye Networks account')).toBeVisible({ timeout: 10000 })

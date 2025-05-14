@@ -8,6 +8,7 @@ import {
   logoutFromApplication } from './utils'
 
 let loggedBaseURL = false // Flag to ensure baseURL is logged only once
+let basePath = ''
 
 test.describe('Login and Navigation', () => {
   test.beforeEach(async ({ page }) => {
@@ -16,7 +17,7 @@ test.describe('Login and Navigation', () => {
     if (!loggedBaseURL) {
       const baseURL = page.context()._options.baseURL
       const configuredProxyUrl = process.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333' // Default logic
-      const basePath = getLastPartOfUrl(baseURL)
+      basePath = getLastPartOfUrl(baseURL)
 
       // eslint-disable-next-line playwright/no-conditional-in-test
       if (baseURL) {
@@ -35,10 +36,10 @@ test.describe('Login and Navigation', () => {
     test.setTimeout(30000) // overall not more than 30 seconds
 
     // Start from home page
-    await navigateToLogin(page)
+    await navigateToLogin(page,basePath)
 
     // Use our utility function for login
-    await loginToApplication(page)
+    await loginToApplication(page,basePath)
 
     // click the "About" button in the navigation bar
     await clickNavButton(page, 'About')

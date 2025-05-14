@@ -1,7 +1,7 @@
 // eslint-disable-next-line playwright/no-conditional-in-test, playwright/no-skipped-test
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
-import { getLastPartOfUrl, loginWithEEN, logoutFromApplication, isGitHubPagesEnvironment } from './utils'
+import { getLastPartOfUrl, loginWithEEN, logoutFromApplication } from './utils'
 import { APP_NAME } from '../src/constants.js'
 
 // Load environment variables from .env file
