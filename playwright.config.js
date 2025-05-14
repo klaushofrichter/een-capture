@@ -3,15 +3,15 @@ import { defineConfig, devices } from '@playwright/test'
 // Read base URL from environment variable, default to local dev server
 const baseURL = process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://127.0.0.1:3333'
 
-// Define webServer config only when testing locally
-const webServer = baseURL.includes('127.0.0.1')
+// Define webServer config only when NOT in CI (i.e., testing locally)
+const webServer = !process.env.CI
   ? {
       command: 'npm run dev',
       url: 'http://127.0.0.1:3333',
-      reuseExistingServer: !process.env.CI,
-      timeout: 120 * 1000 // Increased timeout for server start
+      reuseExistingServer: true, // Allow reusing if already running locally
+      timeout: 120 * 1000
     }
-  : undefined
+  : undefined; // webServer is undefined in CI, so Playwright won't start one
 
 export default defineConfig({
   testDir: './tests',
