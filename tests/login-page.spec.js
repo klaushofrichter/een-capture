@@ -1,7 +1,7 @@
 // eslint-disable-next-line playwright/no-conditional-in-test
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
-import { navigateToHome, isGitHubPagesEnvironment } from './utils'
+import { navigateToLogin, getLastPartOfUrl } from './utils'
 import pkg from '../package.json' assert { type: 'json' }
 import { APP_NAME } from '../src/constants.js'
 
@@ -9,6 +9,7 @@ import { APP_NAME } from '../src/constants.js'
 dotenv.config()
 
 let loggedBaseURL = false // Flag to ensure baseURL is logged only once
+let basePath = ''
 
 test.describe('Login Page', () => {
   test.beforeEach(async ({ page }) => {
@@ -17,20 +18,16 @@ test.describe('Login Page', () => {
     if (!loggedBaseURL) {
       const baseURL = page.context()._options.baseURL
       const configuredProxyUrl = process.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333' // Default logic
+      basePath = getLastPartOfUrl(baseURL)
+
       // eslint-disable-next-line playwright/no-conditional-in-test
       if (baseURL) {
         console.log(`\n🚀 Running tests against Service at URL: ${baseURL}`)
         console.log(`🔒 Using Auth Proxy URL: ${configuredProxyUrl}\n`)
-
-        // Log if we're in GitHub Pages or local environment
-        const environment = isGitHubPagesEnvironment(page) ? 'GitHub Pages' : 'local development'
-        console.log(`🔍 Testing in ${environment} environment\n`)
+        console.log(`🔒 Using basePath: ${basePath}\n`)
       }
       loggedBaseURL = true // Set flag so it doesn't log again
     }
-
-    // Go to the login page before each test using our utility function
-    await navigateToHome(page)
   })
 
   test('login page should have correct elements and consistent styling', async ({ page }) => {
@@ -39,6 +36,7 @@ test.describe('Login Page', () => {
     console.log('🔍 This test checks the login page for the correct elements and consistent styling')
 
     // Check if we're on the login page
+    await navigateToLogin(page, basePath)
     await expect(page.getByText(`Welcome to ${APP_NAME}`)).toBeVisible()
     await expect(page.getByText('Sign in with Eagle Eye Networks')).toBeVisible()
     console.log('✅ Login page main elements verified')

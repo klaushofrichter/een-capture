@@ -2,10 +2,7 @@
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
 import {
-  navigateToLogin,
-  loginToApplication,
   logoutFromApplication,
-  createUrlPattern,
   getLastPartOfUrl,
   loginWithEEN
 } from './utils.js'
@@ -56,8 +53,7 @@ test.describe('Deep Linking', () => {
     await settingsLink.click()
 
     // Verify we reached settings page
-    const settingsPattern = createUrlPattern(page, '/settings')
-    await page.waitForURL(settingsPattern, { timeout: 10000 })
+    await page.waitForURL(basePath+"/settings", { timeout: 10000 })
     console.log('✅ Successfully navigated to Settings page with a deep link without previous login')
 
     // logout

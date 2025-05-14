@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
 import {
-  navigateToHome,
+  navigateToLogin,
   loginToApplication,
   logoutFromApplication,
   getLastPartOfUrl,
@@ -42,11 +42,8 @@ test.describe('Mobile Navigation - Page Navigation', () => {
     console.log(`\n▶️ Running Test: ${test.info().title}\n`)
     console.log('🔍 Starting mobile page navigation test')
 
-    // Navigate to login page
-    await navigateToHome(page)
-
     // Login before each test
-    await loginToApplication(page)
+    await loginToApplication(page, basePath)
 
     // test the profile page
     await clickMobileNavButton(page, 'Profile', basePath, 'User Profile')

@@ -4,81 +4,14 @@
 
 import { expect } from '@playwright/test'
 import dotenv from 'dotenv'
-import pkg from '../package.json' assert { type: 'json' }
 
-
-// Whitelist of allowed GitHub Pages hosts
-const GITHUB_PAGES_HOSTS = [
-  'klaushofrichter.github.io'
-  // Add more allowed hosts here as needed
-]
-
-/**
- * Determines if we're testing against GitHub Pages
- * @param {import('@playwright/test').Page} page - Playwright page object
- * @returns {boolean} True if we're testing against GitHub Pages
- */
-export function isGitHubPagesEnvironment(page) {
-  const baseURL = page.context()._options.baseURL
-  if (!baseURL) return false
-  try {
-    const { host } = new URL(baseURL)
-    return GITHUB_PAGES_HOSTS.includes(host)
-  } catch {
-    return false
-  }
-}
-
-/**
- * Builds a URL that works in both local and GitHub Pages environments
- * @param {import('@playwright/test').Page} page - Playwright page object
- * @param {string} path - The path to navigate to (e.g. '/settings')
- * @returns {string} The full URL to use
- */
-export function buildUrl(page, path) {
-  const baseURL = page.context()._options.baseURL
-
-  if (isGitHubPagesEnvironment(page)) {
-    // GitHub Pages environment
-    if (baseURL.endsWith(`/${pkg.name}`)) {
-      return `${baseURL}${path}`
-    } else if (!baseURL.includes(`/${pkg.name}/`)) {
-      return `${baseURL}/${pkg.name}${path}`
-    }
-  }
-
-  // Local development or already correct structure
-  return new URL(path, baseURL).toString()
-}
-
-/**
- * Creates a URL pattern that works in both environments for URL matching
- * @param {import('@playwright/test').Page} page - Playwright page object
- * @param {string} pathSuffix - The path ending to match (e.g. '/settings')
- * @returns {RegExp} A regular expression for matching the URL
- */
-export function createUrlPattern(page, pathSuffix) {
-  if (isGitHubPagesEnvironment(page)) {
-    return new RegExp(`.*/${pkg.name}${pathSuffix}$`)
-  }
-  return new RegExp(`.*${pathSuffix}$`)
-}
-
-/**
- * Navigates to the app's home/login page as a starting point
- * @param {import('@playwright/test').Page} page - Playwright page object
- */
-export async function navigateToHome(page) {
-  console.log(`📝 Navigating to Home - REPLACED BY NAVIGATE TO LOGIN PAGE`)
-  await navigateToLogin(page)
-}
 
 /**
  * Navigates to the app's login page as a starting point
  * @param {import('@playwright/test').Page} page - Playwright page object
  */
-export async function navigateToLogin(page) {
-  const loginUrl = buildUrl(page, '/')
+export async function navigateToLogin(page,basePath='') {
+  const loginUrl = basePath + '/'
   console.log(`📝 Navigating to Login URL: ${loginUrl}`)
   await page.goto(loginUrl) 
 }
@@ -86,11 +19,10 @@ export async function navigateToLogin(page) {
 /**
  * Handles login to the application
  * @param {import('@playwright/test').Page} page - Playwright page object
- * @param {string} username - The username to log in with
- * @param {string} password - The password to log in with
+ * @param {string} basePath - The base path of the application, used a prefix
  */
-export async function loginToApplication(page) {
-  console.log('🔑 Starting login process')
+export async function loginToApplication(page,basePath='') {
+  console.log('🔑 Starting login process with basePath: '+basePath  )
 
   // Load environment variables from .env file
   dotenv.config()
@@ -104,6 +36,9 @@ export async function loginToApplication(page) {
      throw new Error('Test credentials not found')
    }
 
+  // navigate to login page
+  await navigateToLogin(page,basePath)
+
   // Find and click login button
   const loginButton = page.getByText('Sign in with Eagle Eye Networks')
   await loginButton.click()
@@ -111,20 +46,8 @@ export async function loginToApplication(page) {
   // login with EEN
   await loginWithEEN(page)
 
-  // In GitHub Pages, we need to handle the OAuth flow
-  if (isGitHubPagesEnvironment(page)) {
-    // Wait for redirect back to our app with code parameter
-    //await page.waitForURL(/.*\/een-login\/\?code=.*/, { timeout: 15000 })
-    //console.log('✅ Redirected back to app with code')
-
-    // Wait for the code to be processed and redirect to home
-    await page.waitForURL(/.*\/${pkg.name}\/home/, { timeout: 15000 })
-    console.log('✅ Code processed, redirected to home')
-  } else {
-    // Wait for home page in local environment
-    const homePattern = createUrlPattern(page, '/home')
-    await page.waitForURL(homePattern, { timeout: 20000 })
-  }
+  // Wait for home page
+  await page.waitForURL(basePath + '/home', { timeout: 20000 })
   console.log('✅ Successfully logged in')
 }
 
