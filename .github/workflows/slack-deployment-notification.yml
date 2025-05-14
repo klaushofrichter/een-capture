@@ -39,7 +39,7 @@ jobs:
                   "type": "header",
                   "text": {
                     "type": "plain_text",
-                    "text": "✅ New EEI-Login Deployment to GitHub Pages (v${{ steps.package-version.outputs.VERSION }})",
+                    "text": "✅ New EEN-Login Deployment to GitHub Pages (v${{ steps.package-version.outputs.VERSION }})",
                     "emoji": true
                   }
                 },
