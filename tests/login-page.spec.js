@@ -2,10 +2,11 @@
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
 import { navigateToHome, isGitHubPagesEnvironment } from './utils'
+import pkg from '../package.json' assert { type: 'json' }
+import { APP_NAME } from '../src/constants.js'
 
 // Load environment variables from .env file
 dotenv.config()
-import pkg from '../package.json' assert { type: 'json' }
 
 let loggedBaseURL = false // Flag to ensure baseURL is logged only once
 
@@ -38,7 +39,7 @@ test.describe('Login Page', () => {
     console.log('🔍 This test checks the login page for the correct elements and consistent styling')
 
     // Check if we're on the login page
-    await expect(page.getByText('Welcome to EEN Login')).toBeVisible()
+    await expect(page.getByText(`Welcome to ${APP_NAME}`)).toBeVisible()
     await expect(page.getByText('Sign in with Eagle Eye Networks')).toBeVisible()
     console.log('✅ Login page main elements verified')
 

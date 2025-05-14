@@ -1,7 +1,8 @@
 // eslint-disable-next-line playwright/no-conditional-in-test, playwright/no-skipped-test
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
-import { getLastPartOfUrl, loginWithEEN, logoutFromApplication } from './utils'
+import { getLastPartOfUrl, loginWithEEN, logoutFromApplication, isGitHubPagesEnvironment } from './utils'
+import { APP_NAME } from '../src/constants.js'
 
 // Load environment variables from .env file
 dotenv.config()
@@ -71,7 +72,7 @@ test.describe('Invalid Route Navigation', () => {
     console.log('👈 Clicked "Go to Home" button')
 
     // we expect to be on the home page
-    await expect(page.getByText('Welcome to EEN Login')).toBeVisible({ timeout: 10000 })
+    await expect(page.getByText(`Welcome to ${APP_NAME}`)).toBeVisible({ timeout: 10000 })
     console.log('✅ Home page displayed correctly')
 
     // Navigate to About page
