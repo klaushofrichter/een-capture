@@ -5,15 +5,14 @@
 import { expect } from '@playwright/test'
 import dotenv from 'dotenv'
 
-
 /**
  * Navigates to the app's login page as a starting point
  * @param {import('@playwright/test').Page} page - Playwright page object
  */
-export async function navigateToLogin(page,basePath='') {
+export async function navigateToLogin(page, basePath = '') {
   const loginUrl = basePath + '/'
   console.log(`📝 Navigating to Login URL: ${loginUrl}`)
-  await page.goto(loginUrl) 
+  await page.goto(loginUrl)
 }
 
 /**
@@ -21,23 +20,23 @@ export async function navigateToLogin(page,basePath='') {
  * @param {import('@playwright/test').Page} page - Playwright page object
  * @param {string} basePath - The base path of the application, used a prefix
  */
-export async function loginToApplication(page,basePath='') {
-  console.log('🔑 Starting login process with basePath: '+basePath  )
+export async function loginToApplication(page, basePath = '') {
+  console.log('🔑 Starting login process with basePath: ' + basePath)
 
   // Load environment variables from .env file
   dotenv.config()
 
   // Get credentials
-   const username = process.env.TEST_USER
-   const password = process.env.TEST_PASSWORD
+  const username = process.env.TEST_USER
+  const password = process.env.TEST_PASSWORD
 
-   // eslint-disable-next-line playwright/no-conditional-in-test
-   if (!username || !password) {
-     throw new Error('Test credentials not found')
-   }
+  // eslint-disable-next-line playwright/no-conditional-in-test
+  if (!username || !password) {
+    throw new Error('Test credentials not found')
+  }
 
   // navigate to login page
-  await navigateToLogin(page,basePath)
+  await navigateToLogin(page, basePath)
 
   // Find and click login button
   const loginButton = page.getByText('Sign in with Eagle Eye Networks')
@@ -51,7 +50,6 @@ export async function loginToApplication(page,basePath='') {
   console.log('✅ Successfully logged in')
 }
 
-
 export async function loginWithEEN(page) {
   console.log('🔑 Starting login with EEN')
 
@@ -59,13 +57,13 @@ export async function loginWithEEN(page) {
   dotenv.config()
 
   // Get credentials
-   const username = process.env.TEST_USER
-   const password = process.env.TEST_PASSWORD
+  const username = process.env.TEST_USER
+  const password = process.env.TEST_PASSWORD
 
-   // eslint-disable-next-line playwright/no-conditional-in-test
-   if (!username || !password) {
-     throw new Error('Test credentials not found')
-   }
+  // eslint-disable-next-line playwright/no-conditional-in-test
+  if (!username || !password) {
+    throw new Error('Test credentials not found')
+  }
 
   // Wait for redirect to EEN
   await page.waitForURL(/.*eagleeyenetworks.com.*/, { timeout: 15000 })
@@ -95,7 +93,6 @@ export async function loginWithEEN(page) {
   console.log('✅ Finished EEN login')
 }
 
-
 /**
  * Logs out of the application
  * @param {import('@playwright/test').Page} page - Playwright page object
@@ -122,21 +119,23 @@ export async function logoutFromApplication(page, fromMobile = false, fast = fal
   await page.getByText('Goodbye!').waitFor({ state: 'visible', timeout: 5000 })
   console.log('✅ Logout modal displayed')
 
-    // Click OK to confirm logout
+  // Click OK to confirm logout
   if (fast) {
     await page.getByRole('button', { name: 'OK' }).click()
     console.log('👆 Clicked OK button to speed up logout')
-  } 
-  else {
+  } else {
     // Wait for the logout modal to be visible
     console.log('🔍 Waiting for logout modal to timeout - this will take 10+ seconds')
-    await page.waitForTimeout(5000) 
+    // eslint-disable-next-line playwright/no-wait-for-timeout
+    await page.waitForTimeout(5000)
   }
 
   // Wait for redirect to login page
   try {
     console.log('🔍 Waiting for redirect to login page')
-    await page.getByText('Sign in with Eagle Eye Networks').waitFor({ state: 'visible', timeout: 10000 })
+    await page
+      .getByText('Sign in with Eagle Eye Networks')
+      .waitFor({ state: 'visible', timeout: 10000 })
     console.log('✅ Successfully logged out')
   } catch (e) {
     console.log('⚠️ Did not detect redirect to login page')
@@ -151,34 +150,32 @@ export async function logoutFromApplication(page, fromMobile = false, fast = fal
  */
 export function getLastPartOfUrl(url) {
   try {
-    const parsedUrl = new URL(url);
-    const pathname = parsedUrl.pathname;
+    const parsedUrl = new URL(url)
+    const pathname = parsedUrl.pathname
 
-    if (pathname === "/") {
-      return "";
+    if (pathname === '/') {
+      return ''
     }
 
-    const parts = pathname.split('/');
-    return '/'+parts[parts.length - 1];
+    const parts = pathname.split('/')
+    return '/' + parts[parts.length - 1]
   } catch (error) {
     // Handle cases where the input is not a valid URL
-    console.error("Invalid URL:", error);
-    return ""; // Or you could return null or throw an error
+    console.error('Invalid URL:', error)
+    return '' // Or you could return null or throw an error
   }
 }
 
-
-export async function clickNavButton(page, buttonName) { 
-    // click the "about" button in the navigation bar
-    const button = page.getByRole('link', { name: buttonName }).first()
-    await button.click()
-    await expect(page.getByRole('heading', { name: buttonName })).toBeVisible({ timeout: 10000 }) 
-    //await expect(page.url()).toContain(buttonName.toLowerCase(), { timeout: 10000 })
-    console.log(`✅ Successfully navigated to ${buttonName} page`)
+export async function clickNavButton(page, buttonName) {
+  // click the "about" button in the navigation bar
+  const button = page.getByRole('link', { name: buttonName }).first()
+  await button.click()
+  await expect(page.getByRole('heading', { name: buttonName })).toBeVisible({ timeout: 10000 })
+  //await expect(page.url()).toContain(buttonName.toLowerCase(), { timeout: 10000 })
+  console.log(`✅ Successfully navigated to ${buttonName} page`)
 }
 
-
-export async function clickMobileNavButton(page, buttonName, basePath, expectedText=null) { 
+export async function clickMobileNavButton(page, buttonName, basePath, expectedText = null) {
   const hamburgerButton = page.locator('button[aria-controls="mobile-menu"]')
   await expect(hamburgerButton).toBeVisible()
   await hamburgerButton.click()
@@ -188,14 +185,14 @@ export async function clickMobileNavButton(page, buttonName, basePath, expectedT
   await page.locator('#mobile-menu a').first().waitFor({ state: 'visible' })
 
   // Navigate to the page
-  console.log('👤 Navigating to '+buttonName+" page")
-  await page.locator('#mobile-menu a[href*="/'+buttonName.toLowerCase()+'"]').click()
+  console.log('👤 Navigating to ' + buttonName + ' page')
+  await page.locator('#mobile-menu a[href*="/' + buttonName.toLowerCase() + '"]').click()
 
   // Use our URL pattern utility
-  const profileUrl= basePath + '/' + buttonName.toLowerCase()
+  const profileUrl = basePath + '/' + buttonName.toLowerCase()
   await page.waitForURL(profileUrl, { timeout: 10000 })
   if (expectedText) {
     await expect(page.getByText(expectedText)).toBeVisible()
   }
-  console.log('✅ '+buttonName+' page loaded successfully')
+  console.log('✅ ' + buttonName + ' page loaded successfully')
 }

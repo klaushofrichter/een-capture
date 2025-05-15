@@ -1,11 +1,12 @@
 // eslint-disable-next-line playwright/no-conditional-in-test, playwright/no-skipped-test
 import { test, expect } from '@playwright/test'
-import { 
-  navigateToLogin, 
-  loginToApplication, 
-  clickNavButton, 
-  getLastPartOfUrl, 
-  logoutFromApplication } from './utils'
+import {
+  navigateToLogin,
+  loginToApplication,
+  clickNavButton,
+  getLastPartOfUrl,
+  logoutFromApplication
+} from './utils'
 
 let loggedBaseURL = false // Flag to ensure baseURL is logged only once
 let basePath = ''
@@ -36,10 +37,10 @@ test.describe('Login and Navigation', () => {
     test.setTimeout(30000) // overall not more than 30 seconds
 
     // Start from home page
-    await navigateToLogin(page,basePath)
+    await navigateToLogin(page, basePath)
 
     // Use our utility function for login
-    await loginToApplication(page,basePath)
+    await loginToApplication(page, basePath)
 
     // click the "About" button in the navigation bar
     await clickNavButton(page, 'About')
@@ -63,7 +64,7 @@ test.describe('Login and Navigation', () => {
     await clickNavButton(page, 'Profile')
 
     // click the "home" button in the navigation bar
-    // TODO: fix this test. HOME does not work for the function below 
+    // TODO: fix this test. HOME does not work for the function below
     //await clickNavButton(page, 'Home')
 
     // logout
