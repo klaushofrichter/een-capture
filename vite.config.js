@@ -311,6 +311,10 @@ export default defineConfig(({ command, mode }) => {
           {
             src: 'README.md',
             dest: '.'
+          },
+          {
+            src: 'repository-management.pdf',
+            dest: '.'
           }
         ]
       })
