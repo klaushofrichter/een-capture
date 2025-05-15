@@ -34,19 +34,6 @@ test.describe('Direct Page', () => {
     console.log(`\n▶️ Running Test: ${test.info().title}\n`)
     console.log('🔍 Starting direct page elements test')
 
-    // Skip this test in GitHub Pages environment
-    // eslint-disable-next-line playwright/no-conditional-in-test
-    if (
-      // eslint-disable-next-line playwright/no-conditional-in-test
-      process.env.PLAYWRIGHT_TEST_BASE_URL &&
-      // eslint-disable-next-line playwright/no-conditional-in-test
-      process.env.PLAYWRIGHT_TEST_BASE_URL.includes('github.io')
-    ) {
-      // eslint-disable-next-line playwright/no-conditional-in-test
-      console.log('⏭️ Skipping direct page test in GitHub Pages environment')
-      return
-    }
-
     // Continue with the test for local environment
     const directUrl = basePath + '/direct'
     console.log(`📝 Direct URL: ${directUrl}`)
