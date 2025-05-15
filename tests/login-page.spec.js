@@ -1,7 +1,7 @@
 // eslint-disable-next-line playwright/no-conditional-in-test
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
-import { navigateToLogin, getLastPartOfUrl } from './utils'
+import { navigateToLogin, getLastPartOfUrl } from './utils.js'
 import pkg from '../package.json' assert { type: 'json' }
 import { APP_NAME } from '../src/constants.js'
 
@@ -33,7 +33,9 @@ test.describe('Login Page', () => {
   test('login page should have correct elements and consistent styling', async ({ page }) => {
     console.log(`\n▶️ Running Test: ${test.info().title}\n`)
     console.log('🔍 Starting login page elements test')
-    console.log('🔍 This test checks the login page for the correct elements and consistent styling')
+    console.log(
+      '🔍 This test checks the login page for the correct elements and consistent styling'
+    )
 
     // Check if we're on the login page
     await navigateToLogin(page, basePath)
@@ -70,14 +72,15 @@ test.describe('Login Page', () => {
 
     // eslint-disable-next-line playwright/no-conditional-in-test
     let isDev = process.env.NODE_ENV !== 'production'
-    if(process.env.PLAYWRIGHT_TEST_BASE_URL === `https://klaushofrichter.github.io/${pkg.name}`) 
-      isDev=false  // because we use the deployed app version on GitHub Pages
+    // eslint-disable-next-line playwright/no-conditional-in-test
+    if (process.env.PLAYWRIGHT_TEST_BASE_URL === `https://klaushofrichter.github.io/${pkg.name}`)
+      isDev = false // because we use the deployed app version on GitHub Pages
 
     // eslint-disable-next-line playwright/no-conditional-in-test
     const expectedReadmeHref = isDev
       ? `https://github.com/klaushofrichter/${pkg.name}/blob/develop/README.md`
       : `https://github.com/klaushofrichter/${pkg.name}/blob/gh-pages/README.md`
-  await expect(readme).toHaveAttribute('href', expectedReadmeHref)
+    await expect(readme).toHaveAttribute('href', expectedReadmeHref)
     console.log('✅ README link verified:', expectedReadmeHref)
     console.log('✅ Login page test completed successfully')
   })

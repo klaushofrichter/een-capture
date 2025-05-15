@@ -2,15 +2,15 @@
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
 // eslint-disable-next-line no-unused-vars
-import { 
+import {
   navigateToLogin,
-  loginToApplication, 
-  logoutFromApplication, 
+  loginToApplication,
+  logoutFromApplication,
   getLastPartOfUrl
 } from './utils'
 
 // Load environment variables from .env file
-dotenv.config()  // for .env variables
+dotenv.config() // for .env variables
 
 let loggedBaseURL = false // Flag to ensure baseURL is logged only once
 let basePath = ''
@@ -36,28 +36,30 @@ test.describe('Token Revocation', () => {
   })
 
   test('should revoke token on logout', async ({ page }) => {
-
-
     console.log(`\n▶️ Running Test: ${test.info().title}\n`)
     console.log('🔍 Starting token revocation test')
     console.log('  This test performs a login, retrieves an access token, and then logs out. ')
-    console.log('  Then it goes to the direct page and enters the access token to check if it is revoked. ')
-    test.setTimeout(30000)  // 30 sec max for this test
+    console.log(
+      '  Then it goes to the direct page and enters the access token to check if it is revoked. '
+    )
+    test.setTimeout(30000) // 30 sec max for this test
 
     // go directly to the home page
     await navigateToLogin(page, basePath)
     await loginToApplication(page, basePath)
 
     // we expect to be on the home page
-    await expect(page.getByText('You have successfully logged in to your Eagle Eye Networks account')).toBeVisible({ timeout: 10000 })
+    await expect(
+      page.getByText('You have successfully logged in to your Eagle Eye Networks account')
+    ).toBeVisible({ timeout: 10000 })
     console.log('✅ Home page displayed correctly')
 
     // go to the profile page
-    await page.goto(basePath+'/profile')  // this does not click the button in the navigation bar
+    await page.goto(basePath + '/profile') // this does not click the button in the navigation bar
     await expect(page.getByRole('heading', { name: 'Profile' })).toBeVisible({ timeout: 10000 })
     console.log('✅ Profile page displayed correctly')
 
-    // find the Show and Copy button 
+    // find the Show and Copy button
     const showCopyButton = page.getByRole('button', { name: 'Show & Copy' })
     await showCopyButton.click()
     console.log('✅ Show and Copy button clicked')
@@ -74,17 +76,18 @@ test.describe('Token Revocation', () => {
 
     // get the access token from the input field
     const accessToken = await accessTokenInput.inputValue()
-    console.log('✅ Access token retrieved from input field') 
+    console.log('✅ Access token retrieved from input field')
 
     // logout
     await logoutFromApplication(page)
     console.log('✅ Logged out from application with extra timeout')
+    // eslint-disable-next-line playwright/no-wait-for-timeout
     await page.waitForTimeout(5000)
 
-   // go to the direct page
-   await page.goto(basePath+'/direct')
-   await expect(page.getByRole('heading', { name: 'Direct' })).toBeVisible({ timeout: 10000 })
-   console.log('✅ Direct page displayed correctly')
+    // go to the direct page
+    await page.goto(basePath + '/direct')
+    await expect(page.getByRole('heading', { name: 'Direct' })).toBeVisible({ timeout: 10000 })
+    console.log('✅ Direct page displayed correctly')
 
     // enter the access token into the text field
     await page.locator('#token').fill(accessToken)
@@ -97,7 +100,9 @@ test.describe('Token Revocation', () => {
     console.log('✅ Proceed button clicked')
 
     // wait for text to show that the token was revoked
-    await expect(page.getByText('The client caller does not have a valid authentication credential')).toBeVisible({ timeout: 10000 })
+    await expect(
+      page.getByText('The client caller does not have a valid authentication credential')
+    ).toBeVisible({ timeout: 10000 })
     console.log('✅ Token revoked text displayed correctly')
 
     // press the "back to login" button

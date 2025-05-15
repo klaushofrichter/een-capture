@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
 import {
-  navigateToLogin,
   loginToApplication,
   logoutFromApplication,
   getLastPartOfUrl,
@@ -52,7 +51,7 @@ test.describe('Mobile Navigation - Page Navigation', () => {
     await clickMobileNavButton(page, 'About', basePath, 'About EEN Login')
 
     // test the settings page
-    await clickMobileNavButton(page, 'Settings', basePath)  // no expected text because it's not unique
+    await clickMobileNavButton(page, 'Settings', basePath) // no expected text because it's not unique
 
     // test the home page
     await clickMobileNavButton(page, 'Home', basePath, `Welcome to ${APP_NAME}`)

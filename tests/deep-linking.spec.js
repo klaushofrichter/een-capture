@@ -1,13 +1,9 @@
 // eslint-disable-next-line playwright/no-conditional-in-test, playwright/no-skipped-test, playwright/no-wait-for-selector, playwright/no-conditional-expect
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
-import {
-  logoutFromApplication,
-  getLastPartOfUrl,
-  loginWithEEN
-} from './utils.js'
+import { logoutFromApplication, getLastPartOfUrl, loginWithEEN } from './utils.js'
 
-dotenv.config()  // for .env variables
+dotenv.config() // for .env variables
 let loggedBaseURL = false // Flag to ensure baseURL is logged only once
 let basePath = ''
 
@@ -33,12 +29,12 @@ test.describe('Deep Linking', () => {
 
   test('should navigate to settings with direct link', async ({ page }) => {
     console.log(`\n▶️ Running Test: ${test.info().title}\n`)
-    console.log( "  this test uses a deep link without previous login. ")
-    test.setTimeout(30000) // max 30 seconds overall 
+    console.log('  this test uses a deep link without previous login. ')
+    test.setTimeout(30000) // max 30 seconds overall
 
     // Start from home page
     console.log('🧭 Now navigating to settings page with direct link without previous login')
-    await page.goto(basePath+'/settings') 
+    await page.goto(basePath + '/settings')
 
     // verify that we are on the een signin page (because we are using a deep link w/o previous login)
     await page.waitForURL(/.*eagleeyenetworks.com.*/, { timeout: 15000 })
@@ -53,11 +49,12 @@ test.describe('Deep Linking', () => {
     await settingsLink.click()
 
     // Verify we reached settings page
-    await page.waitForURL(basePath+"/settings", { timeout: 10000 })
-    console.log('✅ Successfully navigated to Settings page with a deep link without previous login')
+    await page.waitForURL(basePath + '/settings', { timeout: 10000 })
+    console.log(
+      '✅ Successfully navigated to Settings page with a deep link without previous login'
+    )
 
     // logout
     await logoutFromApplication(page)
   })
-
-}) 
+})

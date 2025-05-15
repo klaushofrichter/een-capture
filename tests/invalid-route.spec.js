@@ -40,16 +40,16 @@ test.describe('Invalid Route Navigation', () => {
 
     // Increase timeout for this test
     test.setTimeout(30000) // 30 sec max for this test
-    
+
     // go directly to the invalid route before login
-    await page.goto(basePath+'/abcdefg')
+    await page.goto(basePath + '/abcdefg')
 
     // Wait for redirect to EEN
     await page.waitForURL(/.*eagleeyenetworks.com.*/, { timeout: 15000 })
     console.log('✅ Redirected to EEN login page')
 
-     // login with EEN
-     await loginWithEEN(page)
+    // login with EEN
+    await loginWithEEN(page)
 
     // Verify not found page after login
     const notFoundLocator = page.getByText('Page Not Found')
@@ -86,8 +86,8 @@ test.describe('Invalid Route Navigation', () => {
     console.log('✅ About page displayed correctly')
 
     // go to another invalid route
-    console.log('👈 navigating to another invalid route after login:', basePath+'/hijhlm')
-    await page.goto(basePath+'/hijhlm')
+    console.log('👈 navigating to another invalid route after login:', basePath + '/hijhlm')
+    await page.goto(basePath + '/hijhlm')
     //await page.waitForTimeout(100000)
 
     // Verify we're on the NotFound page
@@ -96,7 +96,7 @@ test.describe('Invalid Route Navigation', () => {
     console.log('✅ NotFound page displayed correctly')
 
     // Verify the "Go Back to Previous Page" button is visible
-    // TODO: fix this test for production, it works locally  
+    // TODO: fix this test for production, it works locally
     //await expect(page.getByText('Go Back to Previous Page')).toBeVisible()
     //console.log('✅ "Go Back to Previous Page" button is correctly visible')
 
