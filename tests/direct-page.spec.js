@@ -78,13 +78,15 @@ test.describe('Direct Page', () => {
     expect(classAttr).toContain('dark:hover:text-gray-500')
     expect(classAttr).toContain('dark:hover:text-gray-400')
     // eslint-disable-next-line playwright/no-conditional-in-test
-    const isDev = process.env.NODE_ENV !== 'production'
+    let isDev = process.env.NODE_ENV !== 'production'
+    if(process.env.PLAYWRIGHT_TEST_BASE_URL === `https://klaushofrichter.github.io/${pkg.name}`) 
+      isDev=false  // because we use the deployed app version on GitHub Pages
     // eslint-disable-next-line playwright/no-conditional-in-test
     const expectedReadmeHref = isDev
       ? `https://github.com/klaushofrichter/${pkg.name}/blob/develop/README.md`
       : `https://github.com/klaushofrichter/${pkg.name}/blob/gh-pages/README.md`
     await expect(readme).toHaveAttribute('href', expectedReadmeHref)
-    console.log('✅ README link verified')
+    console.log('✅ README link verified:', expectedReadmeHref)
     console.log('✅ Direct page test completed successfully')
   })
 })

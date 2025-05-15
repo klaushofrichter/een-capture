@@ -78,7 +78,7 @@ test.describe('Login Page', () => {
       ? `https://github.com/klaushofrichter/${pkg.name}/blob/develop/README.md`
       : `https://github.com/klaushofrichter/${pkg.name}/blob/gh-pages/README.md`
   await expect(readme).toHaveAttribute('href', expectedReadmeHref)
-    console.log('✅ README link verified')
+    console.log('✅ README link verified:', expectedReadmeHref)
     console.log('✅ Login page test completed successfully')
   })
 })
