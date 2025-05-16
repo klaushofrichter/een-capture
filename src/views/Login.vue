@@ -57,6 +57,7 @@ const route = useRoute()
 // eslint-disable-next-line no-unused-vars
 const appVersion = computed(() => packageJson.version)
 const lastCommitDate = computed(() => {
+  if (!packageJson.lastCommit) return 'unknown build date'
   const date = new Date(packageJson.lastCommit)
   return date.toLocaleString()
 })

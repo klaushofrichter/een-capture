@@ -33,7 +33,6 @@ async function getAccessToken(code) {
   // Construct path based on whether we target the local proxy or remote
   const relativePath = '/proxy/getAccessToken'
   const requestUrl = `${AUTH_PROXY_URL}${relativePath}?${tokenParams.toString()}`
-  console.log(`[auth.js] Fetching: ${requestUrl}`)
 
   try {
     const response = await fetch(requestUrl, {
