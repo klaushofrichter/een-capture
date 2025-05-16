@@ -1,4 +1,4 @@
-name: Slack Notification on EEI-Login Deployment
+name: Slack Notification on EEN-Login Deployment
 
 on:
   workflow_run:
@@ -47,7 +47,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.event.workflow_run.head_branch }}"
+                    "text": "*Repository:* [${{ github.repository }}](https://github.com/${{ github.repository }})\n*Branch:* [${{ github.event.workflow_run.head_branch }}](https://github.com/${{ github.repository }}/tree/${{ github.event.workflow_run.head_branch }})"
                   }
                 },
                 {
