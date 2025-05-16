@@ -96,6 +96,28 @@ test.describe('Token Revocation', () => {
     console.log('✅ Refresh token retrieved from input field:', refreshToken)
     expect(refreshToken).toBe('Available')
 
+    // find and click the logout button
+    const logoutButton = page.getByRole('button', { name: 'Logout' })
+    await logoutButton.click()
+    console.log('✅ Logout button clicked')
+
+    // wait for the cancel button to be visible
+    const cancelButton = page.getByRole('button', { name: 'Cancel' })
+    await expect(cancelButton).toBeVisible({ timeout: 10000 })
+    console.log('✅ Cancel button displayed correctly')
+
+    // click the cancel button
+    await cancelButton.click()
+
+    // read the expiration time again
+    const expirationTimeAfterCancel = await expirationTimeInput.inputValue()
+    console.log('✅ Expiration time after cancel:', expirationTimeAfterCancel)
+    expect(expirationTimeAfterCancel).toContain('more than')
+
+    // read the refresh token again
+    const refreshTokenAfterCancel = await refreshTokenInput.inputValue()
+    console.log('✅ Refresh token after cancel:', refreshTokenAfterCancel)
+    expect(refreshTokenAfterCancel).toBe('Available')
 
     // logout
     await logoutFromApplication(page)
