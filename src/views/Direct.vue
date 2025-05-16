@@ -146,6 +146,7 @@ const error = ref('')
 const isLoading = ref(false)
 const appVersion = computed(() => packageJson.version)
 const lastCommitDate = computed(() => {
+  if (!packageJson.lastCommit) return 'unknown build date'
   const date = new Date(packageJson.lastCommit)
   return date.toLocaleString()
 })
