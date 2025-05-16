@@ -1,7 +1,7 @@
 {
   "name": "een-capture",
-  "version": "0.0.3",
-  "lastCommit": "May 10, 2025, 08:09 PM CDT",
+  "version": "0.0.4",
+  "lastCommit": "May 16, 2025, 05:29 PM CDT",
   "private": true,
   "type": "module",
   "base": "/een-capture/",
@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "axios": "^1.6.7",
+    "firebase": "^11.7.1",
     "gh-pages": "^6.3.0",
     "pinia": "^2.1.7",
     "vue": "^3.4.15",
