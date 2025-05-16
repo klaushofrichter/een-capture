@@ -179,8 +179,9 @@ const authStore = useAuthStore()
 
 const appVersion = computed(() => packageJson.version)
 const lastCommitDate = computed(() => {
-  if (!packageJson.lastCommit) return 'N/A'
-  return packageJson.lastCommit
+  if (!packageJson.lastCommit) return 'unknown build date'
+  const date = new Date(packageJson.lastCommit)
+  return date.toLocaleString()
 })
 
 const readmeUrl = computed(() =>

@@ -1,39 +1,45 @@
+// eslint-disable-next-line playwright/no-conditional-in-test
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
-import { navigateToHome, isGitHubPagesEnvironment } from './utils'
+import { navigateToLogin, getLastPartOfUrl } from './utils.js'
+import pkg from '../package.json' assert { type: 'json' }
+import { APP_NAME } from '../src/constants.js'
 
 // Load environment variables from .env file
 dotenv.config()
 
 let loggedBaseURL = false // Flag to ensure baseURL is logged only once
+let basePath = ''
 
 test.describe('Login Page', () => {
   test.beforeEach(async ({ page }) => {
     // Log Base URL and Proxy URL once before the first test runs
+    // eslint-disable-next-line playwright/no-conditional-in-test
     if (!loggedBaseURL) {
       const baseURL = page.context()._options.baseURL
       const configuredProxyUrl = process.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333' // Default logic
+      basePath = getLastPartOfUrl(baseURL)
+
+      // eslint-disable-next-line playwright/no-conditional-in-test
       if (baseURL) {
         console.log(`\n🚀 Running tests against Service at URL: ${baseURL}`)
         console.log(`🔒 Using Auth Proxy URL: ${configuredProxyUrl}\n`)
-
-        // Log if we're in GitHub Pages or local environment
-        const environment = isGitHubPagesEnvironment(page) ? 'GitHub Pages' : 'local development'
-        console.log(`🔍 Testing in ${environment} environment\n`)
+        console.log(`🔒 Using basePath: ${basePath}\n`)
       }
       loggedBaseURL = true // Set flag so it doesn't log again
     }
-
-    // Go to the login page before each test using our utility function
-    await navigateToHome(page)
   })
 
   test('login page should have correct elements and consistent styling', async ({ page }) => {
     console.log(`\n▶️ Running Test: ${test.info().title}\n`)
     console.log('🔍 Starting login page elements test')
+    console.log(
+      '🔍 This test checks the login page for the correct elements and consistent styling'
+    )
 
     // Check if we're on the login page
-    await expect(page.getByText('Welcome to EEN Login')).toBeVisible()
+    await navigateToLogin(page, basePath)
+    await expect(page.getByText(`Welcome to ${APP_NAME}`)).toBeVisible()
     await expect(page.getByText('Sign in with Eagle Eye Networks')).toBeVisible()
     console.log('✅ Login page main elements verified')
 
@@ -64,13 +70,18 @@ test.describe('Login Page', () => {
     expect(classAttr).toContain('dark:hover:text-gray-500')
     expect(classAttr).toContain('dark:hover:text-gray-400')
 
-    // Check README href for both environments
-    const isDev = process.env.NODE_ENV !== 'production'
+    // eslint-disable-next-line playwright/no-conditional-in-test
+    let isDev = process.env.NODE_ENV !== 'production'
+    // eslint-disable-next-line playwright/no-conditional-in-test
+    if (process.env.PLAYWRIGHT_TEST_BASE_URL === `https://klaushofrichter.github.io/${pkg.name}`)
+      isDev = false // because we use the deployed app version on GitHub Pages
+
+    // eslint-disable-next-line playwright/no-conditional-in-test
     const expectedReadmeHref = isDev
-      ? 'https://github.com/klaushofrichter/een-login/blob/develop/README.md'
-      : 'https://github.com/klaushofrichter/een-login/blob/gh-pages/README.md'
+      ? `https://github.com/klaushofrichter/${pkg.name}/blob/develop/README.md`
+      : `https://github.com/klaushofrichter/${pkg.name}/blob/gh-pages/README.md`
     await expect(readme).toHaveAttribute('href', expectedReadmeHref)
-    console.log('✅ README link verified')
+    console.log('✅ README link verified:', expectedReadmeHref)
     console.log('✅ Login page test completed successfully')
   })
 })
