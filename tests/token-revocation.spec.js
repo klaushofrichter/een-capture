@@ -38,9 +38,11 @@ test.describe('Token Revocation', () => {
   test('should revoke token on logout', async ({ page }) => {
     console.log(`\n▶️ Running Test: ${test.info().title}\n`)
     console.log('🔍 Starting token revocation test')
-    console.log('  This test performs a login, retrieves an access token, and then logs out. ')
     console.log(
-      '  Then it goes to the direct page and enters the access token to check if it is revoked. '
+      '  This test performs a login, retrieves an access token, and then logs out and cancels the logout process. '
+    )
+    console.log(
+      '  The logout again without cancelation, and go to the direct page and enters the access token to check if it is revoked. '
     )
     test.setTimeout(30000) // 30 sec max for this test
 
@@ -77,6 +79,23 @@ test.describe('Token Revocation', () => {
     // get the access token from the input field
     const accessToken = await accessTokenInput.inputValue()
     console.log('✅ Access token retrieved from input field')
+
+    // retrieve the expiration time from the input field
+    const expirationTimeInput = page.locator('#expiration-time')
+    await expect(expirationTimeInput).toBeVisible({ timeout: 10000 })
+    console.log('✅ Expiration time input field found correctly')
+    const expirationTime = await expirationTimeInput.inputValue()
+    console.log('✅ Expiration time retrieved from input field:', expirationTime)
+    expect(expirationTime).toContain('more than')
+
+    // retrieve the refresh token from the input field
+    const refreshTokenInput = page.locator('#refresh-token')
+    await expect(refreshTokenInput).toBeVisible({ timeout: 10000 })
+    console.log('✅ Refresh token input field found correctly')
+    const refreshToken = await refreshTokenInput.inputValue()
+    console.log('✅ Refresh token retrieved from input field:', refreshToken)
+    expect(refreshToken).toBe('Available')
+
 
     // logout
     await logoutFromApplication(page)
