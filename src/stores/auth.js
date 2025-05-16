@@ -154,6 +154,7 @@ export const useAuthStore = defineStore('auth', () => {
       userProfile: userProfile.value,
       refreshToken: refreshToken.value
     }
+    console.log('tempCredentials', tempCredentials)
 
     // Clear store values
     token.value = null
@@ -206,6 +207,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function cancelLogout() {
+    console.log('cancelling logout')
     if (tempCredentials) {
       // Clear the interval if it exists
       if (logoutInterval) {
@@ -214,18 +216,21 @@ export const useAuthStore = defineStore('auth', () => {
       }
 
       // Restore store values
+      console.log('restoring store values')
       token.value = tempCredentials.token
       user.value = tempCredentials.user
       hostname.value = tempCredentials.hostname
       port.value = tempCredentials.port
       userProfile.value = tempCredentials.userProfile
       refreshToken.value = tempCredentials.refreshToken
+      tokenExpiration.value = tempCredentials.tokenExpiration
       // Restore localStorage
       if (token.value) localStorage.setItem('auth_token', token.value)
       if (user.value) localStorage.setItem('user_data', JSON.stringify(user.value))
       if (hostname.value) localStorage.setItem('hostname', hostname.value)
       if (port.value) localStorage.setItem('port', String(port.value))
       if (refreshToken.value) localStorage.setItem('refresh_token', refreshToken.value)
+      if (tokenExpiration.value) localStorage.setItem('token_expiration', tokenExpiration.value.toString())
 
       // Clear temporary credentials
       tempCredentials = null

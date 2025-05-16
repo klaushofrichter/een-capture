@@ -182,8 +182,6 @@ const localOauthProxy = env => {
         JSON.stringify({
           accessToken: data.access_token,
           expiresIn: data.expires_in
-          // EEN might not return httpsBaseUrl on refresh, handle accordingly
-          // httpsBaseUrl: data.httpsBaseUrl
         })
       )
     } catch (error) {
