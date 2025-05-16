@@ -35,7 +35,7 @@ test.describe('Token Revocation', () => {
     }
   })
 
-  test('should revoke token on logout', async ({ page }) => {
+  test('should revoke token on logout', async ({ page, browser }) => {
     console.log(`\n▶️ Running Test: ${test.info().title}\n`)
     console.log('🔍 Starting token revocation test')
     console.log(
@@ -96,7 +96,62 @@ test.describe('Token Revocation', () => {
     console.log('✅ Refresh token retrieved from input field:', refreshToken)
     expect(refreshToken).toBe('Available')
 
-    // find and click the logout button
+    // SECOND PAGE SPAWN HERE - ANONYMOUS
+    // open a new context 
+    const anonymousContext = await browser.newContext();
+
+    // Create a new page within the anonymous context
+    const secondPage = await anonymousContext.newPage();
+    await secondPage.goto(basePath + '/direct')
+    await expect(secondPage.getByRole('heading', { name: 'Direct' })).toBeVisible({
+      timeout: 10000
+    })
+    console.log('✅ P2: Direct page displayed correctly')
+
+    // enter the access token into the text field
+    await secondPage.locator('#token').fill(accessToken)
+    console.log('✅ P2: Access token entered into text field')
+
+    // click the proceed button
+    const secondProceedButton = secondPage.getByRole('button', { name: 'Proceed' })
+    await secondProceedButton.click()
+    console.log('✅ P2: Proceed button clicked')
+
+    // wait for the home page to be visible
+    await expect(secondPage.getByText('You have successfully logged in to your Eagle Eye Networks account')).toBeVisible({
+      timeout: 10000
+    })
+    console.log('✅ P2: Home page displayed correctly')
+
+    // go to the profile page
+    await secondPage.goto(basePath + '/profile')
+    await expect(secondPage.getByRole('heading', { name: 'Profile' })).toBeVisible({
+      timeout: 10000
+    })
+    console.log('✅ P2: Profile page displayed correctly')
+
+    // find the refresh token input field and read its value  
+    const secondRefreshTokenInput = secondPage.locator('#refresh-token')
+    await expect(secondRefreshTokenInput).toBeVisible({ timeout: 10000 })
+    console.log('✅ P2: Refresh token input field found correctly')
+    const secondRefreshToken = await secondRefreshTokenInput.inputValue()
+    console.log('✅ P2: Refresh token retrieved from input field:', secondRefreshToken)
+    expect(secondRefreshToken).toBe('No Refresh Token available')
+    
+    // find and read the expiration time
+    const secondExpirationTimeInput = secondPage.locator('#expiration-time')
+    await expect(secondExpirationTimeInput).toBeVisible({ timeout: 10000 })
+    console.log('✅ P2: Expiration time input field found correctly')
+    const secondExpirationTime = await secondExpirationTimeInput.inputValue()
+    console.log('✅ P2: Expiration time retrieved from input field:', secondExpirationTime)
+    expect(secondExpirationTime).toContain('Token expiration date is unknown')
+
+    // close the second page
+    await secondPage.close()
+    console.log('✅ P2: Second page closed')
+
+    // FIRST PAGE CONTINUES HERE
+    // find and click the logout button on the first page
     const logoutButton = page.getByRole('button', { name: 'Logout' })
     await logoutButton.click()
     console.log('✅ Logout button clicked')
