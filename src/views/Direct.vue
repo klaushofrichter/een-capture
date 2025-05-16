@@ -146,8 +146,8 @@ const error = ref('')
 const isLoading = ref(false)
 const appVersion = computed(() => packageJson.version)
 const lastCommitDate = computed(() => {
-  if (!packageJson.lastCommit) return null
-  return packageJson.lastCommit
+  const date = new Date(packageJson.lastCommit)
+  return date.toLocaleString()
 })
 const readmeUrl = computed(() =>
   import.meta.env.DEV
