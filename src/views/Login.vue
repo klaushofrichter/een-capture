@@ -22,8 +22,7 @@
     <div class="absolute bottom-4 flex items-center space-x-2 text-xs">
       <span class="text-gray-400 dark:text-gray-500">v{{ appVersion }}</span>
       <span v-if="lastCommitDate" class="text-gray-400 dark:text-gray-500"
-        >| {{ lastCommitDate }}</span
-      >
+        >|  {{ lastCommitDate }}</span>
       <span class="text-gray-400 dark:text-gray-500">|</span>
       <a
         :href="readmeUrl"
@@ -49,7 +48,6 @@
 import { onMounted, computed, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { getAuthUrl, handleAuthCallback } from '../services/auth'
-import { useAuthStore } from '../stores/auth'
 import packageJson from '../../package.json'
 import { APP_NAME } from '../constants'
 
@@ -57,11 +55,11 @@ const router = useRouter()
 const route = useRoute()
 // Auth store is imported for potential future use but currently not used directly
 // eslint-disable-next-line no-unused-vars
-const authStore = useAuthStore()
 const appVersion = computed(() => packageJson.version)
 const lastCommitDate = computed(() => {
-  if (!packageJson.lastCommit) return null
-  return packageJson.lastCommit
+  if (!packageJson.lastCommit) return 'unknown build date'
+  const date = new Date(packageJson.lastCommit)
+  return date.toLocaleString()
 })
 const isProcessingCallback = ref(false)
 

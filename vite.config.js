@@ -101,7 +101,8 @@ const localOauthProxy = env => {
   // Helper to handle /refreshAccessToken
   const handleRefreshAccessToken = async (req, res /*, next */) => {
     // console.log('[Vite Plugin] Intercepted /proxy/refreshAccessToken'); // DEBUG
-    const queryParams = parse(req.url.split('?')[1] || '')
+    // Remove the following line as 'queryParams' is unused
+    // const queryParams = parse(req.url.split('?')[1] || '')
 
     // Try to get sessionId from cookie
     let sessionId = req.headers.cookie
@@ -181,8 +182,6 @@ const localOauthProxy = env => {
         JSON.stringify({
           accessToken: data.access_token,
           expiresIn: data.expires_in
-          // EEN might not return httpsBaseUrl on refresh, handle accordingly
-          // httpsBaseUrl: data.httpsBaseUrl
         })
       )
     } catch (error) {
@@ -309,6 +308,10 @@ export default defineConfig(({ command, mode }) => {
         targets: [
           {
             src: 'README.md',
+            dest: '.'
+          },
+          {
+            src: 'repository-management.pdf',
             dest: '.'
           }
         ]

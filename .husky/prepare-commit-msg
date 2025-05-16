@@ -1,5 +1,6 @@
 # Get the version from package.json
-VERSION=$(node -p "require('./package.json').version")
+REPO_ROOT=$(git rev-parse --show-toplevel)
+VERSION=$(node -p "require('$REPO_ROOT/package.json').version")
 
 # Read the commit message
 COMMIT_MSG_FILE=$1

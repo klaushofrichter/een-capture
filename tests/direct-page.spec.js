@@ -1,21 +1,30 @@
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
-import { isGitHubPagesEnvironment, buildUrl } from './utils.js'
+import { getLastPartOfUrl } from './utils.js'
+import pkg from '../package.json' assert { type: 'json' }
+import { APP_NAME } from '../src/constants.js'
 
 // Load environment variables from .env file
 dotenv.config()
 
 let loggedBaseURL = false // Flag to ensure baseURL is logged only once
+let basePath = ''
 
 test.describe('Direct Page', () => {
   test.beforeEach(async ({ page }) => {
     // Log Base URL and Proxy URL once before the first test runs
+    // eslint-disable-next-line playwright/no-conditional-in-test
     if (!loggedBaseURL) {
       const baseURL = page.context()._options.baseURL
       const configuredProxyUrl = process.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333' // Default logic
+      const redirectUri = process.env.VITE_REDIRECT_URI || 'http://127.0.0.1:3333'
+      basePath = getLastPartOfUrl(baseURL)
+      // eslint-disable-next-line playwright/no-conditional-in-test
       if (baseURL) {
         console.log(`\n🚀 Running tests against Service at URL: ${baseURL}`)
-        console.log(`🔒 Using Auth Proxy URL: ${configuredProxyUrl}\n`)
+        console.log(`🔒 Using Auth Proxy URL: ${configuredProxyUrl}`)
+        console.log(`🔒 Using Redirect URI: ${redirectUri}`)
+        console.log(`🔒 Using basePath: ${basePath}\n`)
       }
       loggedBaseURL = true // Set flag so it doesn't log again
     }
@@ -25,20 +34,16 @@ test.describe('Direct Page', () => {
     console.log(`\n▶️ Running Test: ${test.info().title}\n`)
     console.log('🔍 Starting direct page elements test')
 
-    // Skip this test in GitHub Pages environment
-    if (isGitHubPagesEnvironment(page)) {
-      console.log('⏭️ Skipping direct page test in GitHub Pages environment')
-      return
-    }
-
     // Continue with the test for local environment
-    const directUrl = buildUrl(page, '/direct')
+    const directUrl = basePath + '/direct'
     console.log(`📝 Direct URL: ${directUrl}`)
     await page.goto(directUrl)
     console.log('🌐 Navigated to direct login page')
 
     // Check if we're on the direct page
-    await expect(page.getByRole('heading', { name: /Direct Access to EEN Login/ })).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: new RegExp(`Direct Access to ${APP_NAME}`) })
+    ).toBeVisible()
     console.log('✅ Direct page heading verified')
 
     // Check for form elements
@@ -75,10 +80,14 @@ test.describe('Direct Page', () => {
     expect(classAttr).toContain('hover:text-gray-600')
     expect(classAttr).toContain('dark:hover:text-gray-500')
     expect(classAttr).toContain('dark:hover:text-gray-400')
-    const isDev = process.env.NODE_ENV !== 'production'
+    let isDev = process.env.NODE_ENV !== 'production'
+    // eslint-disable-next-line playwright/no-conditional-in-test
+    if (process.env.PLAYWRIGHT_TEST_BASE_URL === `https://klaushofrichter.github.io/${pkg.name}`)
+      isDev = false // because we use the deployed app version on GitHub Pages
+    // eslint-disable-next-line playwright/no-conditional-in-test
     const expectedReadmeHref = isDev
-      ? 'https://github.com/klaushofrichter/een-login/blob/develop/README.md'
-      : 'https://github.com/klaushofrichter/een-login/blob/gh-pages/README.md'
+      ? `https://github.com/klaushofrichter/${pkg.name}/blob/develop/README.md`
+      : `https://github.com/klaushofrichter/${pkg.name}/blob/gh-pages/README.md`
     await expect(readme).toHaveAttribute('href', expectedReadmeHref)
     console.log('✅ README link verified')
     console.log('✅ Direct page test completed successfully')
