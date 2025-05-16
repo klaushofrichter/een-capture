@@ -193,7 +193,7 @@ const localOauthProxy = env => {
 
   // Helper to handle /revoke
   const handleRevoke = async (req, res /*, next */) => {
-    console.log('[Vite Plugin] Intercepted /proxy/revoke') // DEBUG
+    //console.log('[Vite Plugin] Intercepted /proxy/revoke') // DEBUG
 
     // Try to get sessionId from cookie
     let sessionId = req.headers.cookie
@@ -208,7 +208,7 @@ const localOauthProxy = env => {
     }
 
     const refreshToken = sessions.get(sessionId)
-    console.log('[Vite Plugin] Revoking token for session:', sessionId)
+    //console.log('[Vite Plugin] Revoking token for session:', sessionId)
 
     if (!refreshToken) {
       console.error(`[Vite Plugin] No refresh token found for session: ${sessionId}`)
@@ -232,7 +232,7 @@ const localOauthProxy = env => {
     const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
 
     try {
-      console.log('[Vite Plugin] Revoking token for session:', sessionId)
+      //console.log('[Vite Plugin] Revoking token for session:', sessionId)
       const eenResponse = await fetch(revokeUrl, {
         method: 'POST',
         headers: {
@@ -252,7 +252,7 @@ const localOauthProxy = env => {
 
       // Remove the session regardless of EEN response
       sessions.delete(sessionId)
-      console.log(`[Vite Plugin] Deleted session: ${sessionId}`)
+      //console.log(`[Vite Plugin] Deleted session: ${sessionId}`)
 
       // Remove the cookie by setting its expiration to 0
       res.setHeader(
