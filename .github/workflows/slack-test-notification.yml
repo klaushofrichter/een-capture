@@ -22,12 +22,17 @@ jobs:
           # Get the version from the same commit that was tested
           VERSION=$(node -p 'require("./package.json").version')
           LAST_COMMIT=$(node -p 'require("./package.json").lastCommit')
+          # Convert UTC to Central Time (America/Chicago timezone)
+          ct_time=$(TZ=America/Chicago date -d "$LAST_COMMIT")
+          formatted_ct_time=$(date -d "$ct_time" "+%Y-%m-%dT%H:%M:%S America/Chicago")
+          echo "LAST_COMMIT="$formatted_ct_time" >> $GITHUB_OUTPUT
+
           cat package.json
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "LAST_COMMIT=$LAST_COMMIT" >> $GITHUB_OUTPUT
           echo ""
           echo "Branch: ${{ github.event.workflow_run.head_branch }}"
-          echo "Last Commit: $LAST_COMMIT"
+          echo "Last Build: $formatted_ct_time"
           echo "Version: $VERSION"
 
       - name: Get repository name
@@ -51,7 +56,7 @@ jobs:
           # Replace newlines with spaces and escape quotes
           message="${message//$'\n'/ }"
           message="${message//\"/\\\"}"
-          # replace '`' with '"'
+          # replace '`' with '"'  - sometimes the commit message contains a backtick
           message="${message//\`/\\\"}"
           echo "MESSAGE: $message"
           echo "MESSAGE=$message" >> $GITHUB_OUTPUT
