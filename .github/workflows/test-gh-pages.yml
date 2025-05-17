@@ -29,6 +29,14 @@ jobs:
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
+    
+      - name: Extract repository name
+        id: extract_repo_name
+        run: |
+          REPO="${{ github.repository }}"
+          LAST_PART=$(echo "$REPO" | awk -F'/' '{print $NF}')
+          echo "LAST_PART: $LAST_PART"
+          echo "LAST_PART=$LAST_PART" >> "$GITHUB_OUTPUT"
 
       - name: Wait for deployment to be available
         run: |
@@ -36,7 +44,7 @@ jobs:
           timeout=300
           interval=10
           elapsed=0
-          url="https://${{ github.repository_owner }}.github.io/${{ github.repository }}"
+          url="https://${{ github.repository_owner }}.github.io/${{ steps.extract_repo_name.outputs.LAST_PART }}"
           echo "Waiting for $url to be available..."
           
           until curl --output /dev/null --silent --head --fail "$url"; do
@@ -50,13 +58,6 @@ jobs:
           done
           
           echo "Deployment is available!"
-
-      - name: Extract repository name
-        id: extract_repo_name
-        run: |
-          REPO="${{ github.repository }}"
-          LAST_PART=$(echo "$REPO" | awk -F'/' '{print $NF}')
-          echo "LAST_PART=$LAST_PART" >> "$GITHUB_OUTPUT"
 
       - name: Run Playwright tests
         env:
