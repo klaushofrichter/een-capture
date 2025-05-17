@@ -57,7 +57,7 @@ jobs:
       - name: Upload source code artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.repository }}-src
+          name: ${{ steps.create-source-code-package.outputs.REPO_NAME }}-src_v${{ steps.package-version.outputs.version }}
           path: artifacts/${{ steps.create-source-code-package.outputs.REPO_NAME }}-src_v${{ steps.package-version.outputs.version }}.zip
           retention-days: 5
 

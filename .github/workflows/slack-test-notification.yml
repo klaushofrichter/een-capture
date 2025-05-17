@@ -69,7 +69,7 @@ jobs:
                   "type": "header",
                   "text": {
                     "type": "plain_text",
-                    "text": "${{ github.event.workflow_run.conclusion == 'success' && '✅ GH Pages Tests Passed on ${{ github.repository }}' || '❌ GH Pages Tests Failed on ${{ github.repository }}' }} (v${{ steps.package-version.outputs.VERSION }})",
+                    "text": "${{ github.event.workflow_run.conclusion == 'success' && '✅ GH Pages Tests Passed on ${{ steps.repo-name.outputs.REPO_NAME }}' || '❌ GH Pages Tests Failed on ${{ github.repository }}' }} (v${{ steps.package-version.outputs.VERSION }})",
                     "emoji": true
                   }
                 },
