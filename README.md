@@ -352,6 +352,31 @@ The tests cover:
 -   **Worker Security:** Ensure your worker code handles errors correctly and doesn't inadvertently log sensitive information.
 -   **HTTPS:** Essential for both the frontend application and the Cloudflare Worker URL.
 
+
+
+## Slack Integration
+
+This project integrates with Slack to notify you about important events, such as new production builds and workflow executions.
+
+### Setup
+
+1. **Create a Slack Webhook:**
+   - Go to [Slack.com](https://slack.com) and navigate to your workspace.
+   - Create a new webhook for a specific channel where you want to receive notifications.
+   - Copy the webhook URL provided by Slack.
+
+2. **Set Up GitHub Action Secret:**
+   - In your GitHub repository, go to **Settings** > **Secrets and variables** > **Actions**.
+   - Create a new secret named `GITHUB_WEBHOOK_URL` and paste the Slack webhook URL as the value.
+
+### Notifications
+
+- **New Production Build:** You will receive a Slack message whenever a new production build is released.
+- **Workflow Execution:** You will also receive notifications when the `test-gh-pages.yml` workflow is executed.
+
+This integration helps keep your team informed about important updates and changes in the project.
+
+
 ## Extending the Application
 
 This application does not provide a lot of functionality, it is intended as a framework for other
@@ -389,6 +414,7 @@ is a summary of the steps:
   - `git checkout develop`
   - `git pull origin develop`
   - `git fetch upstream-original` - this imports the changes from the original
+    - if this fails, reimport the original: `git remote add upstream-original https://github.com/klaushofrichter/een-login.git`
   - `git merge upstream-original/develop`
   - resolve any conflicts, and add/commit any changes
   - `git push origin main` to push any files that have been changed
@@ -414,25 +440,3 @@ If you plan to contribute back to the original repository:
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Slack Integration
-
-This project integrates with Slack to notify you about important events, such as new production builds and workflow executions.
-
-### Setup
-
-1. **Create a Slack Webhook:**
-   - Go to [Slack.com](https://slack.com) and navigate to your workspace.
-   - Create a new webhook for a specific channel where you want to receive notifications.
-   - Copy the webhook URL provided by Slack.
-
-2. **Set Up GitHub Action Secret:**
-   - In your GitHub repository, go to **Settings** > **Secrets and variables** > **Actions**.
-   - Create a new secret named `GITHUB_WEBHOOK_URL` and paste the Slack webhook URL as the value.
-
-### Notifications
-
-- **New Production Build:** You will receive a Slack message whenever a new production build is released.
-- **Workflow Execution:** You will also receive notifications when the `test-gh-pages.yml` workflow is executed.
-
-This integration helps keep your team informed about important updates and changes in the project.
