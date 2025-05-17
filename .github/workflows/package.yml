@@ -31,7 +31,7 @@ jobs:
       - name: Create source code package
         run: |
           # Create a zip file of the source code (excluding sensitive files and directories)
-          zip -r artifacts/een-login-src_v${{ steps.package-version.outputs.version }}.zip . \
+          zip -r artifacts/${{ github.repository }}-src_v${{ steps.package-version.outputs.version }}.zip . \
             -x "node_modules/*" \
             -x "dist/*" \
             -x ".git/*" \
@@ -44,8 +44,8 @@ jobs:
       - name: Upload source code artifact
         uses: actions/upload-artifact@v4
         with:
-          name: een-login-src
-          path: artifacts/een-login-src_v${{ steps.package-version.outputs.version }}.zip
+          name: ${{ github.repository }}-src
+          path: artifacts/${{ github.repository }}-src_v${{ steps.package-version.outputs.version }}.zip
           retention-days: 5
 
       - name: Create GitHub Release
@@ -53,7 +53,7 @@ jobs:
         with:
           tag_name: v${{ steps.package-version.outputs.version }}
           name: Release v${{ steps.package-version.outputs.version }}
-          files: artifacts/een-login-src_v${{ steps.package-version.outputs.version }}.zip
+          files: artifacts/${{ github.repository }}-src_v${{ steps.package-version.outputs.version }}.zip
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 

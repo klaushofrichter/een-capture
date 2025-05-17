@@ -7,6 +7,7 @@ import { parse } from 'node:querystring' // To parse query strings
 import { randomBytes } from 'node:crypto' // For session ID generation
 import { Buffer } from 'buffer'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
+import pkg from './package.json'
 
 // Define the proxy plugin
 const localOauthProxy = env => {
@@ -347,10 +348,11 @@ export default defineConfig(({ command, mode }) => {
 
   // Set base path conditionally (keep existing logic)
   if (command === 'build') {
-    config.base = '/een-login/'
+    config.base = `/${pkg.name}/`
   } else {
     config.base = '/'
   }
+  
 
   return config
 })
