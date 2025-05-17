@@ -21,13 +21,10 @@ jobs:
         run: |
           # Get the version from the same commit that was tested
           VERSION=$(node -p 'require("./package.json").version')
-          LAST_COMMIT=$(node -p 'require("./package.json").last_commit')
-          BRANCH=$(node -p 'require("./package.json").branch')
+          LAST_COMMIT=$(node -p 'require("./package.json").lastCommit')
           cat package.json
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "LAST_COMMIT=$LAST_COMMIT" >> $GITHUB_OUTPUT
-          echo "BRANCH=$BRANCH" >> $GITHUB_OUTPUT
-          echo "Branch: $BRANCH"
           echo "Last Commit: $LAST_COMMIT"
           echo "Version: $VERSION"
 
@@ -86,8 +83,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": 
-                      *Repository:* <https://github.com/${{ github.repository }}|${{ github.repository }}\n*Branch:* <https://github.com/${{ github.repository }}/tree/${{ github.event.workflow_run.head_branch }}|${{ github.event.workflow_run.head_branch }}\n*Build Date:* ${{ steps.package-version.outputs.LAST_COMMIT }} UTC"
+                    "text": "*Repository:* <https://github.com/${{ github.repository }}|${{ github.repository }}\n*Branch:* <https://github.com/${{ github.repository }}/tree/${{ github.event.workflow_run.head_branch }}|${{ github.event.workflow_run.head_branch }}\n*Build Date:* ${{ steps.package-version.outputs.LAST_COMMIT }}"
                   }
                 },
                 {
