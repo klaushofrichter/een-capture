@@ -5,7 +5,9 @@ on:
     workflows: ["Test GH Pages with Playwright"]
     types:
       - completed
-
+    branches:
+      - production
+      
 jobs:
   notify-slack:
     runs-on: ubuntu-latest
