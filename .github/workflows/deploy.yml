@@ -40,9 +40,8 @@ jobs:
         env:
           VITE_EEN_CLIENT_ID: ${{ secrets.VITE_EEN_CLIENT_ID }}
           VITE_EEN_CLIENT_SECRET: ${{ secrets.VITE_EEN_CLIENT_SECRET }}
-          VITE_AUTH_PROXY_URL: "https://een-login.klaushofrichter.workers.dev"
+          VITE_AUTH_PROXY_URL: "https://een-login.klaushofrichter.workers.dev" # TODO: make this configurable
 
-          # VITE_REDIRECT_URI will be set dynamically in the run step below
         run: |
           REPO_NAME=$(echo ${{ github.repository }} | cut -d '/' -f 2)
           export VITE_REDIRECT_URI="https://${{ github.repository_owner }}.github.io/${REPO_NAME}/"

@@ -36,7 +36,7 @@ jobs:
           timeout=300
           interval=10
           elapsed=0
-          url="https://${{ github.repository_owner }}.github.io/een-login"
+          url="https://${{ github.repository_owner }}.github.io/${{ github.repository }}"
           echo "Waiting for $url to be available..."
           
           until curl --output /dev/null --silent --head --fail "$url"; do
@@ -53,11 +53,11 @@ jobs:
 
       - name: Run Playwright tests
         env:
-          PLAYWRIGHT_TEST_BASE_URL: https://${{ github.repository_owner }}.github.io/een-login
+          PLAYWRIGHT_TEST_BASE_URL: https://${{ github.repository_owner }}.github.io/${{ github.repository }}
           VITE_EEN_CLIENT_ID: ${{ secrets.VITE_EEN_CLIENT_ID }}
           VITE_EEN_CLIENT_SECRET: ${{ secrets.VITE_EEN_CLIENT_SECRET }}
-          VITE_REDIRECT_URI: https://${{ github.repository_owner }}.github.io/een-login
-          VITE_AUTH_PROXY_URL: https://een-login.klaushofrichter.workers.dev
+          VITE_REDIRECT_URI: https://${{ github.repository_owner }}.github.io/${{ github.repository }}
+          VITE_AUTH_PROXY_URL: https://${{ github.repository }}.klaushofrichter.workers.dev
           TEST_USER: ${{ secrets.TEST_USER }}
           TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
           NODE_ENV: 'production'

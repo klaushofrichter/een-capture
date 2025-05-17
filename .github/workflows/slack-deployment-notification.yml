@@ -1,4 +1,4 @@
-name: Slack Notification on EEN-Login Deployment
+name: Slack Notification on Deployment
 
 on:
   workflow_run:
@@ -39,7 +39,7 @@ jobs:
                   "type": "header",
                   "text": {
                     "type": "plain_text",
-                    "text": "✅ New EEN-Login Deployment to GitHub Pages (v${{ steps.package-version.outputs.VERSION }})",
+                    "text": "✅ New ${{ github.repository }} Deployment to GitHub Pages (v${{ steps.package-version.outputs.VERSION }})",
                     "emoji": true
                   }
                 },
@@ -68,7 +68,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*Deployment URL:* <https://klaushofrichter.github.io/een-login/|View Site>"
+                    "text": "*Deployment URL:* <https://klaushofrichter.github.io/${{ github.repository }}/|View Site>"
                   }
                 },
                 {

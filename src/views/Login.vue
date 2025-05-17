@@ -76,8 +76,8 @@ const hasOAuthCode = computed(() => !!route.query.code)
 
 const readmeUrl = computed(() =>
   import.meta.env.DEV
-    ? 'https://github.com/klaushofrichter/een-login/blob/develop/README.md'
-    : 'https://github.com/klaushofrichter/een-login/blob/gh-pages/README.md'
+    ? 'https://github.com/klaushofrichter/'+packageJson.name+'/blob/develop/README.md'
+    : 'https://github.com/klaushofrichter/'+packageJson.name+'/blob/gh-pages/README.md'
 )
 
 onMounted(async () => {

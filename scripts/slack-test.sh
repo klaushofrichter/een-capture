@@ -1,5 +1,7 @@
 #!/bin/bash
 source ../.env
-curl -X POST -H 'Content-type: application/json' --data '{"text":"Hello, een-login!"}' ${SLACK_WEBHOOK_URL}
+NAME=$( cat ../package.json|grep '"name":' | cut -d '"' -f4 )
+echo "Sending message to Slack for ${NAME}"
+curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"Hello, ${NAME}!\"}" ${SLACK_WEBHOOK_URL}
 echo
 
