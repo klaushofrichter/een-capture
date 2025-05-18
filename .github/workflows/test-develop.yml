@@ -37,21 +37,13 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Start Vite preview server
-        run: |
-          npm run preview -- --port 3333 &
-          echo "Waiting for server to start on port 3333..."
-          timeout=30 # Timeout in seconds 
-          count=0
-          while ! nc -z 127.0.0.1 3333; do
-            if [ "$count" -ge "$timeout" ]; then
-              echo "Timeout waiting for server to start."
-              exit 1
-            fi
-            sleep 1
-            count=$((count + 1))
-          done
-          echo "Server started successfully on port 3333."
+#      - name: Start Vite server
+#        run: |
+#          npm run preview &
+#          echo "Waiting for server to start..."
+#          while ! nc -z 127.0.0.1 3333; do
+#            sleep 1
+#          done
 
       - name: Run Playwright tests
         run: npx playwright test
