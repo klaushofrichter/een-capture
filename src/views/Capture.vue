@@ -49,19 +49,22 @@ import { ref, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { APP_NAME } from '../constants'
 import { getFirestore, collection, getDocs } from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+const auth = getAuth();
 
 const authStore = useAuthStore()
 const captures = ref([]);
 const loading = ref(true);
 const error = ref(null);
 
-const fetchCaptures = async () => {
+
+const fetchUsers = async () => {
   loading.value = true;
   error.value = null;
   try {
     const db = getFirestore();
-    // Replace 'captures' with the actual name of your Firestore collection
     const querySnapshot = await getDocs(collection(db, "users"));
+    console.log("querySnapshot", querySnapshot);
     captures.value = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   } catch (e) {
     console.error("Error fetching users: ", e);
@@ -73,6 +76,6 @@ const fetchCaptures = async () => {
 
 onMounted(async () => {
   document.title = `${APP_NAME} - Capture`;
-  await fetchCaptures();
+  await fetchUsers();
 });
 </script> 
