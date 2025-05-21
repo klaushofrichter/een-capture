@@ -43,32 +43,47 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-// Import the auth and db instances from firebase.js
+import { useAuthStore } from '../stores/auth'
+import { userService } from '../services/user'
 import { auth, db } from '../firebase'
 import { APP_NAME } from '../constants'
 import { collection, getDocs } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
+const authStore = useAuthStore()
 const users = ref([]);
 const loading = ref(true);
 const error = ref(null);
+const profileLoading = ref(false);
+
+const ensureUserProfile = async () => {
+  if (!authStore.userProfile) {
+    profileLoading.value = true;
+    try {
+      const data = await userService.getUserProfile();
+      authStore.setUserProfile({
+        id: data.id,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email
+      });
+    } catch (err) {
+      error.value = err.message || 'Failed to load user profile';
+    } finally {
+      profileLoading.value = false;
+    }
+  }
+
+  // 
+};
 
 const fetchUsers = async () => {
   loading.value = true;
   error.value = null;
-  console.log("Attempting to fetch users...");
-
   try {
-    console.log("Fetching users from collection: documents");
     const querySnapshot = await getDocs(collection(db, "documents"));
-    console.log("Query completed", querySnapshot);
     users.value = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    console.log("Users fetched successfully:", users.value);
-    if (users.value.length === 0) {
-      console.log("No users found in the collection.");
-    }
   } catch (e) {
-    console.error("Error fetching users: ", e);
     error.value = e.message || 'Unknown error';
   } finally {
     loading.value = false;
@@ -77,14 +92,12 @@ const fetchUsers = async () => {
 
 onMounted(() => {
   document.title = `${APP_NAME} - User List`;
-  console.log("onMounted called - auth:", auth);
-
   const waitForAuth = setInterval(() => {
     if (auth) {
       clearInterval(waitForAuth);
-      onAuthStateChanged(auth, (user) => {
-        console.log("onAuthStateChanged fired. User:", user);
+      onAuthStateChanged(auth, async (user) => {
         if (user) {
+          await ensureUserProfile();
           fetchUsers();
         } else {
           error.value = "You must be authenticated to view users.";
