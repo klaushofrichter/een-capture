@@ -9,6 +9,17 @@
           <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
             List of all users in the database.
           </p>
+          <div v-if="profileLoading" class="mt-4 text-sm text-blue-600 dark:text-blue-400">
+            Loading your user profile...
+          </div>
+          <div v-if="userRegistered !== null && userEmail">
+            <span v-if="userRegistered" class="text-green-600 dark:text-green-400">
+              User {{ userEmail }} is registered
+            </span>
+            <span v-else class="text-red-600 dark:text-red-400">
+              User {{ userEmail }} is not registered
+            </span>
+          </div>
         </div>
         <div class="border-t border-gray-200 dark:border-gray-700">
           <div class="px-4 py-5 sm:p-6">
@@ -42,12 +53,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { userService } from '../services/user'
 import { auth, db } from '../firebase'
 import { APP_NAME } from '../constants'
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
 const authStore = useAuthStore()
@@ -55,6 +66,8 @@ const users = ref([]);
 const loading = ref(true);
 const error = ref(null);
 const profileLoading = ref(false);
+const userRegistered = ref(null); // null = unknown, true = registered, false = not registered
+const userEmail = computed(() => authStore.userProfile?.email || '');
 
 const ensureUserProfile = async () => {
   if (!authStore.userProfile) {
@@ -73,8 +86,20 @@ const ensureUserProfile = async () => {
       profileLoading.value = false;
     }
   }
+};
 
-  // 
+const checkUserRegistration = async () => {
+  userRegistered.value = null;
+  if (!authStore.userProfile?.email) return;
+  try {
+    console.log("Checking user registration for:", authStore.userProfile.email);
+    const q = query(collection(db, "documents"), where("email", "==", authStore.userProfile.email));
+    const querySnapshot = await getDocs(q);
+    userRegistered.value = !querySnapshot.empty;
+  } catch (e) {
+    error.value = e.message || 'Unknown error checking registration';
+    userRegistered.value = null;
+  }
 };
 
 const fetchUsers = async () => {
@@ -98,6 +123,7 @@ onMounted(() => {
       onAuthStateChanged(auth, async (user) => {
         if (user) {
           await ensureUserProfile();
+          await checkUserRegistration();
           fetchUsers();
         } else {
           error.value = "You must be authenticated to view users.";
