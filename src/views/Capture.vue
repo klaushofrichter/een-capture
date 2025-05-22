@@ -192,6 +192,7 @@ const confirmUnregister = async () => {
       userJustRegistered.value = false;
       unregisterDocId.value = null;
       showUnregisterModal.value = false;
+      fetchUsers();
     } catch (e) {
       error.value = e.message || 'Unknown error unregistering user';
     }
