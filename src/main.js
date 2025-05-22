@@ -16,8 +16,6 @@ const requiredEnvVars = [
   'VITE_FIREBASE_API_KEY',
   'VITE_FIREBASE_AUTH_DOMAIN',
   'VITE_FIREBASE_PROJECT_ID',
-  'VITE_FIREBASE_ADMIN_EMAIL',
-  'VITE_FIREBASE_ADMIN_PASSWORD'
 ];
 
 const missingEnvVars = requiredEnvVars.filter(
@@ -32,27 +30,8 @@ console.log("Firebase App initialized:", app);
 console.log("Firebase Auth instance:", auth);
 console.log("Firebase Firestore instance:", db);
 
-// Set persistence and login admin user
-const loginAdminUser = async () => {
-  try {
-    await setPersistence(auth, browserLocalPersistence);
-    console.log("Firebase Auth persistence set to browserLocalPersistence");
-    console.log('Debug: Attempting to log in Firebase admin user:', import.meta.env.VITE_FIREBASE_ADMIN_EMAIL);
-    const userCredential = await signInWithEmailAndPassword(
-      auth,
-      import.meta.env.VITE_FIREBASE_ADMIN_EMAIL,
-      import.meta.env.VITE_FIREBASE_ADMIN_PASSWORD
-    );
-    console.log('Debug: Firebase admin user logged in successfully.');
-    console.log('Debug: UserCredential:', userCredential);
-    console.log('Debug: Logged in user UID:', userCredential.user.uid);
-    console.log('Debug: Logged in user Email:', userCredential.user.email);
-  } catch (error) {
-    console.error('Debug: Firebase admin login failed.', error);
-    console.error('Debug: Error code:', error.code);
-    console.error('Debug: Error message:', error.message);
-  }
-};
+// Set persistence and login admin user (removed as per security plan)
+// const loginAdminUser = async () => { ... }; // Removed the entire function block
 
 // Handle 404 redirects from GitHub Pages
 const handleGitHubPagesRedirect = () => {
@@ -75,5 +54,5 @@ document.querySelector('meta[name="description"]').setAttribute('content', APP_D
 handleGitHubPagesRedirect()
 appVue.mount('#app')
 
-// Call the login function after the app is mounted
+// Call the login function after the app is mounted (removed as per security plan)
 // loginAdminUser();
