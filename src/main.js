@@ -76,4 +76,4 @@ handleGitHubPagesRedirect()
 appVue.mount('#app')
 
 // Call the login function after the app is mounted
-loginAdminUser();
+// loginAdminUser();
