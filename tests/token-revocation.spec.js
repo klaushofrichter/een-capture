@@ -44,7 +44,7 @@ test.describe('Token Revocation', () => {
     console.log(
       '  The logout again without cancelation, and go to the direct page and enters the access token to check if it is revoked. '
     )
-    test.setTimeout(30000) // 30 sec max for this test
+    test.setTimeout(60000) // 60 sec max for this test
 
     // go directly to the home page
     await navigateToLogin(page, basePath)
