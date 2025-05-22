@@ -55,7 +55,7 @@
                 <ul v-if="!loading && !error && users.length > 0" class="mt-4 space-y-2">
                   <li v-for="user in users" :key="user.id" class="p-2 bg-gray-100 dark:bg-gray-600 rounded">
                     <!-- Display user properties - adjust based on your user document structure -->
-                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ user.title || 'No Email' }}</p>
+                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ user.email || 'No Email' }}</p>
                     <p class="text-xs text-gray-500 dark:text-gray-400">ID: {{ user.id }}</p>
                   </li>
                 </ul>
@@ -101,6 +101,7 @@ import { auth, db } from '../firebase'
 import { APP_NAME } from '../constants'
 import { collection, getDocs, query, where, addDoc, deleteDoc, doc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
+import { getFunctions, httpsCallable } from "firebase/functions";
 
 const authStore = useAuthStore()
 const users = ref([]);
@@ -163,8 +164,11 @@ const fetchUsers = async () => {
   loading.value = true;
   error.value = null;
   try {
-    const querySnapshot = await getDocs(collection(db, "documents"));
-    users.value = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const functions = getFunctions();
+    const getAllDocuments = httpsCallable(functions, 'getAllDocuments');
+    const result = await getAllDocuments();
+    users.value = result.data;
+
   } catch (e) {
     error.value = e.message || 'Unknown error';
   } finally {
