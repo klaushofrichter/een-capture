@@ -8,11 +8,6 @@ import {
 
 let loggedBaseURL = false // Flag to ensure baseURL is logged only once
 let basePath = ''
-
-// Replace with your test credentials
-const TEST_EMAIL = process.env.TEST_EMAIL || 'testuser@example.com';
-const TEST_PASSWORD = process.env.TEST_PASSWORD || 'testpassword';
-
 // Utility selectors
 const selectors = {
   loginEmail: 'input[type="email"]',
