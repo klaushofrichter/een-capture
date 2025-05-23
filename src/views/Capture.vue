@@ -118,6 +118,7 @@ const ensureUserProfile = async () => {
   if (!authStore.userProfile) {
     profileLoading.value = true;
     try {
+      console.log("Loading user profile");
       const data = await userService.getUserProfile();
       authStore.setUserProfile({
         id: data.id,
@@ -125,6 +126,7 @@ const ensureUserProfile = async () => {
         lastName: data.lastName,
         email: data.email
       });
+      console.log("User profile loaded:", authStore.userProfile);
     } catch (err) {
       error.value = err.message || 'Failed to load user profile';
     } finally {
@@ -134,21 +136,26 @@ const ensureUserProfile = async () => {
 };
 
 const checkUserRegistration = async () => {
+  console.log("Checking user registration - start", userRegistered.value);
   userRegistered.value = null;
   userJustRegistered.value = false;
   unregisterDocId.value = null;
+  console.log("Checking user registration for:", authStore.userProfile);
   if (!authStore.userProfile?.email) return;
   try {
+    console.log("Checking user registration for:", authStore.userProfile.email);
     const q = query(collection(db, "documents"), where("email", "==", authStore.userProfile.email));
     const querySnapshot = await getDocs(q);
     if (!querySnapshot.empty) {
       userRegistered.value = true;
+      console.log("User registered - end", userRegistered.value);
       userJustRegistered.value = false;
       unregisterDocId.value = querySnapshot.docs[0].id;
     } else {
       // Not registered, so register now
       const docRef = await addDoc(collection(db, "documents"), { email: authStore.userProfile.email });
       userRegistered.value = true;
+      console.log("User registered - end", userRegistered.value);
       userJustRegistered.value = true;
       unregisterDocId.value = docRef.id;
     }
@@ -167,6 +174,9 @@ const fetchUsers = async () => {
     const functions = getFunctions();
     const getAllDocuments = httpsCallable(functions, 'getAllDocuments');
     const result = await getAllDocuments();
+
+    console.log("Data received from Cloud Function:", result.data);
+
     users.value = result.data;
 
   } catch (e) {
