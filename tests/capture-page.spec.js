@@ -5,9 +5,17 @@ import {
   clickNavButton,
   logoutFromApplication
 } from './utils'
+import dotenv from 'dotenv'; // Import dotenv
+
+dotenv.config(); // Load environment variables from .env file
 
 let loggedBaseURL = false // Flag to ensure baseURL is logged only once
 let basePath = ''
+
+// Replace with your test credentials
+const TEST_USER = process.env.TEST_USER|| 'testuser@example.com';
+const TEST_PASSWORD = process.env.TEST_PASSWORD || 'testpassword';
+
 // Utility selectors
 const selectors = {
   loginEmail: 'input[type="email"]',
@@ -19,11 +27,13 @@ const selectors = {
   unregisterModal: 'text=Confirm Unregister',
   cancelButton: 'button:has-text("Cancel")',
   logoutButton: 'button:has-text("Logout")',
+  userEmailField: '#user-email', // Added selector for user email field
 }
 
 test.describe('Capture Page Registration Flow', () => {
   test.beforeEach(async ({ page }) => {
     // Log Base URL and Proxy URL once before the first test runs
+    test.setTimeout(60000);
     if (!loggedBaseURL) {
       const baseURL = page.context()._options.baseURL
       basePath = ''
@@ -44,6 +54,14 @@ test.describe('Capture Page Registration Flow', () => {
     console.log(`\n▶️ Running Test: ${test.info().title}\n`)
     console.log('🔍 Starting capture page registration test')
     console.log('🔍 This test checks the registration flow, unregister modal, and registration status')
+
+    // Navigate to Profile page first to ensure user profile is loaded
+    await clickNavButton(page, 'Profile');
+    console.log('✅ Navigated to Profile page');
+    // Wait for the user email field to have the correct text content
+    const userEmailLocator = page.locator(selectors.userEmailField);
+    await expect(userEmailLocator).toHaveText(TEST_USER); // Wait for correct email text
+    console.log(`✅ User email field contains the correct email: ${TEST_USER}`);
 
     // Navigate to Capture page
     await clickNavButton(page, 'Capture')
