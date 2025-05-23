@@ -6,15 +6,18 @@ import {
   logoutFromApplication
 } from './utils'
 import dotenv from 'dotenv'; // Import dotenv
+import fs from 'fs'; // Import fs for file operations
+import path from 'path'; // Import path for path manipulation
 
 dotenv.config(); // Load environment variables from .env file
 
 let loggedBaseURL = false // Flag to ensure baseURL is logged only once
 let basePath = ''
+let consoleLogs = []; // Array to store console logs for each test
 
-// Replace with your test credentials
+// this is used to confirm the user that is logged in
 const TEST_USER = process.env.TEST_USER|| 'testuser@example.com';
-const TEST_PASSWORD = process.env.TEST_PASSWORD || 'testpassword';
+const TEST_PASSWORD = process.env.TEST_PASSWORD || 'testpassword'; // Keep password for login utility
 
 // Utility selectors
 const selectors = {
@@ -31,9 +34,14 @@ const selectors = {
 }
 
 test.describe('Capture Page Registration Flow', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page }, testInfo) => {
+    // Clear logs and set up listener for each test
+    consoleLogs = [];
+    page.on('console', msg => {
+      consoleLogs.push(`[${msg.type()}] ${msg.text()}`);
+    });
+
     // Log Base URL and Proxy URL once before the first test runs
-    test.setTimeout(60000);
     if (!loggedBaseURL) {
       const baseURL = page.context()._options.baseURL
       basePath = ''
@@ -49,6 +57,20 @@ test.describe('Capture Page Registration Flow', () => {
     await navigateToLogin(page, basePath)
     await loginToApplication(page, basePath)
   })
+
+  test.afterEach(async ({}, testInfo) => {
+    // Save console logs to a file after each test
+    // const logFileName = `${testInfo.title.replace(/\s+/g, '-').toLowerCase()}-browser-console.log`;
+    const logFileName = `browser-console.log`;
+    const logFilePath = path.join(testInfo.outputDir, logFileName);
+    const logDir = path.dirname(logFilePath); // Get the directory path
+
+    // Create the directory if it doesn't exist
+    fs.mkdirSync(logDir, { recursive: true });
+
+    fs.writeFileSync(logFilePath, consoleLogs.join('\n'));
+    console.log(`📚 Browser console logs saved to: ${logFilePath}`);
+  });
 
   test('register, open/cancel unregister, verify still registered, logout', async ({ page }) => {
     console.log(`\n▶️ Running Test: ${test.info().title}\n`)
@@ -66,6 +88,10 @@ test.describe('Capture Page Registration Flow', () => {
     // Navigate to Capture page
     await clickNavButton(page, 'Capture')
     console.log('✅ Navigated to Capture page')
+
+    // wait for the application to detect authenticated user on Capture page
+    await page.waitForEvent('console', msg => msg.text().includes('Authenticated user detected, fetching data...'));
+    console.log('✅ Application detected authenticated user on Capture page');
 
     // Wait for registration status (either "is registered" or "is now registered")
     await page.waitForSelector(selectors.registrationStatus, { timeout: 10000 });
