@@ -351,7 +351,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { APP_NAME } from '../constants'
 import { getFirestore, collection, getDocs, query, where, addDoc, deleteDoc, doc } from "firebase/firestore";
@@ -604,6 +604,33 @@ const deleteCapture = async () => {
   }
 };
 
+// ESC key handler for closing modals
+const handleEscapeKey = (event) => {
+  if (event.key === 'Escape') {
+    // Close whichever modal is currently open
+    if (showDeleteModal.value) {
+      closeDeleteModal();
+    } else if (showCreateModal.value) {
+      closeCreateModal();
+    } else if (showModal.value) {
+      closeCaptureModal();
+    }
+  }
+};
+
+// Watch for modal state changes to add/remove ESC key listener
+watch([showModal, showCreateModal, showDeleteModal], ([modal, createModal, deleteModal]) => {
+  const anyModalOpen = modal || createModal || deleteModal;
+  
+  if (anyModalOpen) {
+    // Add ESC key listener when any modal opens
+    document.addEventListener('keydown', handleEscapeKey);
+  } else {
+    // Remove ESC key listener when all modals are closed
+    document.removeEventListener('keydown', handleEscapeKey);
+  }
+}, { immediate: true });
+
 onMounted(() => {
   document.title = `${APP_NAME} - Capture`;
   console.log('[Capture.vue] Component mounted - EEN Auth State:', {
@@ -622,6 +649,8 @@ onMounted(() => {
 });
 
 onUnmounted(async () => {
+  // Clean up event listener on component unmount
+  document.removeEventListener('keydown', handleEscapeKey);
   // Firebase Auth Service handles cleanup automatically through auth state listeners
   // No manual cleanup needed as we're using the global Firebase app instance
   console.log("[Capture.vue] Component unmounted");

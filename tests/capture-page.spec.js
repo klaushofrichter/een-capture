@@ -271,4 +271,82 @@ test.describe('Capture Page Registration Flow', () => {
     await logoutFromApplication(page)
     console.log('✅ Capture page registration test completed successfully')
   });
+
+  test('ESC key closes modals', async ({ page }) => {
+    console.log(`\n▶️ Running Test: ${test.info().title}\n`)
+    console.log('🔍 Testing ESC key functionality on modals')
+
+    // Navigate to Capture page
+    await clickNavButton(page, 'Capture')
+    console.log('✅ Navigated to Capture page')
+
+    // Test ESC key on Create Modal
+    console.log('🔍 Testing ESC key on Create New Capture modal')
+    const createButton = page.locator('button:has-text("Create New Capture")')
+    await createButton.click()
+    
+    const createModal = page.locator('h3:has-text("Create New Capture")')
+    await expect(createModal).toBeVisible()
+    console.log('✅ Create modal opened')
+
+    // Press ESC key
+    await page.keyboard.press('Escape')
+    await expect(createModal).not.toBeVisible()
+    console.log('✅ ESC key closed Create modal')
+
+    // Create a test capture for modal testing
+    console.log('📝 Creating a test capture for modal testing')
+    await createButton.click()
+    await page.fill('input[id="capture-name"]', 'ESC test capture')
+    await page.fill('textarea[id="capture-description"]', 'Testing ESC functionality')
+    const createSubmitButton = page.locator('button[type="submit"]:has-text("Create")')
+    await createSubmitButton.click()
+    await expect(createModal).not.toBeVisible()
+    console.log('✅ Test capture created')
+
+    // Test ESC key on Detail Modal
+    console.log('🔍 Testing ESC key on Capture Detail modal')
+    const testCaptureCard = page.locator('li:has-text("ESC test capture")')
+    await expect(testCaptureCard).toBeVisible()
+    
+    const captureContent = testCaptureCard.locator('div').first()
+    await captureContent.click()
+    
+    const detailModal = page.locator('h3:has-text("Capture Details")')
+    await expect(detailModal).toBeVisible()
+    console.log('✅ Detail modal opened')
+
+    // Press ESC key
+    await page.keyboard.press('Escape')
+    await expect(detailModal).not.toBeVisible()
+    console.log('✅ ESC key closed Detail modal')
+
+    // Test ESC key on Delete Confirmation Modal
+    console.log('🔍 Testing ESC key on Delete Confirmation modal')
+    const deleteButtonOnCard = testCaptureCard.locator('button:has-text("Delete")')
+    await deleteButtonOnCard.click()
+    
+    const deleteModal = page.locator('h3:has-text("Delete Capture")')
+    await expect(deleteModal).toBeVisible()
+    console.log('✅ Delete confirmation modal opened')
+
+    // Press ESC key
+    await page.keyboard.press('Escape')
+    await expect(deleteModal).not.toBeVisible()
+    console.log('✅ ESC key closed Delete confirmation modal')
+
+    // Clean up the test capture
+    console.log('🧹 Cleaning up test capture')
+    await deleteButtonOnCard.click()
+    await expect(deleteModal).toBeVisible()
+    const confirmDeleteButton = page.locator('button:has-text("Delete")').last()
+    await confirmDeleteButton.click()
+    await expect(deleteModal).not.toBeVisible()
+    await expect(testCaptureCard).not.toBeVisible()
+    console.log('✅ Test capture cleaned up')
+
+    // Logout and end
+    await logoutFromApplication(page)
+    console.log('✅ ESC key functionality test completed successfully')
+  });
 }); 
