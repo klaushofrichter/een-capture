@@ -2,8 +2,9 @@ name: Test GH Pages with Playwright
 
 on:
   workflow_dispatch:
-#  schedule:
-#    - cron: 0 6 * * 3  # This cron expression runs the workflow every Wednesday at 6am
+  schedule:
+    - cron: 18 3 * * *  # This cron expression runs the workflow every day at 3:18am
+    #   - cron: 18 3 * * 5  # This cron expression runs the workflow every Friday  at 3am
   workflow_run:
     workflows: ["Deploy to GitHub Pages"]
     types:

@@ -393,7 +393,7 @@ However, you may want to stay connected to the original sources to be able to im
 [Here is an overview to repository management strategies](repository-management.pdf) to accomplish this. 
 The document describes several strategies. The recommended strategy was tested and is called **Independent Repository with Upstream Tracking**. The idea is to include the original repository as upstream 
 source and merge the original repository when appropriate. Please read the document for details, here 
-is a summary of the steps:
+is a summary of the steps. This assumes that the branch to merge is `develop` in both repositories. 
 
 - create a new EMPTY repository in github
 - Create a Local Bare Clone of the Original Repository
@@ -417,7 +417,7 @@ is a summary of the steps:
     - if this fails, reimport the original: `git remote add upstream-original https://github.com/klaushofrichter/een-login.git`
   - `git merge upstream-original/develop`
   - resolve any conflicts, and add/commit any changes
-  - `git push origin main` to push any files that have been changed
+  - `git push origin develop` to push any files that have been changed
 
 More details and instructins are in the document. 
 
