@@ -17,7 +17,8 @@ let consoleLogs = []; // Array to store console logs for each test
 
 // this is used to confirm the user that is logged in
 const TEST_USER = process.env.TEST_USER|| 'testuser@example.com';
-const TEST_PASSWORD = process.env.TEST_PASSWORD || 'testpassword'; // Keep password for login utility
+//const TEST_PASSWORD = process.env.TEST_PASSWORD || 'testpassword'; // Keep password for login utility
+const configuredProxyUrl = process.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333' // Default logic
 
 // Utility selectors
 const selectors = {
@@ -49,6 +50,7 @@ test.describe('Capture Page Registration Flow', () => {
         const url = new URL(baseURL)
         if (url.pathname !== '/') basePath = url.pathname
         console.log(`\n🚀 Running tests against Service at URL: ${baseURL}`)
+        console.log(`🔒 Using Auth Proxy URL: ${configuredProxyUrl}`)
         console.log(`🔒 Using basePath: ${basePath}\n`)
       }
       loggedBaseURL = true // Set flag so it doesn't log again
