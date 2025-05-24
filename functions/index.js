@@ -10,11 +10,10 @@
 
 // The Cloud Functions for Firebase SDK to create Cloud Functions and triggers.
 const { logger } = require("firebase-functions");
+// Import CallableError from the correct location
+const { onCall, HttpsError } = require("firebase-functions/v2/https");
 // Removed unused import: const { onRequest } =
-//    require("firebase-functions/v2/https");
-// Import onCall and https from the v2 https module
-const { onCall, https } =
-  require("firebase-functions/v2/https"); // Fixed max-len
+//    require("firebase-functions/v2/https")
 
 // Create and deploy your first functions
 // https://firebase.google.com/docs/functions/get-started
@@ -27,9 +26,11 @@ const { onCall, https } =
 // The Firebase Admin SDK to access Firestore.
 const { initializeApp } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
+const { getAuth } = require("firebase-admin/auth");
 
 initializeApp();
 const db = getFirestore();
+const adminAuth = getAuth();
 
 // This function fetches all documents from the 'documents' collection.
 // Changed from onRequest to onCall for compatibility with httpsCallable.
@@ -51,8 +52,102 @@ exports.getAllDocuments = onCall(async (request) => {
   } catch (error) {
     logger.error("Error fetching documents:", error);
     // Re-throw error as a CallableError to be sent back to the client
-    throw new https.CallableError("internal",
+    throw new HttpsError("internal",
         error.message || "An error occurred while fetching documents.",
+    );
+  }
+});
+
+/**
+ * Creates a custom Firebase authentication token for an EEN user
+ * @param {Object} request - The function request containing user data
+ * @param {string} request.data.eenUserId - The EEN user ID
+ * @param {string} request.data.eenUserEmail - The EEN user email
+ * @param {string} request.data.eenAccessToken - EEN access token
+ * @param {Object} request.data.additionalClaims - Additional claims
+ * @returns {Promise<string>} Custom Firebase token
+ */
+exports.createCustomToken = onCall(async (request) => {
+  try {
+    const {
+      eenUserId,
+      eenUserEmail,
+      eenAccessToken,
+      additionalClaims = {},
+    } = request.data;
+
+    // Validate required parameters
+    if (!eenUserId || !eenUserEmail || !eenAccessToken) {
+      throw new HttpsError(
+          "invalid-argument",
+          "Missing required parameters: eenUserId, eenUserEmail, or eenAccessToken",
+      );
+    }
+
+    // Optional: Verify the EEN access token with EEN API
+    // You can add EEN token verification here if needed
+    logger.info("Creating custom token for EEN user:", {
+      eenUserId,
+      eenUserEmail,
+    });
+
+    // Create custom claims
+    const customClaims = {
+      eenUserId,
+      eenUserEmail,
+      provider: "een",
+      ...additionalClaims,
+    };
+
+    // Use EEN user ID as the Firebase UID to ensure consistency
+    const firebaseUid = `een_${eenUserId}`;
+
+    // Create or update user record in Firebase Auth
+    try {
+      await adminAuth.getUser(firebaseUid);
+      // User exists, update the record
+      await adminAuth.updateUser(firebaseUid, {
+        email: eenUserEmail,
+        emailVerified: true,
+        customClaims,
+      });
+      logger.info("Updated existing Firebase user:", firebaseUid);
+    } catch (error) {
+      if (error.code === "auth/user-not-found") {
+        // User doesn't exist, create new user
+        await adminAuth.createUser({
+          uid: firebaseUid,
+          email: eenUserEmail,
+          emailVerified: true,
+          customClaims,
+        });
+        logger.info("Created new Firebase user:", firebaseUid);
+      } else {
+        throw error;
+      }
+    }
+
+    // Generate custom token
+    const customToken = await adminAuth.createCustomToken(
+        firebaseUid,
+        customClaims,
+    );
+
+    logger.info("Custom token created successfully for user:", firebaseUid);
+    return { customToken, firebaseUid };
+  } catch (error) {
+    logger.error("Error creating custom token:", error);
+
+    if (error.code && error.code.startsWith("auth/")) {
+      throw new HttpsError(
+          "unauthenticated",
+          error.message,
+      );
+    }
+
+    throw new HttpsError(
+        "internal",
+        `Failed to create custom token: ${error.message}`,
     );
   }
 });

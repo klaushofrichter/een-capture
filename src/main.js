@@ -6,6 +6,7 @@ import App from './App.vue'
 import router from './router'
 import { APP_NAME, APP_DESCRIPTION } from './constants'
 import { app, auth, db } from './firebase' // eslint-disable-line no-unused-vars
+import { firebaseAuthService } from './services/firebase-auth'
 
 
 // Handle 404 redirects from GitHub Pages
@@ -24,6 +25,10 @@ const appVue = createApp(App)
 const pinia = createPinia()
 appVue.use(pinia)
 appVue.use(router)
+
+// Initialize Firebase Auth Service
+firebaseAuthService.initialize(app)
+
 document.title = APP_NAME
 document.querySelector('meta[name="description"]').setAttribute('content', APP_DESCRIPTION)
 handleGitHubPagesRedirect()
