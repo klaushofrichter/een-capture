@@ -45,15 +45,25 @@
                   <li 
                     v-for="capture in captures" 
                     :key="capture.id" 
-                    @click="openCaptureModal(capture)"
-                    class="p-2 bg-gray-100 dark:bg-gray-600 rounded cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors"
+                    class="p-2 bg-gray-100 dark:bg-gray-600 rounded hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors"
                   >
-                    <!-- Adjust this based on your data structure -->
-                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ capture.name || 'Unnamed Capture' }}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ capture.eenUserEmailField || 'No email' }}</p>
-                    <p v-if="capture.createdAt" class="text-xs text-gray-500 dark:text-gray-400">
-                      Created: {{ new Date(capture.createdAt).toLocaleString() }}
-                    </p>
+                    <div @click="openCaptureModal(capture)" class="cursor-pointer">
+                      <!-- Adjust this based on your data structure -->
+                      <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ capture.name || 'Unnamed Capture' }}</p>
+                      <p class="text-xs text-gray-500 dark:text-gray-400">{{ capture.eenUserEmailField || 'No email' }}</p>
+                      <p v-if="capture.createdAt" class="text-xs text-gray-500 dark:text-gray-400">
+                        Created: {{ new Date(capture.createdAt).toLocaleString() }}
+                      </p>
+                    </div>
+                    <!-- Delete button -->
+                    <div class="mt-2 flex justify-end">
+                      <button 
+                        @click.stop="openDeleteModal(capture)"
+                        class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </li>
                 </ul>
                 <p v-if="!loading && !error && captures.length === 0" class="mt-4 text-sm text-gray-600 dark:text-gray-300">
@@ -256,12 +266,83 @@
         </div>
 
         <!-- Modal Footer -->
-        <div class="flex justify-end pt-6 border-t border-gray-200 dark:border-gray-600 mt-6">
+        <div class="flex justify-between pt-6 border-t border-gray-200 dark:border-gray-600 mt-6">
+          <button 
+            @click="openDeleteModal(selectedCapture); closeCaptureModal()"
+            class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+          >
+            Delete Capture
+          </button>
           <button 
             @click="closeCaptureModal"
             class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
           >
             Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div 
+    v-if="showDeleteModal" 
+    class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+    @click="closeDeleteModal"
+  >
+    <div 
+      class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white dark:bg-gray-800"
+      @click.stop
+    >
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-600">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          Delete Capture
+        </h3>
+        <button 
+          @click="closeDeleteModal"
+          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Content -->
+      <div class="pt-4">
+        <p class="text-sm text-gray-700 dark:text-gray-300 mb-4">
+          Are you sure you want to delete this capture?
+        </p>
+        
+        <div v-if="captureToDelete" class="bg-gray-50 dark:bg-gray-700 p-3 rounded mb-4">
+          <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
+            {{ captureToDelete.name || 'Unnamed Capture' }}
+          </p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">
+            {{ captureToDelete.description || 'No description' }}
+          </p>
+        </div>
+
+        <p class="text-xs text-red-600 dark:text-red-400 mb-4">
+          This action cannot be undone.
+        </p>
+
+        <!-- Modal Footer -->
+        <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-600">
+          <button 
+            type="button"
+            @click="closeDeleteModal"
+            class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            type="button"
+            @click="deleteCapture"
+            class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+          >
+            Delete
           </button>
         </div>
       </div>
@@ -273,7 +354,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { APP_NAME } from '../constants'
-import { getFirestore, collection, getDocs, query, where, addDoc } from "firebase/firestore";
+import { getFirestore, collection, getDocs, query, where, addDoc, deleteDoc, doc } from "firebase/firestore";
 import { firebaseAuthService } from '../services/firebase-auth'
 import { app } from '../firebase'
 
@@ -292,6 +373,10 @@ const createForm = ref({
   name: '',
   description: ''
 });
+
+// Delete modal state
+const showDeleteModal = ref(false);
+const captureToDelete = ref(null);
 
 const fetchCaptures = async () => {
   loading.value = true;
@@ -481,6 +566,42 @@ const closeCreateModal = () => {
     name: '',
     description: ''
   };
+};
+
+// Open delete confirmation modal
+const openDeleteModal = (capture) => {
+  console.log("[Capture.vue] Opening delete confirmation for capture:", capture);
+  captureToDelete.value = capture;
+  showDeleteModal.value = true;
+};
+
+// Close delete confirmation modal
+const closeDeleteModal = () => {
+  console.log("[Capture.vue] Closing delete confirmation modal");
+  showDeleteModal.value = false;
+  captureToDelete.value = null;
+};
+
+// Delete capture
+const deleteCapture = async () => {
+  console.log("[Capture.vue] Deleting capture:", captureToDelete.value);
+  
+  if (!captureToDelete.value) {
+    console.error("[Capture.vue] No capture selected for deletion");
+    return;
+  }
+
+  try {
+    const db = getFirestore(app);
+    await deleteDoc(doc(db, "captures", captureToDelete.value.id));
+    console.log("[Capture.vue] Capture deleted successfully");
+    
+    // Close delete modal and refresh the captures list
+    closeDeleteModal();
+    await fetchCaptures();
+  } catch (error) {
+    console.error("[Capture.vue] Error deleting capture:", error);
+  }
 };
 
 onMounted(() => {
