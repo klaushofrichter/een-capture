@@ -1,7 +1,7 @@
 {
   "name": "een-capture",
-  "version": "0.0.40",
-  "lastCommit": "2025-05-24T22:09:38.338Z",
+  "version": "0.0.41",
+  "lastCommit": "2025-05-24T22:43:42.969Z",
   "private": true,
   "type": "module",
   "base": "/een-capture/",
@@ -16,6 +16,7 @@
     "gh-deploy": "gh-pages -d dist -f -m 'Deploy to GitHub Pages' -u 'Klaus Hofrichter <klaus@klaushofrichter.net>'",
     "gh-deploy-help": "gh-pages --help",
     "pre-commit": "npm run version:patch",
+    "check-node": "node scripts/check-node-version.js",
     "test": "playwright test",
     "test-preview": "npm run build && npx playwright test",
     "test:ui": "playwright test --ui",
@@ -51,7 +52,7 @@
     "vite-plugin-static-copy": "^3.0.0"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=20.19.0"
   },
   "browserslist": [
     "> 1%",
