@@ -20,20 +20,6 @@ const TEST_USER = process.env.TEST_USER|| 'testuser@example.com';
 //const TEST_PASSWORD = process.env.TEST_PASSWORD || 'testpassword'; // Keep password for login utility
 const configuredProxyUrl = process.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333' // Default logic
 
-// Utility selectors
-const selectors = {
-  loginEmail: 'input[type="email"]',
-  loginPassword: 'input[type="password"]',
-  loginButton: 'button:has-text("Login")',
-  captureNav: 'a:has-text("Capture")',
-  registrationStatus: 'text=/The user .* is (now )?registered/',
-  unregisterButton: 'button:has-text("Unregister the user")',
-  unregisterModal: 'text=Confirm Unregister',
-  cancelButton: 'button:has-text("Cancel")',
-  logoutButton: 'button:has-text("Logout")',
-  userEmailField: '#user-email', // Added selector for user email field
-}
-
 test.describe('Capture Page Registration Flow', () => {
   test.beforeEach(async ({ page }, testInfo) => {
     // Clear logs and set up listener for each test
@@ -45,12 +31,14 @@ test.describe('Capture Page Registration Flow', () => {
     // Log Base URL and Proxy URL once before the first test runs
     if (!loggedBaseURL) {
       const baseURL = page.context()._options.baseURL
+      const redirectUri = process.env.VITE_REDIRECT_URI || 'http://127.0.0.1:3333'
       basePath = ''
       if (baseURL) {
         const url = new URL(baseURL)
         if (url.pathname !== '/') basePath = url.pathname
         console.log(`\n🚀 Running tests against Service at URL: ${baseURL}`)
         console.log(`🔒 Using Auth Proxy URL: ${configuredProxyUrl}`)
+        console.log(`🔒 Using Redirect URI: ${redirectUri}`)
         console.log(`🔒 Using basePath: ${basePath}\n`)
       }
       loggedBaseURL = true // Set flag so it doesn't log again
@@ -281,6 +269,69 @@ test.describe('Capture Page Registration Flow', () => {
     // Navigate to Capture page
     await clickNavButton(page, 'Capture')
     console.log('✅ Navigated to Capture page')
+
+    // Clean up any existing ESC test captures first
+    console.log('🧹 Cleaning up any existing ESC test captures...')
+    
+    // Wait for captures to load by waiting for either "No captures found" or capture list items
+    try {
+      await Promise.race([
+        page.locator('li[class*="bg-gray-100"]').first().waitFor({ timeout: 5000 }),
+        page.locator('text=No captures found').waitFor({ timeout: 5000 })
+      ])
+    } catch (e) {
+      console.log('⚠️ Captures loading state unclear, continuing...')
+    }
+
+    let existingEscCaptures = page.locator('li:has-text("ESC test capture")')
+    let existingCount = await existingEscCaptures.count()
+    
+    if (existingCount > 0) {
+      console.log(`⚠️ Found ${existingCount} existing ESC test capture(s), cleaning up...`)
+      
+      let deletionCount = 0
+      let remainingCount = existingCount
+      while (remainingCount > 0 && deletionCount < 10) {
+        // Re-check for remaining test captures after each deletion
+        existingEscCaptures = page.locator('li:has-text("ESC test capture")')
+        remainingCount = await existingEscCaptures.count()
+        
+        if (remainingCount === 0) {
+          console.log('✅ All ESC test captures cleaned up')
+          break
+        }
+        
+        deletionCount++
+        console.log(`🗑️ Deleting ESC test capture ${deletionCount} (${remainingCount} remaining)`)
+        
+        // Always target the first remaining capture
+        const capture = existingEscCaptures.first()
+        const deleteButton = capture.locator('button:has-text("Delete")')
+        await deleteButton.click()
+        
+        // Wait for delete confirmation modal
+        const deleteModal = page.locator('h3:has-text("Delete Capture")')
+        await expect(deleteModal).toBeVisible()
+        
+        // Confirm deletion
+        const confirmDeleteButton = page.locator('button:has-text("Delete")').last()
+        await confirmDeleteButton.click()
+        await expect(deleteModal).not.toBeVisible()
+        
+        // Wait a moment for the list to update
+        await page.waitForTimeout(1000)
+      }
+      
+      if (deletionCount >= 10) {
+        console.log('⚠️ Too many deletions, breaking to prevent infinite loop')
+      }
+    }
+
+    // Now check that there are no captures with the title "ESC test capture"
+    console.log('🔍 Verifying no ESC test captures remain')
+    const remainingEscCaptures = page.locator('li:has-text("ESC test capture")')
+    await expect(remainingEscCaptures).toHaveCount(0)
+    console.log('✅ Confirmed no existing ESC test capture')
 
     // Test ESC key on Create Modal
     console.log('🔍 Testing ESC key on Create New Capture modal')
