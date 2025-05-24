@@ -6,8 +6,12 @@
           <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">
             Capture
           </h3>
-          <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
-            Capture and manage your content
+          <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400 flex justify-between items-center">
+            <span>Capture and manage your content</span>
+            <span v-if="eenAuthStore.userProfile?.email">
+              <span class="text-gray-500 dark:text-gray-400">User: </span>
+              <span class="text-blue-600 dark:text-blue-400 font-medium">{{ eenAuthStore.userProfile.email }}</span>
+            </span>
           </p>
         </div>
         <div class="border-t border-gray-200 dark:border-gray-700">
@@ -18,6 +22,18 @@
                 <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
                   Welcome to the Capture page. This is where you can manage your content captures.
                 </p>
+                
+                <!-- Test button for creating data -->
+                <div class="mt-4">
+                  <button 
+                    @click="createTestCapture" 
+                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    :disabled="loading"
+                  >
+                    Create Test Capture
+                  </button>
+                </div>
+                
                 <!-- Display fetched data -->
                 <div v-if="loading" class="mt-4 text-sm text-gray-600 dark:text-gray-300">
                   Loading captures...
@@ -169,6 +185,40 @@ const signInAndFetchData = async () => {
     console.error("[Capture.vue] Firebase authentication error:", signInError);
     error.value = `Firebase authentication failed: ${signInError.message}`;
     loading.value = false;
+  }
+};
+
+const createTestCapture = async () => {
+  console.log("[Capture.vue] Creating test capture...");
+  
+  if (!firebaseAuthService.isAuthenticated()) {
+    console.error("[Capture.vue] User must be authenticated to create test data");
+    return;
+  }
+
+  const eenUserEmail = eenAuthStore?.userProfile?.email;
+  if (!eenUserEmail) {
+    console.error("[Capture.vue] EEN user email not available");
+    return;
+  }
+
+  try {
+    const db = getFirestore(app);
+    const testCapture = {
+      name: `Test Capture ${new Date().toLocaleTimeString()}`,
+      eenUserEmailField: eenUserEmail,
+      createdAt: new Date().toISOString(),
+      description: "This is a test capture created for debugging"
+    };
+
+    console.log("[Capture.vue] Creating test document:", testCapture);
+    const docRef = await addDoc(collection(db, "captures"), testCapture);
+    console.log("[Capture.vue] Test capture created with ID:", docRef.id);
+    
+    // Refresh the captures list
+    await fetchCaptures();
+  } catch (error) {
+    console.error("[Capture.vue] Error creating test capture:", error);
   }
 };
 

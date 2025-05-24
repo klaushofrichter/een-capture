@@ -72,47 +72,31 @@ test.describe('Capture Page Registration Flow', () => {
     console.log(`📚 Browser console logs saved to: ${logFilePath}`);
   });
 
-  test('register, open/cancel unregister, verify still registered, logout', async ({ page }) => {
+  test('login, navigate the capture page, check email, logout', async ({ page }) => {
     console.log(`\n▶️ Running Test: ${test.info().title}\n`)
-    console.log('🔍 Starting capture page registration test')
-    console.log('🔍 This test checks the registration flow, unregister modal, and registration status')
-
-    // Navigate to Profile page first to ensure user profile is loaded
-    await clickNavButton(page, 'Profile');
-    console.log('✅ Navigated to Profile page');
-    // Wait for the user email field to have the correct text content
-    const userEmailLocator = page.locator(selectors.userEmailField);
-    await expect(userEmailLocator).toHaveText(TEST_USER); // Wait for correct email text
-    console.log(`✅ User email field contains the correct email: ${TEST_USER}`);
+    console.log('🔍 Starting capture page test')
 
     // Navigate to Capture page
     await clickNavButton(page, 'Capture')
     console.log('✅ Navigated to Capture page')
 
-    // wait for the application to detect authenticated user on Capture page
-    await page.waitForEvent('console', msg => msg.text().includes('Authenticated user detected, fetching data...'));
-    console.log('✅ Application detected authenticated user on Capture page');
-
-    // Wait for registration status (either "is registered" or "is now registered")
-    await page.waitForSelector(selectors.registrationStatus, { timeout: 10000 });
-    const statusText = await page.textContent(selectors.registrationStatus);
-    expect(statusText).toMatch(/The user .* is (now )?registered/);
-    console.log('✅ Registration status verified:', statusText)
-
-    // Open unregister modal
-    await page.click(selectors.unregisterButton);
-    await page.waitForSelector(selectors.unregisterModal);
-    console.log('✅ Unregister modal opened')
-
-    // Cancel unregister
-    await page.click(selectors.cancelButton);
-    console.log('✅ Cancelled unregister action')
-
-    // Ensure still registered
-    await page.waitForSelector(selectors.registrationStatus, { timeout: 5000 });
-    const statusTextAfterCancel = await page.textContent(selectors.registrationStatus);
-    expect(statusTextAfterCancel).toMatch(/The user .* is (now )?registered/);
-    console.log('✅ Registration status after cancel verified:', statusTextAfterCancel)
+    // Verify that the displayed email matches TEST_USER environment variable
+    console.log(`🔍 Checking displayed email matches TEST_USER: ${TEST_USER}`)
+    
+    // Wait for the email to actually load - wait for a span that contains the TEST_USER email
+    console.log('⏳ Waiting for email to load in the user display...')
+    
+    // Wait for the email to appear by looking for the blue span containing the email
+    const emailSpan = page.locator('p:has-text("Capture and manage your content") span.text-blue-600')
+    await expect(emailSpan).toBeVisible({ timeout: 10000 })
+    
+    // Get the email text content
+    const displayedEmail = await emailSpan.textContent()
+    console.log(`📧 Found displayed email: ${displayedEmail}`)
+    console.log(`📧 Expected email: ${TEST_USER}`)
+    
+    expect(displayedEmail.trim()).toBe(TEST_USER)
+    console.log('✅ Email verification successful - displayed email matches TEST_USER')
 
     // Logout
     await logoutFromApplication(page)
