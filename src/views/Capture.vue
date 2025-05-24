@@ -23,14 +23,14 @@
                   Welcome to the Capture page. This is where you can manage your content captures.
                 </p>
                 
-                <!-- Test button for creating data -->
+                <!-- Create New Capture button -->
                 <div class="mt-4">
                   <button 
-                    @click="createTestCapture" 
+                    @click="openCreateModal" 
                     class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     :disabled="loading"
                   >
-                    Create Test Capture
+                    Create New Capture
                   </button>
                 </div>
                 
@@ -42,10 +42,18 @@
                   Error loading captures: {{ error }}
                 </div>
                 <ul v-if="!loading && !error && captures.length > 0" class="mt-4 space-y-2">
-                  <li v-for="capture in captures" :key="capture.id" class="p-2 bg-gray-100 dark:bg-gray-600 rounded">
+                  <li 
+                    v-for="capture in captures" 
+                    :key="capture.id" 
+                    @click="openCaptureModal(capture)"
+                    class="p-2 bg-gray-100 dark:bg-gray-600 rounded cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors"
+                  >
                     <!-- Adjust this based on your data structure -->
                     <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ capture.name || 'Unnamed Capture' }}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ capture.email || 'No email' }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ capture.eenUserEmailField || 'No email' }}</p>
+                    <p v-if="capture.createdAt" class="text-xs text-gray-500 dark:text-gray-400">
+                      Created: {{ new Date(capture.createdAt).toLocaleString() }}
+                    </p>
                   </li>
                 </ul>
                 <p v-if="!loading && !error && captures.length === 0" class="mt-4 text-sm text-gray-600 dark:text-gray-300">
@@ -54,6 +62,207 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create New Capture Modal -->
+  <div 
+    v-if="showCreateModal" 
+    class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+    @click="closeCreateModal"
+  >
+    <div 
+      class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white dark:bg-gray-800"
+      @click.stop
+    >
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-600">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          Create New Capture
+        </h3>
+        <button 
+          @click="closeCreateModal"
+          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Content -->
+      <div class="pt-4">
+        <form @submit.prevent="createCapture" class="space-y-4">
+          <!-- Capture Name (Editable) -->
+          <div>
+            <label for="capture-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Name <span class="text-red-500">*</span>
+            </label>
+            <input
+              id="capture-name"
+              v-model="createForm.name"
+              type="text"
+              required
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Enter capture name"
+            />
+          </div>
+
+          <!-- Description (Editable) -->
+          <div>
+            <label for="capture-description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Description
+            </label>
+            <textarea
+              id="capture-description"
+              v-model="createForm.description"
+              rows="3"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Enter capture description (optional)"
+            ></textarea>
+          </div>
+
+          <!-- User Email (Read-only) -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              User Email
+            </label>
+            <p class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-gray-900 dark:text-gray-100">
+              {{ eenAuthStore.userProfile?.email || 'No email available' }}
+            </p>
+          </div>
+
+          <!-- Create Date (Read-only) -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Create Date
+            </label>
+            <p class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-gray-900 dark:text-gray-100">
+              {{ new Date().toLocaleString() }}
+            </p>
+          </div>
+
+          <!-- Modal Footer -->
+          <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-600">
+            <button 
+              type="button"
+              @click="closeCreateModal"
+              class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit"
+              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+              :disabled="!createForm.name.trim()"
+            >
+              Create
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Capture Details Modal -->
+  <div 
+    v-if="showModal" 
+    class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+    @click="closeCaptureModal"
+  >
+    <div 
+      class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white dark:bg-gray-800"
+      @click.stop
+    >
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-600">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          Capture Details
+        </h3>
+        <button 
+          @click="closeCaptureModal"
+          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Content -->
+      <div v-if="selectedCapture" class="pt-4">
+        <div class="space-y-4">
+          <!-- Capture Name -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Name
+            </label>
+            <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded">
+              {{ selectedCapture.name || 'Unnamed Capture' }}
+            </p>
+          </div>
+
+          <!-- Email -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              User Email
+            </label>
+            <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded">
+              {{ selectedCapture.eenUserEmailField || 'No email' }}
+            </p>
+          </div>
+
+          <!-- Created Date -->
+          <div v-if="selectedCapture.createdAt">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Created
+            </label>
+            <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded">
+              {{ new Date(selectedCapture.createdAt).toLocaleString() }}
+            </p>
+          </div>
+
+          <!-- Description -->
+          <div v-if="selectedCapture.description">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Description
+            </label>
+            <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded">
+              {{ selectedCapture.description }}
+            </p>
+          </div>
+
+          <!-- Capture ID -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Capture ID
+            </label>
+            <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded font-mono">
+              {{ selectedCapture.id }}
+            </p>
+          </div>
+
+          <!-- Raw Data (for debugging) -->
+          <div class="pt-2 border-t border-gray-200 dark:border-gray-600">
+            <details class="group">
+              <summary class="cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100">
+                Raw Data (Debug)
+              </summary>
+              <pre class="mt-2 text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 p-2 rounded overflow-auto max-h-40">{{ JSON.stringify(selectedCapture, null, 2) }}</pre>
+            </details>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="flex justify-end pt-6 border-t border-gray-200 dark:border-gray-600 mt-6">
+          <button 
+            @click="closeCaptureModal"
+            class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
+          >
+            Close
+          </button>
         </div>
       </div>
     </div>
@@ -72,6 +281,17 @@ const eenAuthStore = useAuthStore()
 const captures = ref([]);
 const loading = ref(true);
 const error = ref(null);
+
+// Modal state
+const showModal = ref(false);
+const selectedCapture = ref(null);
+
+// Create modal state
+const showCreateModal = ref(false);
+const createForm = ref({
+  name: '',
+  description: ''
+});
 
 const fetchCaptures = async () => {
   loading.value = true;
@@ -188,11 +408,11 @@ const signInAndFetchData = async () => {
   }
 };
 
-const createTestCapture = async () => {
-  console.log("[Capture.vue] Creating test capture...");
+const createCapture = async () => {
+  console.log("[Capture.vue] Creating new capture...");
   
   if (!firebaseAuthService.isAuthenticated()) {
-    console.error("[Capture.vue] User must be authenticated to create test data");
+    console.error("[Capture.vue] User must be authenticated to create capture");
     return;
   }
 
@@ -202,24 +422,65 @@ const createTestCapture = async () => {
     return;
   }
 
+  // Validate form
+  if (!createForm.value.name.trim()) {
+    console.error("[Capture.vue] Capture name is required");
+    return;
+  }
+
   try {
     const db = getFirestore(app);
-    const testCapture = {
-      name: `Test Capture ${new Date().toLocaleTimeString()}`,
+    const newCapture = {
+      name: createForm.value.name.trim(),
+      description: createForm.value.description.trim(),
       eenUserEmailField: eenUserEmail,
-      createdAt: new Date().toISOString(),
-      description: "This is a test capture created for debugging"
+      createdAt: new Date().toISOString()
     };
 
-    console.log("[Capture.vue] Creating test document:", testCapture);
-    const docRef = await addDoc(collection(db, "captures"), testCapture);
-    console.log("[Capture.vue] Test capture created with ID:", docRef.id);
+    console.log("[Capture.vue] Creating capture:", newCapture);
+    const docRef = await addDoc(collection(db, "captures"), newCapture);
+    console.log("[Capture.vue] Capture created with ID:", docRef.id);
     
-    // Refresh the captures list
+    // Close modal and refresh the captures list
+    closeCreateModal();
     await fetchCaptures();
   } catch (error) {
-    console.error("[Capture.vue] Error creating test capture:", error);
+    console.error("[Capture.vue] Error creating capture:", error);
   }
+};
+
+// Open modal with selected capture
+const openCaptureModal = (capture) => {
+  console.log("[Capture.vue] Opening modal for capture:", capture);
+  selectedCapture.value = capture;
+  showModal.value = true;
+};
+
+// Close modal
+const closeCaptureModal = () => {
+  console.log("[Capture.vue] Closing capture modal");
+  showModal.value = false;
+  selectedCapture.value = null;
+};
+
+// Open create modal
+const openCreateModal = () => {
+  console.log("[Capture.vue] Opening create capture modal");
+  createForm.value = {
+    name: '',
+    description: ''
+  };
+  showCreateModal.value = true;
+};
+
+// Close create modal
+const closeCreateModal = () => {
+  console.log("[Capture.vue] Closing create capture modal");
+  showCreateModal.value = false;
+  createForm.value = {
+    name: '',
+    description: ''
+  };
 };
 
 onMounted(() => {
