@@ -170,7 +170,7 @@ export async function clickNavButton(page, buttonName) {
   // click the "about" button in the navigation bar
   const button = page.getByRole('link', { name: buttonName }).first()
   await button.click()
-  await expect(page.getByRole('heading', { name: buttonName })).toBeVisible({ timeout: 10000 })
+  await expect(page.getByRole('heading', { name: buttonName, level: 3 })).toBeVisible({ timeout: 10000 })
   //await expect(page.url()).toContain(buttonName.toLowerCase(), { timeout: 10000 })
   console.log(`✅ Successfully navigated to ${buttonName} page`)
 }
