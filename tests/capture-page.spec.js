@@ -32,6 +32,7 @@ test.describe('Capture Page Registration Flow', () => {
     if (!loggedBaseURL) {
       const baseURL = page.context()._options.baseURL
       const redirectUri = process.env.VITE_REDIRECT_URI || 'http://127.0.0.1:3333'
+      const configuredProxyUrl = process.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333' // Default logic
       basePath = ''
       if (baseURL) {
         const url = new URL(baseURL)
@@ -136,7 +137,7 @@ test.describe('Capture Page Registration Flow', () => {
         // Confirm deletion
         const confirmDeleteButton = page.locator('button:has-text("Delete")').last()
         await confirmDeleteButton.click()
-        await expect(deleteModal).not.toBeVisible()
+        await expect(deleteModal).toBeHidden()
         
         // Wait a moment for the list to update
         await page.waitForTimeout(1000)
@@ -178,7 +179,7 @@ test.describe('Capture Page Registration Flow', () => {
     await createSubmitButton.click()
     
     // Wait for modal to close and capture to be created
-    await expect(createModal).not.toBeVisible()
+    await expect(createModal).toBeHidden()
     console.log('✅ Create modal closed - capture created')
 
     // Check that the new capture is listed on the Capture page
@@ -209,7 +210,7 @@ test.describe('Capture Page Registration Flow', () => {
     console.log('❌ Cancelling deletion')
     const cancelButton = page.locator('button:has-text("Cancel")').last()
     await cancelButton.click()
-    await expect(deleteModal).not.toBeVisible()
+    await expect(deleteModal).toBeHidden()
     console.log('✅ Delete modal closed - deletion cancelled')
 
     // Check that the test capture is still there
@@ -249,7 +250,7 @@ test.describe('Capture Page Registration Flow', () => {
     console.log('✅ Confirming deletion')
     const confirmDeleteButton = page.locator('button:has-text("Delete")').last()
     await confirmDeleteButton.click()
-    await expect(deleteModal).not.toBeVisible()
+    await expect(deleteModal).toBeHidden()
     console.log('✅ Delete confirmed and modal closed')
 
     // Check that the test capture is deleted
@@ -316,7 +317,7 @@ test.describe('Capture Page Registration Flow', () => {
         // Confirm deletion
         const confirmDeleteButton = page.locator('button:has-text("Delete")').last()
         await confirmDeleteButton.click()
-        await expect(deleteModal).not.toBeVisible()
+        await expect(deleteModal).toBeHidden()
         
         // Wait a moment for the list to update
         await page.waitForTimeout(1000)
@@ -344,7 +345,7 @@ test.describe('Capture Page Registration Flow', () => {
 
     // Press ESC key
     await page.keyboard.press('Escape')
-    await expect(createModal).not.toBeVisible()
+    await expect(createModal).toBeHidden()
     console.log('✅ ESC key closed Create modal')
 
     // Create a test capture for modal testing
@@ -354,7 +355,7 @@ test.describe('Capture Page Registration Flow', () => {
     await page.fill('textarea[id="capture-description"]', 'Testing ESC functionality')
     const createSubmitButton = page.locator('button[type="submit"]:has-text("Create")')
     await createSubmitButton.click()
-    await expect(createModal).not.toBeVisible()
+    await expect(createModal).toBeHidden()
     console.log('✅ Test capture created')
 
     // Test ESC key on Detail Modal
@@ -371,7 +372,7 @@ test.describe('Capture Page Registration Flow', () => {
 
     // Press ESC key
     await page.keyboard.press('Escape')
-    await expect(detailModal).not.toBeVisible()
+    await expect(detailModal).toBeHidden()
     console.log('✅ ESC key closed Detail modal')
 
     // Test ESC key on Delete Confirmation Modal
@@ -385,7 +386,7 @@ test.describe('Capture Page Registration Flow', () => {
 
     // Press ESC key
     await page.keyboard.press('Escape')
-    await expect(deleteModal).not.toBeVisible()
+    await expect(deleteModal).toBeHidden()
     console.log('✅ ESC key closed Delete confirmation modal')
 
     // Clean up the test capture
@@ -394,8 +395,8 @@ test.describe('Capture Page Registration Flow', () => {
     await expect(deleteModal).toBeVisible()
     const confirmDeleteButton = page.locator('button:has-text("Delete")').last()
     await confirmDeleteButton.click()
-    await expect(deleteModal).not.toBeVisible()
-    await expect(testCaptureCard).not.toBeVisible()
+    await expect(deleteModal).toBeHidden()
+    await expect(testCaptureCard).toBeHidden()
     console.log('✅ Test capture cleaned up')
 
     // Logout and end

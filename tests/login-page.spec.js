@@ -1,8 +1,8 @@
-// eslint-disable-next-line playwright/no-conditional-in-test
+ 
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
 import { navigateToLogin, getLastPartOfUrl } from './utils.js'
-import pkg from '../package.json' assert { type: 'json' }
+import pkg from '../package.json' with { type: 'json' }
 import { APP_NAME } from '../src/constants.js'
 
 // Load environment variables from .env file
@@ -14,14 +14,14 @@ let basePath = ''
 test.describe('Login Page', () => {
   test.beforeEach(async ({ page }) => {
     // Log Base URL and Proxy URL once before the first test runs
-    // eslint-disable-next-line playwright/no-conditional-in-test
+     
     if (!loggedBaseURL) {
       const baseURL = page.context()._options.baseURL
       const configuredProxyUrl = process.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333' // Default logic
       const redirectUri = process.env.VITE_REDIRECT_URI || 'http://127.0.0.1:3333'
       basePath = getLastPartOfUrl(baseURL)
 
-      // eslint-disable-next-line playwright/no-conditional-in-test
+       
       if (baseURL) {
         console.log(`\n🚀 Running tests against Service at URL: ${baseURL}`)
         console.log(`🔒 Using Redirect URI: ${redirectUri}`)
@@ -72,7 +72,7 @@ test.describe('Login Page', () => {
     expect(classAttr).toContain('dark:hover:text-gray-500')
     expect(classAttr).toContain('dark:hover:text-gray-400')
 
-    // eslint-disable-next-line playwright/no-conditional-in-test
+     
     let isDev = process.env.NODE_ENV !== 'production'
     // eslint-disable-next-line playwright/no-conditional-in-test
     if (process.env.PLAYWRIGHT_TEST_BASE_URL === `https://klaushofrichter.github.io/${pkg.name}`)
