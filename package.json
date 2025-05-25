@@ -1,7 +1,7 @@
 {
   "name": "een-capture",
-  "version": "0.0.47",
-  "lastCommit": "2025-05-25T16:19:43.366Z",
+  "version": "0.0.48",
+  "lastCommit": "2025-05-25T17:26:13.000Z",
   "private": true,
   "type": "module",
   "base": "/een-capture/",
@@ -23,7 +23,8 @@
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
-    "lint:check": "eslint ."
+    "lint:check": "eslint .",
+    "favicon": "node scripts/generate-favicon.js"
   },
   "dependencies": {
     "axios": "^1.6.7",
