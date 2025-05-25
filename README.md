@@ -66,6 +66,21 @@ npm run test:headed
 npm run test:ci
 ```
 
+#### Code Quality
+
+The project uses ESLint 9 with flat config for code quality and Prettier for formatting:
+
+```bash
+# Run ESLint and auto-fix issues
+npm run lint
+
+# Check for ESLint issues without fixing
+npm run lint:check
+
+# Format code with Prettier
+npm run format
+```
+
 #### Troubleshooting CI Test Failures
 
 If tests fail in GitHub Actions but work locally:

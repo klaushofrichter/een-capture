@@ -26,9 +26,9 @@
                 <!-- Create New Capture button -->
                 <div class="mt-4">
                   <button 
-                    @click="openCreateModal" 
-                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" 
                     :disabled="loading"
+                    @click="openCreateModal"
                   >
                     Create New Capture
                   </button>
@@ -47,7 +47,7 @@
                     :key="capture.id" 
                     class="p-2 bg-gray-100 dark:bg-gray-600 rounded hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors"
                   >
-                    <div @click="openCaptureModal(capture)" class="cursor-pointer">
+                    <div class="cursor-pointer" @click="openCaptureModal(capture)">
                       <!-- Adjust this based on your data structure -->
                       <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ capture.name || 'Unnamed Capture' }}</p>
                       <p class="text-xs text-gray-500 dark:text-gray-400">{{ capture.eenUserEmailField || 'No email' }}</p>
@@ -58,8 +58,8 @@
                     <!-- Delete button -->
                     <div class="mt-2 flex justify-end">
                       <button 
-                        @click.stop="openDeleteModal(capture)"
                         class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+                        @click.stop="openDeleteModal(capture)"
                       >
                         Delete
                       </button>
@@ -93,8 +93,8 @@
           Create New Capture
         </h3>
         <button 
-          @click="closeCreateModal"
           class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+          @click="closeCreateModal"
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -104,7 +104,7 @@
 
       <!-- Modal Content -->
       <div class="pt-4">
-        <form @submit.prevent="createCapture" class="space-y-4">
+        <form class="space-y-4" @submit.prevent="createCapture">
           <!-- Capture Name (Editable) -->
           <div>
             <label for="capture-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -158,8 +158,8 @@
           <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-600">
             <button 
               type="button"
-              @click="closeCreateModal"
               class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
+              @click="closeCreateModal"
             >
               Cancel
             </button>
@@ -192,8 +192,8 @@
           Capture Details
         </h3>
         <button 
-          @click="closeCaptureModal"
           class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+          @click="closeCaptureModal"
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -268,14 +268,14 @@
         <!-- Modal Footer -->
         <div class="flex justify-between pt-6 border-t border-gray-200 dark:border-gray-600 mt-6">
           <button 
-            @click="openDeleteModal(selectedCapture); closeCaptureModal()"
             class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+            @click="openDeleteModal(selectedCapture); closeCaptureModal()"
           >
             Delete Capture
           </button>
           <button 
-            @click="closeCaptureModal"
             class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
+            @click="closeCaptureModal"
           >
             Close
           </button>
@@ -300,8 +300,8 @@
           Delete Capture
         </h3>
         <button 
-          @click="closeDeleteModal"
           class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+          @click="closeDeleteModal"
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -332,15 +332,15 @@
         <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-600">
           <button 
             type="button"
-            @click="closeDeleteModal"
             class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
+            @click="closeDeleteModal"
           >
             Cancel
           </button>
           <button 
             type="button"
-            @click="deleteCapture"
             class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+            @click="deleteCapture"
           >
             Delete
           </button>
