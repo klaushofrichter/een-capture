@@ -61,6 +61,7 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes
 })
+console.log('router.base:', import.meta.env.BASE_URL)
 
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
