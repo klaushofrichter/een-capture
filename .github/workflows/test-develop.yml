@@ -82,7 +82,7 @@ jobs:
           ls -al
           ls -al playwright-report || true
           ls -al test-results || true
-          npx playwright show-report
+          npx playwright show-report || true
         timeout-minutes: 10
 
       - name: Stop Vite server
