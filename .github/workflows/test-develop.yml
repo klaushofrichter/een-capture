@@ -50,7 +50,7 @@ jobs:
 
       - name: Start Vite preview server
         run: |
-          npm run preview &
+          npm run dev &
           SERVER_PID=$!
           echo "Started Vite server with PID: $SERVER_PID"
           echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
@@ -78,7 +78,7 @@ jobs:
 
       - name: Run Playwright tests
         run: npx playwright test
-        timeout-minutes: 15
+        timeout-minutes: 10
 
       - name: Stop Vite server
         if: always()

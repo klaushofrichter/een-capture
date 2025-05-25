@@ -17,7 +17,7 @@ export default defineConfig({
   testDir: './tests',
   fullyParallel: false, // Keep false due to shared auth state potentially
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
+  retries: process.env.CI ? 1 : 0,
   workers: 1, // Keep workers at 1 due to auth tests potentially interfering
   reporter: process.env.CI ? 'github' : 'html',
   use: {
