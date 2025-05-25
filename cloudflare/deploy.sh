@@ -1,4 +1,6 @@
 #!/bin/bash
+#
+# we are using the worker from the een-login repository
 WORKER="een-login"
 
 # reading the secrets from .env

@@ -23,7 +23,6 @@ test.describe('Login and Navigation', () => {
       const configuredProxyUrl = process.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333' // Default logic
       const redirectUri = process.env.VITE_REDIRECT_URI || 'http://127.0.0.1:3333'
       basePath = getLastPartOfUrl(baseURL)
-
        
       if (baseURL) {
         console.log(`\n🚀 Running tests against Service at URL: ${baseURL}`)

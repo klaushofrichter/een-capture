@@ -77,7 +77,12 @@ jobs:
           echo "Server is responding correctly"
 
       - name: Run Playwright tests
-        run: npx playwright test
+        run: |
+          npx playwright test
+          ls -al
+          ls -al playwright-report
+          ls -al test-results
+          npx playwright show-report
         timeout-minutes: 10
 
       - name: Stop Vite server
