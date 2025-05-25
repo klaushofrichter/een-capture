@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favicon Preview - EEN Capture</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: #f8fafc;
+        }
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        .preview-item {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .favicon-display {
+            margin: 1rem 0;
+        }
+        .size-label {
+            font-size: 0.875rem;
+            color: #64748b;
+            font-weight: 600;
+        }
+        h1 {
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+        .description {
+            color: #64748b;
+            margin-bottom: 2rem;
+        }
+        .color-info {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-top: 2rem;
+        }
+        .color-swatch {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 EEN Capture Favicon Preview</h1>
+    <p class="description">New favicon design featuring the letter "C" for the een-capture application.</p>
+    
+    <div class="preview-grid">
+        <div class="preview-item">
+            <div class="size-label">16x16 (Browser tab)</div>
+            <div class="favicon-display">
+                <img src="/favicon.svg" width="16" height="16" alt="16x16 favicon">
+            </div>
+        </div>
+        
+        <div class="preview-item">
+            <div class="size-label">32x32 (Standard)</div>
+            <div class="favicon-display">
+                <img src="/favicon.svg" width="32" height="32" alt="32x32 favicon">
+            </div>
+        </div>
+        
+        <div class="preview-item">
+            <div class="size-label">48x48 (Large)</div>
+            <div class="favicon-display">
+                <img src="/favicon.svg" width="48" height="48" alt="48x48 favicon">
+            </div>
+        </div>
+        
+        <div class="preview-item">
+            <div class="size-label">64x64 (Touch)</div>
+            <div class="favicon-display">
+                <img src="/favicon.svg" width="64" height="64" alt="64x64 favicon">
+            </div>
+        </div>
+        
+        <div class="preview-item">
+            <div class="size-label">128x128 (High DPI)</div>
+            <div class="favicon-display">
+                <img src="/favicon.svg" width="128" height="128" alt="128x128 favicon">
+            </div>
+        </div>
+        
+        <div class="preview-item">
+            <div class="size-label">192x192 (Android)</div>
+            <div class="favicon-display">
+                <img src="/favicon.svg" width="192" height="192" alt="192x192 favicon">
+            </div>
+        </div>
+    </div>
+    
+    <div class="color-info">
+        <h3>Design Details</h3>
+        <p><span class="color-swatch" style="background-color: #3b82f6;"></span><strong>Primary Blue:</strong> #3b82f6</p>
+        <p><span class="color-swatch" style="background-color: #1e40af;"></span><strong>Border Blue:</strong> #1e40af</p>
+        <p><span class="color-swatch" style="background-color: white; border: 1px solid #ccc;"></span><strong>Text Color:</strong> White</p>
+        <p><strong>Font:</strong> System UI with bold weight</p>
+        <p><strong>Format:</strong> SVG (scalable vector graphics)</p>
+    </div>
+    
+    <p style="margin-top: 2rem; font-size: 0.875rem; color: #64748b;">
+        💡 <strong>Tip:</strong> The SVG format ensures the favicon looks crisp at all sizes and supports both light and dark themes.
+    </p>
+</body>
+</html> 

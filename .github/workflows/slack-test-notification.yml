@@ -63,7 +63,7 @@ jobs:
       - name: Prepare commit message
         id: commit-message
         run: |
-          message=$( echo "${{ github.event.workflow_run.head_commit.message }}" | sed 's/\\n/ /g' | sed 's/\\"/\\\"/g' | sed 's/\\`/\\\"/g' )
+          message=$( echo "${{ github.event.workflow_run.head_commit.message }}" | sed 's/\\n/ /g' | sed 's/\\"/"/g' | sed 's/\\`/"/g')
           #message="${{ github.event.workflow_run.head_commit.message }}"
           # Replace newlines with spaces and escape quotes
           #message="${message//$'\n'/ }"
@@ -159,4 +159,4 @@ jobs:
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK 
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
