@@ -6,13 +6,15 @@
           <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">
             Capture
           </h3>
-          <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400 flex justify-between items-center">
-            <span>Capture and manage your content</span>
-            <span v-if="eenAuthStore.userProfile?.email">
-              <span class="text-gray-500 dark:text-gray-400">User: </span>
-              <span class="text-blue-600 dark:text-blue-400 font-medium">{{ eenAuthStore.userProfile.email }}</span>
-            </span>
-          </p>
+          <div class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
+            <p class="md:flex md:justify-between md:items-center">
+              <span>Capture and manage your content</span>
+              <span v-if="eenAuthStore.userProfile?.email" class="block md:inline mt-1 md:mt-0">
+                <span class="text-gray-500 dark:text-gray-400">User: </span>
+                <span class="text-blue-600 dark:text-blue-400 font-medium">{{ eenAuthStore.userProfile.email }}</span>
+              </span>
+            </p>
+          </div>
         </div>
         <div class="border-t border-gray-200 dark:border-gray-700">
           <div class="px-4 py-5 sm:p-6">
