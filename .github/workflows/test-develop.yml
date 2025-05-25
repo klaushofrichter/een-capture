@@ -80,8 +80,8 @@ jobs:
         run: |
           npx playwright test
           ls -al
-          ls -al playwright-report
-          ls -al test-results
+          ls -al playwright-report || true
+          ls -al test-results || true
           npx playwright show-report
         timeout-minutes: 10
 
