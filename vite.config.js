@@ -352,7 +352,6 @@ export default defineConfig(({ command, mode }) => {
   } else {
     config.base = '/'
   }
-  
 
   return config
 })

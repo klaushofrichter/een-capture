@@ -69,8 +69,8 @@
               <div class="flex space-x-4">
                 <button
                   type="button"
-                  @click="router.push('/')"
                   class="w-2/3 flex justify-center py-2 px-6 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                  @click="router.push('/')"
                 >
                   Back to Login
                 </button>

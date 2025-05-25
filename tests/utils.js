@@ -30,7 +30,7 @@ export async function loginToApplication(page, basePath = '') {
   const username = process.env.TEST_USER
   const password = process.env.TEST_PASSWORD
 
-  // eslint-disable-next-line playwright/no-conditional-in-test
+   
   if (!username || !password) {
     throw new Error('Test credentials not found')
   }
@@ -60,7 +60,7 @@ export async function loginWithEEN(page) {
   const username = process.env.TEST_USER
   const password = process.env.TEST_PASSWORD
 
-  // eslint-disable-next-line playwright/no-conditional-in-test
+   
   if (!username || !password) {
     throw new Error('Test credentials not found')
   }
