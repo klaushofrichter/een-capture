@@ -27,9 +27,15 @@ appVue.use(pinia)
 appVue.use(router)
 
 // Initialize Firebase Auth Service
+console.log('Initializing Firebase Auth Service')
 firebaseAuthService.initialize(app)
+console.log('Firebase Auth Service initialized')
 
 document.title = APP_NAME
+console.log('Setting document title to', APP_NAME)
 document.querySelector('meta[name="description"]').setAttribute('content', APP_DESCRIPTION)
+console.log('Setting document description to', APP_DESCRIPTION)
 handleGitHubPagesRedirect()
+console.log('Handling GitHub Pages redirect')
 appVue.mount('#app')
+console.log('App mounted')
