@@ -93,7 +93,8 @@ const routeNameMap = {
   '/about': 'About',
   '/profile': 'Profile',
   '/settings': 'Settings',
-  '/direct': 'Direct Login'
+  '/direct': 'Direct Login',
+  '/capture': 'Capture',
 }
 
 function goBack() {
