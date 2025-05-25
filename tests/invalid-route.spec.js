@@ -1,4 +1,4 @@
-// eslint-disable-next-line playwright/no-conditional-in-test, playwright/no-skipped-test
+ 
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
 import { getLastPartOfUrl, loginWithEEN, logoutFromApplication } from './utils'
@@ -18,7 +18,7 @@ test.describe('Invalid Route Navigation', () => {
       const configuredProxyUrl = process.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333' // Default logic
       const redirectUri = process.env.VITE_REDIRECT_URI || 'http://127.0.0.1:3333'
       basePath = getLastPartOfUrl(baseURL)
-      // eslint-disable-next-line playwright/no-conditional-in-test
+       
       if (baseURL) {
         console.log(`\n🚀 Running tests against Service at URL: ${baseURL}`)
         console.log(`🔒 Using Auth Proxy URL: ${configuredProxyUrl}`)
@@ -32,7 +32,7 @@ test.describe('Invalid Route Navigation', () => {
   test('should display not found page after login when navigating to invalid route', async ({
     page
   }) => {
-    // eslint-disable-next-line playwright/no-conditional-in-test, playwright/no-skipped-test
+     
 
     console.log(`\n▶️ Running Test: ${test.info().title}\n`)
     console.log('🔍 this test uses an invalid route with and without previous login. ')
