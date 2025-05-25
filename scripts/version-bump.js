@@ -6,19 +6,6 @@ import { exec } from 'child_process'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-// Format date in a more readable way
-function formatDate(date) {
-  const options = {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZoneName: 'short' // Add timezone information
-  }
-  return date.toLocaleDateString(undefined, options)
-}
-
 // Read package.json
 const packagePath = path.join(__dirname, '..', 'package.json')
 

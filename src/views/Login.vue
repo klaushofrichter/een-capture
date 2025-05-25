@@ -8,8 +8,8 @@
         Welcome to {{ APP_NAME }}
       </h2>
       <button
-        @click="handleLogin"
         class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+        @click="handleLogin"
       >
         Sign in with Eagle Eye Networks
       </button>
@@ -54,7 +54,7 @@ import { APP_NAME } from '../constants'
 const router = useRouter()
 const route = useRoute()
 // Auth store is imported for potential future use but currently not used directly
-// eslint-disable-next-line no-unused-vars
+ 
 const appVersion = computed(() => packageJson.version)
 const lastCommitDate = computed(() => {
   if (!packageJson.lastCommit) return 'unknown build date'
