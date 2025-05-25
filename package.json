@@ -1,7 +1,7 @@
 {
   "name": "een-capture",
-  "version": "0.0.41",
-  "lastCommit": "2025-05-24T22:43:42.969Z",
+  "version": "0.0.42",
+  "lastCommit": "2025-05-25T12:55:04.577Z",
   "private": true,
   "type": "module",
   "base": "/een-capture/",
@@ -19,6 +19,7 @@
     "check-node": "node scripts/check-node-version.js",
     "test": "playwright test",
     "test-preview": "npm run build && npx playwright test",
+    "test:ci": "scripts/test-ci-local.sh",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug"

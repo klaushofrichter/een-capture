@@ -50,7 +50,7 @@ If you prefer not to use nvm, ensure you have Node.js 20.19.0+ installed from [n
 The project includes end-to-end tests using Playwright:
 
 ```bash
-# Run all tests
+# Run all tests (development mode)
 npm test
 
 # Run specific test
@@ -61,7 +61,32 @@ npm run test:ui
 
 # Run tests in headed mode (see browser)
 npm run test:headed
+
+# Test in CI-like environment locally (mimics GitHub Actions)
+npm run test:ci
 ```
+
+#### Troubleshooting CI Test Failures
+
+If tests fail in GitHub Actions but work locally:
+
+1. **Test locally in CI mode** to replicate the issue:
+   ```bash
+   npm run test:ci
+   ```
+
+2. **Check environment variables** - Ensure all required secrets are set in GitHub:
+   - `VITE_EEN_CLIENT_ID`
+   - `VITE_EEN_CLIENT_SECRET` 
+   - `VITE_REDIRECT_URI`
+   - `TEST_USER`
+   - `TEST_PASSWORD`
+   - Firebase configuration secrets (all `VITE_FIREBASE_*` variables)
+
+3. **Review test artifacts** - GitHub Actions uploads:
+   - Playwright HTML reports
+   - Test videos and screenshots
+   - Console logs for debugging
 
 ## License
 
