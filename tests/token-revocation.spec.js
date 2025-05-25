@@ -1,7 +1,7 @@
-// eslint-disable-next-line playwright/no-conditional-in-test
+ 
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
-// eslint-disable-next-line no-unused-vars
+ 
 import {
   navigateToLogin,
   loginToApplication,
@@ -18,13 +18,13 @@ let basePath = ''
 test.describe('Token Revocation', () => {
   test.beforeEach(async ({ page }) => {
     // Log Base URL and Proxy URL once before the first test runs
-    // eslint-disable-next-line playwright/no-conditional-in-test
+     
     if (!loggedBaseURL) {
       const baseURL = page.context()._options.baseURL
       const configuredProxyUrl = process.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333' // Default logic
       const redirectUri = process.env.VITE_REDIRECT_URI || 'http://127.0.0.1:3333'
       basePath = getLastPartOfUrl(baseURL)
-      // eslint-disable-next-line playwright/no-conditional-in-test
+       
       if (baseURL) {
         console.log(`\n🚀 Running tests against Service at URL: ${baseURL}`)
         console.log(`🔒 Using Auth Proxy URL: ${configuredProxyUrl}`)
@@ -92,9 +92,9 @@ test.describe('Token Revocation', () => {
     const refreshTokenInput = page.locator('#refresh-token')
     await expect(refreshTokenInput).toBeVisible({ timeout: 10000 })
     console.log('✅ Refresh token input field found correctly')
-    const refreshToken = await refreshTokenInput.inputValue()
+    const refreshToken = refreshTokenInput
     console.log('✅ Refresh token retrieved from input field:', refreshToken)
-    expect(refreshToken).toBe('Available')
+    await expect(refreshToken).toHaveValue('Available')
 
     // SECOND PAGE SPAWN HERE - ANONYMOUS
     // open a new context 
@@ -134,9 +134,9 @@ test.describe('Token Revocation', () => {
     const secondRefreshTokenInput = secondPage.locator('#refresh-token')
     await expect(secondRefreshTokenInput).toBeVisible({ timeout: 10000 })
     console.log('✅ P2: Refresh token input field found correctly')
-    const secondRefreshToken = await secondRefreshTokenInput.inputValue()
+    const secondRefreshToken = secondRefreshTokenInput
     console.log('✅ P2: Refresh token retrieved from input field:', secondRefreshToken)
-    expect(secondRefreshToken).toBe('No Refresh Token available')
+    await expect(secondRefreshToken).toHaveValue('No Refresh Token available')
     
     // find and read the expiration time
     const secondExpirationTimeInput = secondPage.locator('#expiration-time')
@@ -170,9 +170,9 @@ test.describe('Token Revocation', () => {
     expect(expirationTimeAfterCancel).toContain('more than')
 
     // read the refresh token again
-    const refreshTokenAfterCancel = await refreshTokenInput.inputValue()
+    const refreshTokenAfterCancel = refreshTokenInput
     console.log('✅ Refresh token after cancel:', refreshTokenAfterCancel)
-    expect(refreshTokenAfterCancel).toBe('Available')
+    await expect(refreshTokenAfterCancel).toHaveValue('Available')
 
     // logout
     await logoutFromApplication(page)

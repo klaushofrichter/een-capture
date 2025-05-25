@@ -19,14 +19,14 @@
         </div>
         <div class="flex justify-center space-x-4">
           <button
-            @click="handleCancelLogout"
             class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-primary-700 dark:text-primary-400 bg-primary-100 dark:bg-primary-900 hover:bg-primary-200 dark:hover:bg-primary-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            @click="handleCancelLogout"
           >
             Cancel Logout
           </button>
           <button
-            @click="handleImmediateLogout"
             class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            @click="handleImmediateLogout"
           >
             OK
           </button>
@@ -103,19 +103,19 @@
           </div>
           <div class="hidden sm:ml-6 sm:flex sm:items-center">
             <button
-              @click="handleLogout"
               class="ml-3 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              @click="handleLogout"
             >
               Logout
             </button>
           </div>
           <div class="-mr-2 flex items-center sm:hidden">
             <button
-              @click="isMobileMenuOpen = !isMobileMenuOpen"
               type="button"
               class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
               aria-controls="mobile-menu"
               :aria-expanded="isMobileMenuOpen"
+              @click="isMobileMenuOpen = !isMobileMenuOpen"
             >
               <span class="sr-only">Open main menu</span>
               <svg
@@ -157,9 +157,9 @@
 
       <!-- Mobile menu, show/hide based on menu state. -->
       <div
+        id="mobile-menu"
         class="sm:hidden"
         :class="{ block: isMobileMenuOpen, hidden: !isMobileMenuOpen }"
-        id="mobile-menu"
       >
         <div class="pt-2 pb-3 space-y-1">
           <router-link
@@ -223,8 +223,8 @@
             Settings
           </router-link>
           <button
-            @click="handleLogoutAndCloseMenu"
             class="w-full text-left border-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+            @click="handleLogoutAndCloseMenu"
           >
             Logout
           </button>
@@ -256,7 +256,7 @@ import { APP_NAME } from './constants'
 // Route is used for navigation active classes
 const route = useRoute()
 // Router is used for programmatic navigation - though we use window.location directly in handleImmediateLogout
-// eslint-disable-next-line no-unused-vars
+ 
 const router = useRouter()
 // Auth store is used for logout functionality
 const authStore = useAuthStore()

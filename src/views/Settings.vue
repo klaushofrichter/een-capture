@@ -16,35 +16,35 @@
                 <h4 class="text-base font-medium text-gray-900 dark:text-gray-100 mb-4">Theme</h4>
                 <div class="flex items-center space-x-4">
                   <button
-                    @click="setTheme('light')"
                     class="px-4 py-2 rounded-md text-sm font-medium"
                     :class="[
                       theme === 'light'
                         ? 'bg-primary-600 text-white'
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                     ]"
+                    @click="setTheme('light')"
                   >
                     Light
                   </button>
                   <button
-                    @click="setTheme('dark')"
                     class="px-4 py-2 rounded-md text-sm font-medium"
                     :class="[
                       theme === 'dark'
                         ? 'bg-primary-600 text-white'
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                     ]"
+                    @click="setTheme('dark')"
                   >
                     Dark
                   </button>
                   <button
-                    @click="setTheme('system')"
                     class="px-4 py-2 rounded-md text-sm font-medium"
                     :class="[
                       theme === 'system'
                         ? 'bg-primary-600 text-white'
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                     ]"
+                    @click="setTheme('system')"
                   >
                     System
                   </button>
