@@ -32,6 +32,7 @@ test.describe('Capture Page Registration Flow', () => {
     if (!loggedBaseURL) {
       const baseURL = page.context()._options.baseURL
       const redirectUri = process.env.VITE_REDIRECT_URI || 'http://127.0.0.1:3333'
+      const configuredProxyUrl = process.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:3333' // Default logic
       basePath = ''
       if (baseURL) {
         const url = new URL(baseURL)
