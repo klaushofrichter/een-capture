@@ -1,10 +1,10 @@
 {
-  "name": "een-login",
-  "version": "0.1.35",
-  "lastCommit": "May 10, 2025, 04:24 PM CDT",
+  "name": "een-capture",
+  "version": "0.0.43",
+  "lastCommit": "2025-05-25T13:16:36.902Z",
   "private": true,
   "type": "module",
-  "base": "/een-login/",
+  "base": "/een-capture/",
   "scripts": {
     "dev": "vite",
     "build": "vite build && node scripts/prepare-dist-package.js",
@@ -16,14 +16,17 @@
     "gh-deploy": "gh-pages -d dist -f -m 'Deploy to GitHub Pages' -u 'Klaus Hofrichter <klaus@klaushofrichter.net>'",
     "gh-deploy-help": "gh-pages --help",
     "pre-commit": "npm run version:patch",
+    "check-node": "node scripts/check-node-version.js",
     "test": "playwright test",
-    "test-preview": "npm run build && npx playwright test --config playwright.preview.config.js",
+    "test-preview": "npm run build && npx playwright test",
+    "test:ci": "scripts/test-ci-local.sh",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug"
   },
   "dependencies": {
     "axios": "^1.6.7",
+    "firebase": "^11.7.1",
     "gh-pages": "^6.3.0",
     "pinia": "^2.1.7",
     "vue": "^3.4.15",
@@ -50,7 +53,7 @@
     "vite-plugin-static-copy": "^3.0.0"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=20.19.0"
   },
   "browserslist": [
     "> 1%",

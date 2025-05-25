@@ -1,0 +1,162 @@
+name: Slack Notification for Test Results
+
+on:
+  workflow_run:
+    workflows: ["Test GH Pages with Playwright"]
+    types:
+      - completed
+
+jobs:
+  notify-slack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          fetch-depth: 0
+
+      - name: Get version, branch, repo, and last commit from package.json
+        id: package-version
+        run: |
+          cat package.json
+          echo "--------------------------------"
+
+          # Get the version from the same commit that was tested
+          VERSION=$(node -p 'require("./package.json").version')
+          echo "Version: $VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+          # Get the last commit from the same commit that was tested
+          LAST_COMMIT=$(node -p 'require("./package.json").lastCommit')
+          echo "Last Commit: $LAST_COMMIT"
+
+          # Convert UTC to Central Time (America/Chicago timezone)
+          ct_time=$(TZ=America/Chicago date -d "$LAST_COMMIT")
+          #formatted_ct_time=$(date -d "$ct_time" +"%Y-%m-%dT%H:%M:%S America/Chicago")
+          echo "LAST_COMMIT=$ct_time" >> $GITHUB_OUTPUT
+          echo "LAST_COMMIT after reformat to CT: $ct_time"
+ 
+          # the name in package.json is the name of the repo
+          #REPO_NAME=$(echo ${{ github.repository }} | cut -d '/' -f 2)
+          REPO_NAME=$(node -p 'require("./package.json").name')
+          echo "REPO_NAME=$REPO_NAME" >> $GITHUB_OUTPUT
+          echo "Repo: $REPO_NAME"
+
+          # Get the branch from the same commit that was tested
+          BRANCH_NAME="gh-pages"  # this is testing gh pages only... (?)
+          echo "BRANCH_NAME: $BRANCH_NAME"
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_OUTPUT
+
+          # test complete date
+          TEST_COMPLETE_DATE=$(TZ=America/Chicago date -d "${{ github.event.workflow_run.updated_at }}")
+          echo "TEST_COMPLETE_DATE=$TEST_COMPLETE_DATE" >> $GITHUB_OUTPUT
+          echo "TEST_COMPLETE_DATE: $TEST_COMPLETE_DATE"
+
+      - name: Get GH Pages Site Name
+        id: site-name
+        run: |
+          SITE_NAME=$(echo ${{ github.repository }} | cut -d '/' -f 1)
+          echo "SITE_NAME: $SITE_NAME"
+          echo "SITE_NAME=$SITE_NAME" >> $GITHUB_OUTPUT
+
+      - name: Prepare commit message
+        id: commit-message
+        run: |
+          message=$( echo "${{ github.event.workflow_run.head_commit.message }}" | sed 's/\\n/ /g' | sed 's/\\"/"/g' | sed 's/\\`/"/g')
+          #message="${{ github.event.workflow_run.head_commit.message }}"
+          # Replace newlines with spaces and escape quotes
+          #message="${message//$'\n'/ }"
+          #message="${message//\"/\\\"}"
+          # replace '`' with '"'  - sometimes the commit message contains a backtick
+          #message="${message//\`/\\\"}"
+          echo "MESSAGE w/o backticks: $message"
+          echo "MESSAGE=$message" >> $GITHUB_OUTPUT
+
+      - name: Calculate duration
+        id: duration
+        run: |
+          start="${{ github.event.workflow_run.run_started_at }}"
+          end="${{ github.event.workflow_run.updated_at }}"
+          if [ -n "$start" ] && [ -n "$end" ]; then
+            start_sec=$(date -d "$start" +%s)
+            end_sec=$(date -d "$end" +%s)
+            duration=$((($end_sec - $start_sec) / 60))
+            echo "DURATION=$duration" >> $GITHUB_OUTPUT
+          else
+            echo "DURATION=unknown" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Slack notification
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "${{ github.event.workflow_run.conclusion == 'success' && '✅ GH Pages Tests Passed on ' || '❌ GH Pages Tests Failed on ' }}${{ steps.package-version.outputs.REPO_NAME }} (v${{ steps.package-version.outputs.VERSION }})",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Repository:* <https://github.com/${{ github.repository }}|${{ github.repository }}>\n*Branch:* <https://github.com/${{ github.repository }}/tree/${{ steps.package-version.outputs.BRANCH_NAME }}|${{ steps.package-version.outputs.BRANCH_NAME }}>\n*Build Date:* ${{ steps.package-version.outputs.LAST_COMMIT }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Site URL:* <https://${{ steps.site-name.outputs.SITE_NAME }}.github.io/${{ steps.package-version.outputs.REPO_NAME }}/|https://${{ steps.site-name.outputs.SITE_NAME }}.github.io/${{ steps.package-version.outputs.REPO_NAME }}>"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Version:* v${{ steps.package-version.outputs.VERSION }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Status:* ${{ github.event.workflow_run.conclusion }}\n*Duration:* ${{ steps.duration.outputs.DURATION }} minutes"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Commit Message:* ${{ steps.commit-message.outputs.MESSAGE }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Workflow Run:* <${{ github.event.workflow_run.html_url }}|View Test Details>"
+                  }
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "Test completed at: ${{ steps.package-version.outputs.TEST_COMPLETE_DATE }}"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK 

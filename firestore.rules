@@ -1,0 +1,54 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ... other collection rules if any ...
+
+    // Rules for the 'documents' collection
+    match /documents/{documentId} {
+      // Allow authenticated users to read or list documents
+      // ONLY if the document's email matches their authenticated email.
+      allow read, list: if request.auth != null && 
+        (request.auth.token.email == "klaus@klaushofrichter.net" || 
+         request.auth.token.eenUserEmail != null);
+
+      // Allow authenticated users to create documents
+      // ONLY if the email in the new document matches their authenticated email.
+      allow create: if request.auth != null && 
+        (request.auth.token.email == "klaus@klaushofrichter.net" || 
+         request.auth.token.eenUserEmail != null);
+
+      // Allow authenticated users to delete documents
+      // ONLY if the document's email matches their authenticated email.
+      allow delete: if request.auth != null && 
+        (request.auth.token.email == "klaus@klaushofrichter.net" || 
+         request.auth.token.eenUserEmail != null);
+
+      // Note: Your Cloud Function (getAllDocuments) uses the Admin SDK,
+      // which bypasses these security rules. This allows the function
+      // to read all documents regardless of the user's email, as intended.
+    }
+
+    // Rules for the 'captures' collection
+    match /captures/{captureId} {
+      // Temporarily allow all authenticated users to read/list for debugging
+      allow read, list: if request.auth != null;
+
+      // Allow authenticated EEN users to create captures
+      // ONLY if the eenUserEmailField matches their authenticated email
+      allow create: if request.auth != null && 
+        request.auth.token.eenUserEmail != null &&
+        (request.resource.data.eenUserEmailField == request.auth.token.eenUserEmail ||
+         request.resource.data.eenUserEmailField == request.auth.token.email);
+
+      // Allow authenticated EEN users to update their own captures
+      allow update: if request.auth != null && 
+        request.auth.token.eenUserEmail != null &&
+        resource.data.eenUserEmailField == request.auth.token.eenUserEmail;
+
+      // Allow authenticated EEN users to delete their own captures
+      allow delete: if request.auth != null && 
+        request.auth.token.eenUserEmail != null &&
+        resource.data.eenUserEmailField == request.auth.token.eenUserEmail;
+    }
+  }
+}

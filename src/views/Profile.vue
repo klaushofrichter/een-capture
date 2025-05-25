@@ -53,7 +53,7 @@
                 </div>
                 <div class="sm:col-span-2">
                   <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Email</dt>
-                  <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                  <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100" id="user-email">
                     {{ userProfile.email || 'N/A' }}
                   </dd>
                 </div>
@@ -102,6 +102,7 @@
                       <div class="flex-1">
                         <input
                           :type="showToken ? 'text' : 'password'"
+                          :id="'access-token'"
                           :value="authStore.token"
                           readonly
                           class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm sm:text-sm dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-0 focus:border-gray-300 dark:focus:border-gray-600"
@@ -127,6 +128,7 @@
                       <div class="flex-1">
                         <input
                           :value="tokenExpirationText"
+                          :id="'expiration-time'"
                           readonly
                           class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm sm:text-sm dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-0 focus:border-gray-300 dark:focus:border-gray-600"
                         />
@@ -143,6 +145,7 @@
                       <div class="flex-1">
                         <input
                           :value="hasRefreshToken ? 'Available' : 'No Refresh Token available'"
+                          :id="'refresh-token'"
                           readonly
                           class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm sm:text-sm dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-0 focus:border-gray-300 dark:focus:border-gray-600"
                         />

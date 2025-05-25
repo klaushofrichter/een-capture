@@ -179,14 +179,15 @@ const authStore = useAuthStore()
 
 const appVersion = computed(() => packageJson.version)
 const lastCommitDate = computed(() => {
-  if (!packageJson.lastCommit) return 'N/A'
-  return packageJson.lastCommit
+  if (!packageJson.lastCommit) return 'unknown build date'
+  const date = new Date(packageJson.lastCommit)
+  return date.toLocaleString()
 })
 
 const readmeUrl = computed(() =>
   import.meta.env.DEV
-    ? 'https://github.com/klaushofrichter/een-login/blob/develop/README.md'
-    : 'https://github.com/klaushofrichter/een-login/blob/gh-pages/README.md'
+    ? 'https://github.com/klaushofrichter/'+packageJson.name+'/blob/develop/README.md'
+    : 'https://github.com/klaushofrichter/'+packageJson.name+'/blob/gh-pages/README.md'
 )
 
 onMounted(() => {
