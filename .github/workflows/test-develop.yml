@@ -14,7 +14,7 @@ jobs:
       VITE_EEN_CLIENT_ID: ${{ secrets.VITE_EEN_CLIENT_ID }}
       VITE_EEN_CLIENT_SECRET: ${{ secrets.VITE_EEN_CLIENT_SECRET }}
       VITE_REDIRECT_URI: ${{ secrets.VITE_REDIRECT_URI }}
-      VITE_AUTH_PROXY_URL: http://127.0.0.1:3333
+      VITE_AUTH_PROXY_URL: https://een-login.klaushofrichter.workers.dev
       VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
       VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
       VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
