@@ -64,6 +64,7 @@ exports.getAllDocuments = onCall(async (request) => {
  * @param {string} request.data.eenUserId - The EEN user ID
  * @param {string} request.data.eenUserEmail - The EEN user email
  * @param {string} request.data.eenAccessToken - EEN access token
+ * @param {string} request.data.eenBaseUrl - EEN base URL for API calls
  * @param {Object} request.data.additionalClaims - Additional claims
  * @returns {Promise<string>} Custom Firebase token
  */
@@ -73,19 +74,122 @@ exports.createCustomToken = onCall(async (request) => {
       eenUserId,
       eenUserEmail,
       eenAccessToken,
+      eenBaseUrl,
       additionalClaims = {},
     } = request.data;
 
     // Validate required parameters
-    if (!eenUserId || !eenUserEmail || !eenAccessToken) {
+    if (!eenUserId || !eenUserEmail || !eenAccessToken || !eenBaseUrl) {
       throw new HttpsError(
           "invalid-argument",
-          "Missing required parameters: eenUserId, eenUserEmail, or eenAccessToken",
+          "Missing required parameters: eenUserId, eenUserEmail, eenAccessToken, or eenBaseUrl",
       );
     }
 
-    // Optional: Verify the EEN access token with EEN API
-    // You can add EEN token verification here if needed
+    // Verify the EEN access token and email by calling EEN API
+    logger.info("Verifying EEN user email with EEN API:", {
+      eenUserId,
+      eenUserEmail,
+      eenBaseUrl,
+    });
+
+    try {
+      // Import axios for making HTTP requests
+      const axios = require("axios");
+      
+      // Call EEN API to get user profile
+      const eenApiResponse = await axios.get(`${eenBaseUrl}/api/v3.0/users/self`, {
+        headers: {
+          "Accept": "application/json",
+          "Authorization": `Bearer ${eenAccessToken}`,
+        },
+        timeout: 10000, // 10 second timeout
+      });
+
+      // Check if the API call was successful
+      if (eenApiResponse.status !== 200) {
+        throw new HttpsError(
+            "unauthenticated",
+            `EEN API returned status ${eenApiResponse.status}`,
+        );
+      }
+
+      // Extract email from EEN API response
+      const eenApiUserData = eenApiResponse.data;
+      const eenApiEmail = eenApiUserData.email;
+
+      if (!eenApiEmail) {
+        throw new HttpsError(
+            "internal",
+            "EEN API response does not contain email field",
+        );
+      }
+
+      // Verify that the email from EEN API matches the provided email
+      if (eenApiEmail.toLowerCase() !== eenUserEmail.toLowerCase()) {
+        logger.error("Email mismatch:", {
+          providedEmail: eenUserEmail,
+          eenApiEmail: eenApiEmail,
+        });
+        throw new HttpsError(
+            "permission-denied",
+            "Email verification failed: provided email does not match EEN user email",
+        );
+      }
+
+      logger.info("EEN email verification successful:", {
+        eenUserId,
+        verifiedEmail: eenApiEmail,
+      });
+
+    } catch (error) {
+      // Handle different types of errors
+      if (error.code && error.code.startsWith("functions/")) {
+        // Re-throw HttpsError as-is
+        throw error;
+      }
+      
+      if (error.response) {
+        // Axios error with response
+        logger.error("EEN API error:", {
+          status: error.response.status,
+          statusText: error.response.statusText,
+          data: error.response.data,
+        });
+        
+        if (error.response.status === 401) {
+          throw new HttpsError(
+              "unauthenticated",
+              "EEN access token is invalid or expired",
+          );
+        } else if (error.response.status === 403) {
+          throw new HttpsError(
+              "permission-denied",
+              "EEN access token does not have permission to access user profile",
+          );
+        } else {
+          throw new HttpsError(
+              "internal",
+              `EEN API error: ${error.response.status} ${error.response.statusText}`,
+          );
+        }
+      } else if (error.request) {
+        // Network error
+        logger.error("Network error calling EEN API:", error.message);
+        throw new HttpsError(
+            "unavailable",
+            "Unable to connect to EEN API for email verification",
+        );
+      } else {
+        // Other error
+        logger.error("Unexpected error during EEN API call:", error.message);
+        throw new HttpsError(
+            "internal",
+            `Email verification failed: ${error.message}`,
+        );
+      }
+    }
+
     logger.info("Creating custom token for EEN user:", {
       eenUserId,
       eenUserEmail,
