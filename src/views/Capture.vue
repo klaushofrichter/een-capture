@@ -871,6 +871,10 @@ watch(() => createForm.value.cameraId, async (newCameraId) => {
     const details = await cameraService.getCameraById(newCameraId);
     cameraDetails.value = details;
     cameraError.value = null;
+    // If the capture name is empty, set it to the camera name
+    if (!createForm.value.name.trim() && details.name) {
+      createForm.value.name = details.name;
+    }
     // Fetch live image after camera is confirmed
     liveImageLoading.value = true;
     try {
