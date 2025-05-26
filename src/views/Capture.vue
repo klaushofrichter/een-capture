@@ -601,6 +601,14 @@ const signInAndFetchData = async () => {
     // Ensure user profile is available before attempting Firebase auth
     await ensureUserProfile();
     
+    // Check if we need to refresh the EEN token
+    const timeRemaining = eenAuthStore.getTokenTimeRemaining();
+    if (timeRemaining && timeRemaining < 300000) { // 5 minutes
+      console.log("[Capture.vue] EEN token expiring soon, refreshing...");
+      const { refreshToken } = await import('../services/auth');
+      await refreshToken();
+    }
+    
     // Sign in to Firebase using EEN custom token
     const firebaseUser = await firebaseAuthService.signInWithEEN();
     console.log("[Capture.vue] Firebase authentication successful:", firebaseUser.uid);
@@ -792,6 +800,9 @@ watch([showModal, showCreateModal, showDeleteModal], ([modal, createModal, delet
   }
 }, { immediate: true });
 
+// Add token refresh interval
+let tokenRefreshInterval = null;
+
 onMounted(() => {
   document.title = `${APP_NAME} - Capture`;
   console.log('[Capture.vue] Component mounted - EEN Auth State:', {
@@ -803,6 +814,24 @@ onMounted(() => {
   
   if (eenAuthStore.isAuthenticated) {
     signInAndFetchData();
+    
+    // Set up token refresh interval
+    tokenRefreshInterval = setInterval(async () => {
+      const timeRemaining = eenAuthStore.getTokenTimeRemaining();
+      if (timeRemaining && timeRemaining < 300000) { // 5 minutes
+        console.log("[Capture.vue] Token refresh interval triggered");
+        try {
+          const { refreshToken } = await import('../services/auth');
+          const success = await refreshToken();
+          if (success) {
+            // Refresh Firebase auth after EEN token refresh
+            await firebaseAuthService.refreshAuth();
+          }
+        } catch (error) {
+          console.error("[Capture.vue] Token refresh failed:", error);
+        }
+      }
+    }, 60000); // Check every minute
   } else {
     error.value = "EEN user not authenticated.";
     loading.value = false;
@@ -812,8 +841,14 @@ onMounted(() => {
 onUnmounted(async () => {
   // Clean up event listener on component unmount
   document.removeEventListener('keydown', handleEscapeKey);
+  
+  // Clear token refresh interval
+  if (tokenRefreshInterval) {
+    clearInterval(tokenRefreshInterval);
+    tokenRefreshInterval = null;
+  }
+  
   // Firebase Auth Service handles cleanup automatically through auth state listeners
-  // No manual cleanup needed as we're using the global Firebase app instance
   console.log("[Capture.vue] Component unmounted");
 });
 </script> 
