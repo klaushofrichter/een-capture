@@ -58,6 +58,9 @@
                       <p v-if="capture.createdAt" class="text-xs text-gray-500 dark:text-gray-400">
                         Created: {{ new Date(capture.createdAt).toLocaleString() }}
                       </p>
+                      <p v-if="capture.images && capture.images.length > 0" class="text-xs text-green-600 dark:text-green-400">
+                        📁 {{ capture.images.length }} images stored
+                      </p>
                     </div>
                     <!-- Action buttons: Process and Delete -->
                     <div class="flex items-center gap-2 ml-2">
@@ -410,6 +413,35 @@
             </p>
           </div>
 
+          <!-- Stored Images -->
+          <div v-if="selectedCapture.images && selectedCapture.images.length > 0">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Stored Images ({{ selectedCapture.images.length }})
+            </label>
+            <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+              <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 max-h-40 overflow-y-auto">
+                <div 
+                  v-for="(image, index) in selectedCapture.images" 
+                  :key="index"
+                  class="relative group"
+                >
+                  <img 
+                    :src="image.downloadUrl" 
+                    :alt="`Stored image ${image.index}`"
+                    class="w-full h-12 object-cover rounded border border-gray-300 dark:border-gray-600"
+                    @error="$event.target.style.display='none'"
+                  />
+                  <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded flex items-center justify-center">
+                    <span class="text-white text-xs font-bold">{{ image.index }}</span>
+                  </div>
+                </div>
+              </div>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                Images stored in Firebase Cloud Storage
+              </p>
+            </div>
+          </div>
+
           <!-- Raw Data (for debugging) -->
           <div class="pt-2 border-t border-gray-200 dark:border-gray-600">
             <details class="group">
@@ -634,32 +666,82 @@
             </div>
           </div>
         </div>
+
+        <!-- Upload Progress (Integrated with Capture) -->
+        <div v-if="isUploading" class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+          <h4 class="text-sm font-medium text-purple-900 dark:text-purple-100 mb-2">Uploading to Firebase Storage</h4>
+          
+          <div class="space-y-3">
+            <div class="flex justify-between text-sm text-purple-700 dark:text-purple-300">
+              <span>Capturing and uploading images...</span>
+              <span>{{ uploadProgress }}%</span>
+            </div>
+            <div class="w-full bg-purple-200 dark:bg-purple-800 rounded-full h-2">
+              <div 
+                class="bg-purple-600 dark:bg-purple-400 h-2 rounded-full transition-all duration-300"
+                :style="{ width: uploadProgress + '%' }"
+              ></div>
+            </div>
+            
+            <!-- Real-time upload statistics for large sequences -->
+            <div v-if="uploadStats.total > 100" class="grid grid-cols-3 gap-4 text-xs">
+              <div class="text-center">
+                <div class="text-green-600 dark:text-green-400 font-bold">{{ uploadStats.success }}</div>
+                <div class="text-gray-500 dark:text-gray-400">Uploaded</div>
+              </div>
+              <div class="text-center">
+                <div class="text-red-600 dark:text-red-400 font-bold">{{ uploadStats.failed }}</div>
+                <div class="text-gray-500 dark:text-gray-400">Failed</div>
+              </div>
+              <div class="text-center">
+                <div class="text-purple-600 dark:text-purple-400 font-bold">{{ uploadStats.total - uploadStats.success - uploadStats.failed }}</div>
+                <div class="text-gray-500 dark:text-gray-400">Pending</div>
+              </div>
+            </div>
+            
+            <!-- Parallel processing indicator -->
+            <div class="text-xs text-purple-600 dark:text-purple-400 text-center">
+              Using parallel capture and upload for optimal performance
+            </div>
+          </div>
+        </div>
+        
+        <!-- Completion Summary -->
+        <div v-if="!isProcessing && !isUploading && uploadStats.total > 0" class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+          <h4 class="text-sm font-medium text-green-900 dark:text-green-100 mb-2">Process Complete</h4>
+          <div class="text-sm text-green-700 dark:text-green-300">
+            Successfully captured and uploaded {{ uploadStats.success }}/{{ uploadStats.total }} images
+            <span v-if="uploadStats.failed > 0" class="text-red-600 dark:text-red-400">
+              ({{ uploadStats.failed }} failed)
+            </span>
+          </div>
+        </div>
       </div>
 
       <!-- Modal Footer -->
       <div class="flex justify-end pt-6 border-t border-gray-200 dark:border-gray-600 mt-6 space-x-3">
         <button 
           class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
-          :disabled="isProcessing"
+          :disabled="isProcessing || isUploading"
           @click="closeProcessModal"
         >
-          {{ isProcessing ? 'Processing...' : 'Cancel' }}
+          {{ isProcessing || isUploading ? 'Processing...' : 'Close' }}
         </button>
         <button 
-          v-if="!isProcessing"
+          v-if="!isProcessing && !isUploading && uploadStats.total === 0"
           class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
           @click="startImageCapture"
         >
-          Start Capture
+          Start Capture & Upload
         </button>
         <button 
-          v-else
+          v-else-if="isProcessing || isUploading"
           class="px-4 py-2 bg-gray-400 text-white rounded cursor-not-allowed"
           disabled
         >
           <div class="flex items-center space-x-2">
             <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-            <span>Processing...</span>
+            <span>{{ isProcessing && isUploading ? 'Capturing & Uploading...' : isProcessing ? 'Processing...' : 'Uploading...' }}</span>
           </div>
         </button>
       </div>
@@ -671,11 +753,12 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { APP_NAME } from '../constants'
-import { getFirestore, collection, getDocs, query, where, addDoc, deleteDoc, doc } from "firebase/firestore";
+import { getFirestore, collection, getDocs, query, where, addDoc, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { firebaseAuthService } from '../services/firebase-auth'
 import { app } from '../firebase'
 import { cameraService } from '../services/cameras'
 import { mediaService } from '../services/media'
+import { storageService } from '../services/storage'
 
 const eenAuthStore = useAuthStore()
 const captures = ref([]);
@@ -723,6 +806,16 @@ const processTimestamps = ref([]);
 const isProcessing = ref(false);
 const processProgress = ref(0);
 const processedImages = ref([]);
+
+// Upload state
+const isUploading = ref(false);
+const uploadProgress = ref(0);
+const uploadedImages = ref([]);
+const showUploadSection = ref(false);
+
+// Streaming upload state for large sequences
+const streamingResults = ref([]);
+const uploadStats = ref({ success: 0, failed: 0, total: 0 });
 
 // Helper: Downsample image to 320px width and return base64
 async function downsampleImage(base64Image, width = 320) {
@@ -991,8 +1084,19 @@ const deleteCapture = async () => {
   }
 
   try {
+    const captureId = captureToDelete.value.id;
+    
+    // Delete images from Firebase Storage first
+    try {
+      await storageService.deleteCapture(captureId);
+      console.log("[Capture.vue] Storage images deleted successfully");
+    } catch (storageError) {
+      console.warn("[Capture.vue] Error deleting storage images (continuing with Firestore deletion):", storageError);
+    }
+    
+    // Delete the capture document from Firestore
     const db = getFirestore(app);
-    await deleteDoc(doc(db, "captures", captureToDelete.value.id));
+    await deleteDoc(doc(db, "captures", captureId));
     console.log("[Capture.vue] Capture deleted successfully");
     
     // Close delete modal and refresh the captures list
@@ -1013,7 +1117,7 @@ const handleEscapeKey = (event) => {
       closeCreateModal();
     } else if (showModal.value) {
       closeCaptureModal();
-    } else if (showProcessModal.value && !isProcessing.value) {
+    } else if (showProcessModal.value && !isProcessing.value && !isUploading.value) {
       closeProcessModal();
     }
   }
@@ -1128,7 +1232,7 @@ function calculateCaptureTimestamps(capture) {
   return timestamps;
 }
 
-// Start the image capture process
+// Start the image capture and upload process (streamlined)
 async function startImageCapture() {
   if (!processCapture.value) return;
   
@@ -1136,45 +1240,251 @@ async function startImageCapture() {
   processProgress.value = 0;
   processedImages.value = [];
   
+  // Initialize upload state immediately
+  isUploading.value = true;
+  uploadProgress.value = 0;
+  uploadedImages.value = [];
+  streamingResults.value = [];
+  uploadStats.value = { success: 0, failed: 0, total: processTimestamps.value.length };
+  
   const timestamps = processTimestamps.value;
   const totalImages = timestamps.length;
+  const captureId = processCapture.value.id;
   
-  console.log(`[Process] Starting capture of ${totalImages} images from camera ${processCapture.value.cameraId}`);
+  console.log(`[Process] Starting streamlined capture and upload of ${totalImages} images from camera ${processCapture.value.cameraId}`);
   
-  for (let i = 0; i < timestamps.length; i++) {
-    try {
-      const timestamp = timestamps[i];
-      console.log(`[Process] Capturing image ${i + 1}/${totalImages} at ${timestamp}`);
+  // For large sequences (>500 images), use memory-efficient processing
+  const isLargeSequence = totalImages > 500;
+  const batchSize = isLargeSequence ? 10 : totalImages; // Process in batches for large sequences
+  
+  if (isLargeSequence) {
+    console.log(`[Process] Large sequence detected (${totalImages} images). Using streamlined batch processing with size ${batchSize}`);
+  }
+  
+  for (let batchStart = 0; batchStart < timestamps.length; batchStart += batchSize) {
+    const batchEnd = Math.min(batchStart + batchSize, timestamps.length);
+    const batchTimestamps = timestamps.slice(batchStart, batchEnd);
+    
+    console.log(`[Process] Processing batch ${Math.floor(batchStart / batchSize) + 1}/${Math.ceil(timestamps.length / batchSize)} (images ${batchStart + 1}-${batchEnd})`);
+    
+    // Process batch with parallel requests (max 3 concurrent for API stability)
+    const batchPromises = [];
+    const maxConcurrent = 3;
+    
+    for (let i = 0; i < batchTimestamps.length; i += maxConcurrent) {
+      const concurrentBatch = batchTimestamps.slice(i, i + maxConcurrent);
+      const concurrentPromises = concurrentBatch.map(async (timestamp, concurrentIndex) => {
+        const globalIndex = batchStart + i + concurrentIndex + 1;
+        
+        try {
+          console.log(`[Process] Capturing and uploading image ${globalIndex}/${totalImages} at ${timestamp}`);
+          
+          // Step 1: Capture the image
+          const result = await mediaService.getRecordedImage(
+            processCapture.value.cameraId,
+            timestamp,
+            'preview'
+          );
+          
+          if (result.image) {
+            // Step 2: Immediately upload to Firebase Storage
+            try {
+              const uploadResult = await storageService.uploadImage(
+                captureId,
+                globalIndex,
+                result.image,
+                timestamp
+              );
+              
+              const finalResult = {
+                timestamp,
+                image: result.image, // Keep for UI display
+                index: globalIndex,
+                downloadUrl: uploadResult.downloadUrl,
+                storagePath: uploadResult.storagePath,
+                size: uploadResult.size,
+                success: true
+              };
+              
+              // Update upload statistics
+              uploadStats.value.success++;
+              streamingResults.value.push(finalResult);
+              
+              // Update upload progress
+              const totalCompleted = uploadStats.value.success + uploadStats.value.failed;
+              uploadProgress.value = Math.round((totalCompleted / totalImages) * 100);
+              
+              // Batch update Firestore every 10 uploads
+              if (streamingResults.value.length % 10 === 0) {
+                updateCaptureWithImagesBatch(captureId, streamingResults.value);
+              }
+              
+              return finalResult;
+              
+            } catch (uploadError) {
+              console.error(`[Process] Failed to upload image ${globalIndex}:`, uploadError);
+              
+              // Still return the captured image for UI, but mark upload as failed
+              const failedResult = {
+                timestamp,
+                image: result.image,
+                index: globalIndex,
+                success: false,
+                error: uploadError.message
+              };
+              
+              uploadStats.value.failed++;
+              const totalCompleted = uploadStats.value.success + uploadStats.value.failed;
+              uploadProgress.value = Math.round((totalCompleted / totalImages) * 100);
+              
+              return failedResult;
+            }
+          } else {
+            console.warn(`[Process] Failed to capture image ${globalIndex}/${totalImages} at ${timestamp}`);
+            uploadStats.value.failed++;
+            const totalCompleted = uploadStats.value.success + uploadStats.value.failed;
+            uploadProgress.value = Math.round((totalCompleted / totalImages) * 100);
+            return null;
+          }
+        } catch (error) {
+          console.error(`[Process] Error capturing image ${globalIndex}/${totalImages}:`, error);
+          uploadStats.value.failed++;
+          const totalCompleted = uploadStats.value.success + uploadStats.value.failed;
+          uploadProgress.value = Math.round((totalCompleted / totalImages) * 100);
+          return null;
+        }
+      });
       
-      const result = await mediaService.getRecordedImage(
-        processCapture.value.cameraId,
-        timestamp,
-        'preview'
-      );
+      const batchResults = await Promise.all(concurrentPromises);
+      batchResults.filter(result => result !== null).forEach(result => {
+        processedImages.value.push(result);
+      });
       
-      if (result.image) {
-        processedImages.value.push({
-          timestamp,
-          image: result.image,
-          index: i + 1
-        });
-        console.log(`[Process] Successfully captured image ${i + 1}/${totalImages}`);
-      } else {
-        console.warn(`[Process] Failed to capture image ${i + 1}/${totalImages} at ${timestamp}`);
+      // Update progress
+      const completedImages = batchStart + i + concurrentBatch.length;
+      processProgress.value = Math.round((completedImages / totalImages) * 100);
+      
+      // Small delay between concurrent batches
+      if (i + maxConcurrent < batchTimestamps.length) {
+        await new Promise(resolve => setTimeout(resolve, 200));
       }
-      
-      processProgress.value = Math.round(((i + 1) / totalImages) * 100);
-      
-      // Small delay to prevent overwhelming the API
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-    } catch (error) {
-      console.error(`[Process] Error capturing image ${i + 1}/${totalImages}:`, error);
+    }
+    
+    // For large sequences, clear memory periodically by limiting displayed images
+    if (isLargeSequence && processedImages.value.length > 50) {
+      // Keep only the last 10 images in memory for UI display
+      const recentImages = processedImages.value.slice(-10);
+      // Store the full list temporarily for upload
+      if (!window.fullImageSequence) {
+        window.fullImageSequence = [];
+      }
+      window.fullImageSequence.push(...processedImages.value.slice(0, -10));
+      processedImages.value = recentImages;
+    }
+    
+    // Delay between batches for large sequences
+    if (isLargeSequence && batchEnd < timestamps.length) {
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
   }
   
-  console.log(`[Process] Completed capture process. Successfully captured ${processedImages.value.length}/${totalImages} images`);
+  // Restore full image sequence if it was split (for UI display only)
+  if (window.fullImageSequence) {
+    processedImages.value = [...window.fullImageSequence, ...processedImages.value];
+    delete window.fullImageSequence;
+  }
+  
+  // Final Firestore update with all successful uploads
+  if (streamingResults.value.length > 0) {
+    try {
+      await updateCaptureWithImages(captureId, streamingResults.value);
+      console.log(`[Process] Final Firestore update completed`);
+    } catch (error) {
+      console.error(`[Process] Error in final Firestore update:`, error);
+    }
+  }
+  
+  // Refresh the captures list to show updated data
+  await fetchCaptures();
+  
+  const successCount = uploadStats.value.success;
+  const failedCount = uploadStats.value.failed;
+  
+  console.log(`[Process] Streamlined process completed. Successfully captured and uploaded ${successCount}/${totalImages} images (${failedCount} failed)`);
+  
   isProcessing.value = false;
+  isUploading.value = false;
+  
+  // No need for upload section - everything is already uploaded!
+  showUploadSection.value = false;
+}
+
+// Note: uploadImagesToStorage function removed - now integrated into startImageCapture
+
+// Update capture document with image metadata (batch-friendly for large sequences)
+async function updateCaptureWithImagesBatch(captureId, uploadResults) {
+  try {
+    const db = getFirestore(app);
+    const captureRef = doc(db, "captures", captureId);
+    
+    const imageMetadata = uploadResults
+      .filter(result => result.success)
+      .map(result => ({
+        index: result.index,
+        timestamp: result.timestamp,
+        downloadUrl: result.downloadUrl,
+        storagePath: result.storagePath,
+        size: result.size,
+        uploadedAt: new Date().toISOString()
+      }));
+    
+    // For large sequences, only update progress stats during streaming
+    await updateDoc(captureRef, {
+      imageCount: imageMetadata.length,
+      processedAt: new Date().toISOString(),
+      status: uploadResults.length === uploadStats.value.total ? 'completed' : 'processing'
+    });
+    
+    console.log(`[Upload] Batch updated capture ${captureId} progress: ${imageMetadata.length} images`);
+    
+  } catch (error) {
+    console.warn('[Upload] Error during batch update (continuing):', error);
+  }
+}
+
+// Update capture document with image metadata (final update)
+async function updateCaptureWithImages(captureId, uploadResults) {
+  try {
+    const db = getFirestore(app);
+    const captureRef = doc(db, "captures", captureId);
+    
+    const imageMetadata = uploadResults
+      .filter(result => result.success)
+      .map(result => ({
+        index: result.index,
+        timestamp: result.timestamp,
+        downloadUrl: result.downloadUrl,
+        storagePath: result.storagePath,
+        size: result.size,
+        uploadedAt: new Date().toISOString()
+      }));
+    
+    await updateDoc(captureRef, {
+      images: imageMetadata,
+      imageCount: imageMetadata.length,
+      processedAt: new Date().toISOString(),
+      status: 'completed'
+    });
+    
+    console.log(`[Upload] Final update: capture ${captureId} with ${imageMetadata.length} image records`);
+    
+    // Refresh the captures list to show updated data
+    await fetchCaptures();
+    
+  } catch (error) {
+    console.error('[Upload] Error updating capture with image metadata:', error);
+    throw error;
+  }
 }
 
 function openProcessModal(capture) {
@@ -1201,6 +1511,21 @@ function closeProcessModal() {
   isProcessing.value = false;
   processProgress.value = 0;
   processedImages.value = [];
+  
+  // Reset upload state
+  isUploading.value = false;
+  uploadProgress.value = 0;
+  uploadedImages.value = [];
+  showUploadSection.value = false;
+  
+  // Reset streaming state
+  streamingResults.value = [];
+  uploadStats.value = { success: 0, failed: 0, total: 0 };
+  
+  // Clean up any temporary storage
+  if (window.fullImageSequence) {
+    delete window.fullImageSequence;
+  }
 }
 
 onMounted(() => {
