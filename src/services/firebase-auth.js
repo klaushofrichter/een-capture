@@ -11,6 +11,7 @@ class FirebaseAuthService {
     this.auth = null
     this.functions = null
     this.currentUser = null
+    this.tokenCheckInterval = null
   }
 
   /**
@@ -27,10 +28,48 @@ class FirebaseAuthService {
       this.currentUser = user
       if (user) {
         console.log('[FirebaseAuth] User signed in:', user.uid)
+        
+        // Set up token refresh listener
+        this.checkAndRefreshToken()
+        
+        // Set up periodic token check
+        if (this.tokenCheckInterval) {
+          clearInterval(this.tokenCheckInterval)
+        }
+        this.tokenCheckInterval = setInterval(() => {
+          this.checkAndRefreshToken()
+        }, 60000) // Check every minute
       } else {
         console.log('[FirebaseAuth] User signed out')
+        // Clear token check interval
+        if (this.tokenCheckInterval) {
+          clearInterval(this.tokenCheckInterval)
+          this.tokenCheckInterval = null
+        }
       }
     })
+  }
+
+  /**
+   * Check if the Firebase token needs to be refreshed and refresh if necessary
+   */
+  async checkAndRefreshToken() {
+    if (!this.currentUser) return
+
+    try {
+      const idTokenResult = await this.currentUser.getIdTokenResult()
+      const expirationTime = new Date(idTokenResult.expirationTime).getTime()
+      const now = Date.now()
+      const timeUntilExpiration = expirationTime - now
+      
+      // If token will expire in less than 5 minutes, refresh it
+      if (timeUntilExpiration < 300000) {
+        console.log('[FirebaseAuth] Firebase token expiring soon, refreshing...')
+        await this.refreshAuth()
+      }
+    } catch (error) {
+      console.error('[FirebaseAuth] Error checking token expiration:', error)
+    }
   }
 
   /**
