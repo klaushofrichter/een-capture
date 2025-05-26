@@ -117,6 +117,12 @@ class FirebaseAuthService {
       throw new Error('EEN user profile not available')
     }
 
+    // Check for baseUrl
+    if (!eenAuthStore.baseUrl) {
+      console.error('[FirebaseAuth] EEN base URL not configured')
+      throw new Error('EEN base URL not configured')
+    }
+
     // Extract EEN user information
     const eenUserId = eenAuthStore.userProfile.id || eenAuthStore.userProfile.userId
     const eenUserEmail = eenAuthStore.userProfile.email

@@ -162,8 +162,25 @@
               required
               maxlength="15"
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              :class="{
+                'border-red-500': cameraError,
+                'border-green-500': cameraDetails && !cameraError
+              }"
               placeholder="Enter camera ID (e.g., 100e93d0)"
             />
+            <p v-if="cameraError" class="mt-1 text-sm text-red-600 dark:text-red-400">
+              {{ cameraError }}
+            </p>
+            <p v-if="cameraDetails" class="mt-1 text-sm text-green-600 dark:text-green-400">
+              Camera found: {{ cameraDetails.name }}
+            </p>
+            <div v-if="cameraDetails">
+              <div v-if="liveImageLoading" class="mt-2 text-xs text-gray-500 dark:text-gray-400">Loading live image...</div>
+              <div v-else-if="liveImage" class="mt-2">
+                <img :src="liveImage" alt="Live camera preview" class="rounded border border-gray-300 dark:border-gray-600 max-w-full max-h-48" />
+              </div>
+              <div v-else-if="liveImageError" class="mt-2 text-xs text-red-600 dark:text-red-400">{{ liveImageError }}</div>
+            </div>
           </div>
 
           <!-- Start Date -->
@@ -482,6 +499,8 @@ import { APP_NAME } from '../constants'
 import { getFirestore, collection, getDocs, query, where, addDoc, deleteDoc, doc } from "firebase/firestore";
 import { firebaseAuthService } from '../services/firebase-auth'
 import { app } from '../firebase'
+import { cameraService } from '../services/cameras'
+import { mediaService } from '../services/media'
 
 const eenAuthStore = useAuthStore()
 const captures = ref([]);
@@ -508,6 +527,11 @@ const createForm = ref({
     unit: 'seconds'
   }
 });
+const cameraDetails = ref(null);
+const cameraError = ref(null);
+const liveImage = ref(null);
+const liveImageLoading = ref(false);
+const liveImageError = ref(null);
 
 // Delete modal state
 const showDeleteModal = ref(false);
@@ -802,6 +826,41 @@ watch([showModal, showCreateModal, showDeleteModal], ([modal, createModal, delet
 
 // Add token refresh interval
 let tokenRefreshInterval = null;
+
+// Watch for camera ID changes
+watch(() => createForm.value.cameraId, async (newCameraId) => {
+  cameraDetails.value = null;
+  cameraError.value = null;
+  liveImage.value = null;
+  liveImageError.value = null;
+  
+  if (!newCameraId || newCameraId.length < 3) {
+    return;
+  }
+  
+  try {
+    const details = await cameraService.getCameraById(newCameraId);
+    cameraDetails.value = details;
+    cameraError.value = null;
+    // Fetch live image after camera is confirmed
+    liveImageLoading.value = true;
+    try {
+      const result = await mediaService.getLiveImage(newCameraId);
+      liveImage.value = result.image;
+      liveImageError.value = result.image ? null : 'Could not load live image.';
+    } catch (imgErr) {
+      liveImage.value = null;
+      liveImageError.value = 'Could not load live image.';
+    } finally {
+      liveImageLoading.value = false;
+    }
+  } catch (error) {
+    cameraDetails.value = null;
+    cameraError.value = error.message;
+    liveImage.value = null;
+    liveImageError.value = null;
+  }
+}, { debounce: 500 });
 
 onMounted(() => {
   document.title = `${APP_NAME} - Capture`;
