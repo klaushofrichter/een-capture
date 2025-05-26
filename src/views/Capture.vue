@@ -402,22 +402,8 @@ const fetchCaptures = async () => {
     const db = getFirestore(app);
     console.log("[Capture.vue] Firestore instance:", db);
     console.log("[Capture.vue] EEN User Identifier:", eenUserIdentifier);
-    
-    // First, let's try to get ALL documents in the captures collection for debugging
-    console.log("[Capture.vue] Fetching ALL captures for debugging...");
-    const allCapturesQuery = query(collection(db, "captures"));
-    const allCapturesSnapshot = await getDocs(allCapturesQuery);
-    
-    console.log("[Capture.vue] Total documents in captures collection:", allCapturesSnapshot.size);
-    allCapturesSnapshot.forEach((doc) => {
-      console.log("[Capture.vue] Document found:", {
-        id: doc.id,
-        data: doc.data(),
-        eenUserEmailField: doc.data().eenUserEmailField
-      });
-    });
-    
-    // Now try the specific query
+       
+    // query for the specific user 
     console.log("[Capture.vue] Trying specific query with eenUserEmailField ==", eenUserIdentifier);
     const q = query(collection(db, "captures"), where("eenUserEmailField", "==", eenUserIdentifier));
     const querySnapshot = await getDocs(q);
@@ -427,13 +413,13 @@ const fetchCaptures = async () => {
     
     console.log("Captures fetched successfully:", captures.value);
     if (captures.value.length === 0) {
-      console.log("No captures found for this EEN user.");
+      console.log("No captures matched for this EEN user.", eenUserIdentifier);
       // For debugging, let's also try to show all captures
-      const allCaptures = allCapturesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      console.log("All captures in collection (for debugging):", allCaptures);
+      //const allCaptures = allCapturesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      //console.log("All captures in collection (for debugging):", allCaptures);
       
       // Temporarily show all captures in UI for debugging
-      captures.value = allCaptures;
+      //captures.value = allCaptures;
     }
   } catch (e) {
     console.error("Error fetching captures: ", e);
