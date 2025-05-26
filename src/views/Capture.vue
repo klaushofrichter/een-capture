@@ -47,10 +47,12 @@
                   <li 
                     v-for="capture in captures" 
                     :key="capture.id" 
-                    class="p-2 bg-gray-100 dark:bg-gray-600 rounded hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors"
+                    class="p-2 bg-gray-100 dark:bg-gray-600 rounded hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors flex items-center gap-3"
                   >
-                    <div class="cursor-pointer" @click="openCaptureModal(capture)">
-                      <!-- Adjust this based on your data structure -->
+                    <div v-if="capture.thumbnail" class="flex-shrink-0">
+                      <img :src="capture.thumbnail" alt="Thumbnail" class="w-12 h-12 object-cover rounded border border-gray-300 dark:border-gray-600" />
+                    </div>
+                    <div class="flex-1 cursor-pointer" @click="openCaptureModal(capture)">
                       <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ capture.name || 'Unnamed Capture' }}</p>
                       <p class="text-xs text-gray-500 dark:text-gray-400">{{ capture.eenUserEmailField || 'No email' }}</p>
                       <p v-if="capture.createdAt" class="text-xs text-gray-500 dark:text-gray-400">
@@ -150,36 +152,38 @@
             ></textarea>
           </div>
 
-          <!-- Camera ID -->
-          <div>
-            <label for="camera-id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Camera ID <span class="text-red-500">*</span>
-            </label>
-            <input
-              id="camera-id"
-              v-model="createForm.cameraId"
-              type="text"
-              required
-              maxlength="15"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              :class="{
-                'border-red-500': cameraError,
-                'border-green-500': cameraDetails && !cameraError
-              }"
-              placeholder="Enter camera ID (e.g., 100e93d0)"
-            />
-            <p v-if="cameraError" class="mt-1 text-sm text-red-600 dark:text-red-400">
-              {{ cameraError }}
-            </p>
-            <p v-if="cameraDetails" class="mt-1 text-sm text-green-600 dark:text-green-400">
-              Camera found: {{ cameraDetails.name }}
-            </p>
-            <div v-if="cameraDetails">
-              <div v-if="liveImageLoading" class="mt-2 text-xs text-gray-500 dark:text-gray-400">Loading live image...</div>
-              <div v-else-if="liveImage" class="mt-2">
-                <img :src="liveImage" alt="Live camera preview" class="rounded border border-gray-300 dark:border-gray-600 max-w-full max-h-48" />
+          <!-- Camera ID and Image Row -->
+          <div class="flex flex-row items-start gap-4">
+            <div class="flex-1">
+              <label for="camera-id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Camera ID <span class="text-red-500">*</span>
+              </label>
+              <input
+                id="camera-id"
+                v-model="createForm.cameraId"
+                type="text"
+                required
+                maxlength="15"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                :class="{
+                  'border-red-500': cameraError,
+                  'border-green-500': cameraDetails && !cameraError
+                }"
+                placeholder="Enter camera ID (e.g., 100e93d0)"
+              />
+              <p v-if="cameraError" class="mt-1 text-sm text-red-600 dark:text-red-400">
+                {{ cameraError }}
+              </p>
+              <p v-if="cameraDetails" class="mt-1 text-sm text-green-600 dark:text-green-400">
+                Camera found: {{ cameraDetails.name }}
+              </p>
+            </div>
+            <div v-if="cameraDetails" class="w-40 flex-shrink-0 flex flex-col items-center">
+              <div v-if="liveImageLoading" class="text-xs text-gray-500 dark:text-gray-400">Loading live image...</div>
+              <div v-else-if="liveImageThumbnail" class="mt-1">
+                <img :src="liveImageThumbnail" alt="Live camera preview" class="rounded border border-gray-300 dark:border-gray-600 max-w-full max-h-32" />
               </div>
-              <div v-else-if="liveImageError" class="mt-2 text-xs text-red-600 dark:text-red-400">{{ liveImageError }}</div>
+              <div v-else-if="liveImageError" class="text-xs text-red-600 dark:text-red-400">{{ liveImageError }}</div>
             </div>
           </div>
 
@@ -311,6 +315,10 @@
       <!-- Modal Content -->
       <div v-if="selectedCapture" class="pt-4">
         <div class="space-y-4">
+          <!-- Thumbnail Preview -->
+          <div v-if="selectedCapture.thumbnail" class="flex justify-center">
+            <img :src="selectedCapture.thumbnail" alt="Thumbnail" class="rounded border border-gray-300 dark:border-gray-600 max-w-xs max-h-48" />
+          </div>
           <!-- Capture Name -->
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -532,10 +540,29 @@ const cameraError = ref(null);
 const liveImage = ref(null);
 const liveImageLoading = ref(false);
 const liveImageError = ref(null);
+const liveImageThumbnail = ref(null);
 
 // Delete modal state
 const showDeleteModal = ref(false);
 const captureToDelete = ref(null);
+
+// Helper: Downsample image to 320px width and return base64
+async function downsampleImage(base64Image, width = 320) {
+  return new Promise((resolve, reject) => {
+    const img = new window.Image();
+    img.onload = function () {
+      const scale = width / img.width;
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = img.height * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', 0.8));
+    };
+    img.onerror = reject;
+    img.src = base64Image;
+  });
+}
 
 const fetchCaptures = async () => {
   loading.value = true;
@@ -692,7 +719,8 @@ const createCapture = async () => {
         unit: createForm.value.interval.unit
       },
       eenUserEmailField: eenUserEmail,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      thumbnail: liveImageThumbnail.value || null
     };
 
     console.log("[Capture.vue] Creating capture:", newCapture);
@@ -833,6 +861,7 @@ watch(() => createForm.value.cameraId, async (newCameraId) => {
   cameraError.value = null;
   liveImage.value = null;
   liveImageError.value = null;
+  liveImageThumbnail.value = null;
   
   if (!newCameraId || newCameraId.length < 3) {
     return;
@@ -848,9 +877,13 @@ watch(() => createForm.value.cameraId, async (newCameraId) => {
       const result = await mediaService.getLiveImage(newCameraId);
       liveImage.value = result.image;
       liveImageError.value = result.image ? null : 'Could not load live image.';
+      if (result.image) {
+        liveImageThumbnail.value = await downsampleImage(result.image, 320);
+      }
     } catch (imgErr) {
       liveImage.value = null;
       liveImageError.value = 'Could not load live image.';
+      liveImageThumbnail.value = null;
     } finally {
       liveImageLoading.value = false;
     }
@@ -859,6 +892,7 @@ watch(() => createForm.value.cameraId, async (newCameraId) => {
     cameraError.value = error.message;
     liveImage.value = null;
     liveImageError.value = null;
+    liveImageThumbnail.value = null;
   }
 }, { debounce: 500 });
 
