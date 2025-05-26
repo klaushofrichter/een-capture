@@ -63,6 +63,56 @@ class MediaService {
       return { image: null, timestamp: null, prevToken: null }
     }
   }
+
+  /**
+   * Get a recorded image from a camera at a specific timestamp
+   * @param {string} deviceId - The ID of the device (camera)
+   * @param {string} timestamp - ISO 8601 timestamp for the image
+   * @param {string} [type='preview'] - The type of image to fetch ('preview' or 'main')
+   * @returns {Promise<{ image: string|null, timestamp: string|null, prevToken: string|null }>} Recorded image data and headers
+   */
+  async getRecordedImage(deviceId, timestamp, type = 'preview') {
+    const authStore = useAuthStore()
+
+    if (!authStore.isAuthenticated) {
+      throw new Error('Authentication required')
+    }
+    if (!authStore.baseUrl) {
+      throw new Error('EEN base URL not configured')
+    }
+    if (!deviceId) {
+      throw new Error('Device ID is required')
+    }
+    if (!timestamp) {
+      throw new Error('Timestamp is required')
+    }
+
+    try {
+      const url = `${authStore.baseUrl}/api/v3.0/media/recordedImage.jpeg?deviceId=${encodeURIComponent(deviceId)}&timestamp__gte=${encodeURIComponent(timestamp)}&type=${encodeURIComponent(type)}`
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Accept': 'image/jpeg',
+          'Authorization': `Bearer ${authStore.token}`
+        }
+      })
+
+      const eenTimestamp = response.headers.get('X-Een-Timestamp')
+      const prevToken = response.headers.get('X-Een-PrevToken')
+
+      if (!response.ok) {
+        return { image: null, timestamp: eenTimestamp, prevToken }
+      }
+
+      // Get image as base64
+      const arrayBuffer = await response.arrayBuffer()
+      const base64Image = `data:image/jpeg;base64,${this.arrayBufferToBase64(arrayBuffer)}`
+      return { image: base64Image, timestamp: eenTimestamp, prevToken }
+    } catch (error) {
+      console.error('[MediaService] Error fetching recorded image:', error)
+      return { image: null, timestamp: null, prevToken: null }
+    }
+  }
 }
 
 // Create and export a singleton instance
