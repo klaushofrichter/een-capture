@@ -512,13 +512,14 @@
     @click="closeProcessModal"
   >
     <div 
-      class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 lg:w-1/3 shadow-lg rounded-md bg-white dark:bg-gray-800"
+      class="relative top-10 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto"
       @click.stop
     >
       <div class="pb-4 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Process Capture</h3>
         <button 
           class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+          :disabled="isProcessing"
           @click="closeProcessModal"
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -526,30 +527,140 @@
           </svg>
         </button>
       </div>
+      
       <div class="pt-4 space-y-4">
+        <!-- Title (full width) -->
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title</label>
           <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded">{{ processCapture?.name || 'Unnamed Capture' }}</p>
         </div>
-        <div v-if="processCapture?.thumbnail" class="flex justify-center">
-          <img :src="processCapture.thumbnail" alt="Thumbnail" class="rounded border border-gray-300 dark:border-gray-600 max-w-xs max-h-48" />
+
+        <!-- Camera ID and Thumbnail Row -->
+        <div class="flex gap-4">
+          <!-- Left side: Camera ID -->
+          <div class="flex-1">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Camera ID</label>
+            <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded">{{ processCapture?.cameraId }}</p>
+          </div>
+          
+          <!-- Right side: Thumbnail -->
+          <div v-if="processCapture?.thumbnail" class="flex-shrink-0">
+            <img :src="processCapture.thumbnail" alt="Thumbnail" class="rounded border border-gray-300 dark:border-gray-600 max-w-32 max-h-32 object-contain" />
+          </div>
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
-          <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded">{{ processCapture?.startDate }}</p>
+
+        <!-- Start Date, Duration, and Interval Row -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+            <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded">{{ processCapture?.startDate }}</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duration</label>
+            <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded">
+              {{ processCapture?.duration?.value }} {{ processCapture?.duration?.unit }}
+            </p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Interval</label>
+            <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded">
+              {{ processCapture?.interval?.value }} {{ processCapture?.interval?.unit }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Image Count and Timestamps -->
+        <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+          <h4 class="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">Capture Plan</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-blue-700 dark:text-blue-300 mb-1">Total Images</label>
+              <p class="text-lg font-bold text-blue-900 dark:text-blue-100">{{ processImageCount }}</p>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-blue-700 dark:text-blue-300 mb-1">First 5 Timestamps</label>
+              <div class="space-y-1">
+                <p 
+                  v-for="(timestamp, index) in processTimestamps.slice(0, 5)" 
+                  :key="index"
+                  class="text-xs text-blue-800 dark:text-blue-200 font-mono"
+                >
+                  {{ new Date(timestamp).toLocaleString() }}
+                </p>
+                <p v-if="processTimestamps.length > 5" class="text-xs text-blue-600 dark:text-blue-400 italic">
+                  ... and {{ processTimestamps.length - 5 }} more
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Processing Progress -->
+        <div v-if="isProcessing" class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+          <h4 class="text-sm font-medium text-green-900 dark:text-green-100 mb-2">Processing Images</h4>
+          <div class="space-y-2">
+            <div class="flex justify-between text-sm text-green-700 dark:text-green-300">
+              <span>Progress: {{ processedImages.length }} / {{ processImageCount }}</span>
+              <span>{{ processProgress }}%</span>
+            </div>
+            <div class="w-full bg-green-200 dark:bg-green-800 rounded-full h-2">
+              <div 
+                class="bg-green-600 dark:bg-green-400 h-2 rounded-full transition-all duration-300"
+                :style="{ width: processProgress + '%' }"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Processing Results -->
+        <div v-if="processedImages.length > 0 && !isProcessing" class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+          <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
+            Captured Images ({{ processedImages.length }})
+          </h4>
+          <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 max-h-40 overflow-y-auto">
+            <div 
+              v-for="processedImage in processedImages" 
+              :key="processedImage.index"
+              class="relative group"
+            >
+              <img 
+                :src="processedImage.image" 
+                :alt="`Image ${processedImage.index}`"
+                class="w-full h-12 object-cover rounded border border-gray-300 dark:border-gray-600"
+              />
+              <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded flex items-center justify-center">
+                <span class="text-white text-xs font-bold">{{ processedImage.index }}</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+
+      <!-- Modal Footer -->
       <div class="flex justify-end pt-6 border-t border-gray-200 dark:border-gray-600 mt-6 space-x-3">
         <button 
           class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
+          :disabled="isProcessing"
           @click="closeProcessModal"
         >
-          Cancel
+          {{ isProcessing ? 'Processing...' : 'Cancel' }}
         </button>
         <button 
+          v-if="!isProcessing"
           class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
+          @click="startImageCapture"
         >
-          Start
+          Start Capture
+        </button>
+        <button 
+          v-else
+          class="px-4 py-2 bg-gray-400 text-white rounded cursor-not-allowed"
+          disabled
+        >
+          <div class="flex items-center space-x-2">
+            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+            <span>Processing...</span>
+          </div>
         </button>
       </div>
     </div>
@@ -605,6 +716,13 @@ const captureToDelete = ref(null);
 // Add modal state for process modal
 const showProcessModal = ref(false);
 const processCapture = ref(null);
+
+// Process modal state
+const processImageCount = ref(0);
+const processTimestamps = ref([]);
+const isProcessing = ref(false);
+const processProgress = ref(0);
+const processedImages = ref([]);
 
 // Helper: Downsample image to 320px width and return base64
 async function downsampleImage(base64Image, width = 320) {
@@ -888,20 +1006,22 @@ const deleteCapture = async () => {
 // ESC key handler for closing modals
 const handleEscapeKey = (event) => {
   if (event.key === 'Escape') {
-    // Close whichever modal is currently open
+    // Close whichever modal is currently open (but not if processing)
     if (showDeleteModal.value) {
       closeDeleteModal();
     } else if (showCreateModal.value) {
       closeCreateModal();
     } else if (showModal.value) {
       closeCaptureModal();
+    } else if (showProcessModal.value && !isProcessing.value) {
+      closeProcessModal();
     }
   }
 };
 
 // Watch for modal state changes to add/remove ESC key listener
-watch([showModal, showCreateModal, showDeleteModal], ([modal, createModal, deleteModal]) => {
-  const anyModalOpen = modal || createModal || deleteModal;
+watch([showModal, showCreateModal, showDeleteModal, showProcessModal], ([modal, createModal, deleteModal, processModal]) => {
+  const anyModalOpen = modal || createModal || deleteModal || processModal;
   
   if (anyModalOpen) {
     // Add ESC key listener when any modal opens
@@ -944,7 +1064,7 @@ watch(() => createForm.value.cameraId, async (newCameraId) => {
       if (result.image) {
         liveImageThumbnail.value = await downsampleImage(result.image, 320);
       }
-    } catch (imgErr) {
+    } catch {
       liveImage.value = null;
       liveImageError.value = 'Could not load live image.';
       liveImageThumbnail.value = null;
@@ -960,22 +1080,165 @@ watch(() => createForm.value.cameraId, async (newCameraId) => {
   }
 }, { debounce: 500 });
 
+// Helper function to convert duration to milliseconds
+function durationToMilliseconds(duration) {
+  const { value, unit } = duration;
+  switch (unit) {
+    case 'seconds':
+      return value * 1000;
+    case 'minutes':
+      return value * 60 * 1000;
+    case 'hours':
+      return value * 60 * 60 * 1000;
+    default:
+      return value * 60 * 1000; // default to minutes
+  }
+}
+
+// Helper function to convert interval to milliseconds
+function intervalToMilliseconds(interval) {
+  const { value, unit } = interval;
+  switch (unit) {
+    case 'seconds':
+      return value * 1000;
+    case 'minutes':
+      return value * 60 * 1000;
+    default:
+      return value * 1000; // default to seconds
+  }
+}
+
+// Calculate timestamps for image capture
+function calculateCaptureTimestamps(capture) {
+  const startTime = new Date(capture.startDate).getTime();
+  const durationMs = durationToMilliseconds(capture.duration);
+  const intervalMs = intervalToMilliseconds(capture.interval);
+  
+  const endTime = startTime + durationMs;
+  const timestamps = [];
+  
+  for (let currentTime = startTime; currentTime <= endTime; currentTime += intervalMs) {
+    // Format timestamp as YYYY-MM-DDTHH:mm:ss.sss+00:00 (ISO 8601 format with +00:00 instead of Z)
+    const date = new Date(currentTime);
+    const timestamp = date.toISOString().replace('Z', '+00:00');
+    timestamps.push(timestamp);
+  }
+  
+  console.log(`[Process] Generated ${timestamps.length} timestamps. First few:`, timestamps.slice(0, 3));
+  return timestamps;
+}
+
+// Start the image capture process
+async function startImageCapture() {
+  if (!processCapture.value) return;
+  
+  isProcessing.value = true;
+  processProgress.value = 0;
+  processedImages.value = [];
+  
+  const timestamps = processTimestamps.value;
+  const totalImages = timestamps.length;
+  
+  console.log(`[Process] Starting capture of ${totalImages} images from camera ${processCapture.value.cameraId}`);
+  
+  for (let i = 0; i < timestamps.length; i++) {
+    try {
+      const timestamp = timestamps[i];
+      console.log(`[Process] Capturing image ${i + 1}/${totalImages} at ${timestamp}`);
+      
+      const result = await mediaService.getRecordedImage(
+        processCapture.value.cameraId,
+        timestamp,
+        'preview'
+      );
+      
+      if (result.image) {
+        processedImages.value.push({
+          timestamp,
+          image: result.image,
+          index: i + 1
+        });
+        console.log(`[Process] Successfully captured image ${i + 1}/${totalImages}`);
+      } else {
+        console.warn(`[Process] Failed to capture image ${i + 1}/${totalImages} at ${timestamp}`);
+      }
+      
+      processProgress.value = Math.round(((i + 1) / totalImages) * 100);
+      
+      // Small delay to prevent overwhelming the API
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+    } catch (error) {
+      console.error(`[Process] Error capturing image ${i + 1}/${totalImages}:`, error);
+    }
+  }
+  
+  console.log(`[Process] Completed capture process. Successfully captured ${processedImages.value.length}/${totalImages} images`);
+  isProcessing.value = false;
+}
+
 function openProcessModal(capture) {
   processCapture.value = capture;
+  
+  // Calculate timestamps and image count
+  const timestamps = calculateCaptureTimestamps(capture);
+  processTimestamps.value = timestamps;
+  processImageCount.value = timestamps.length;
+  
+  // Reset processing state
+  isProcessing.value = false;
+  processProgress.value = 0;
+  processedImages.value = [];
+  
   showProcessModal.value = true;
 }
+
 function closeProcessModal() {
   showProcessModal.value = false;
   processCapture.value = null;
+  processImageCount.value = 0;
+  processTimestamps.value = [];
+  isProcessing.value = false;
+  processProgress.value = 0;
+  processedImages.value = [];
 }
 
 onMounted(() => {
   document.title = `${APP_NAME} - Capture`;
+  
+  // Initialize auth store from localStorage if needed
+  const storedBaseUrl = localStorage.getItem('eenBaseUrl');
+  const storedToken = localStorage.getItem('eenToken');
+  const storedUserProfile = localStorage.getItem('eenUserProfile');
+
+  if (storedBaseUrl && !eenAuthStore.baseUrl) {
+    try {
+      const url = new URL(storedBaseUrl);
+      eenAuthStore.setBaseUrl({
+        hostname: url.hostname,
+        port: url.port ? parseInt(url.port) : (url.protocol === 'https:' ? 443 : 80)
+      });
+    } catch (err) {
+      console.error('[Capture.vue] Failed to parse stored baseUrl:', err);
+    }
+  }
+  if (storedToken && !eenAuthStore.token) {
+    eenAuthStore.setToken(storedToken, 3600); // Default 1 hour expiration
+  }
+  if (storedUserProfile && !eenAuthStore.userProfile) {
+    try {
+      eenAuthStore.setUserProfile(JSON.parse(storedUserProfile));
+    } catch (err) {
+      console.error('[Capture.vue] Failed to parse stored userProfile:', err);
+    }
+  }
+  
   console.log('[Capture.vue] Component mounted - EEN Auth State:', {
     isAuthenticated: eenAuthStore.isAuthenticated,
     hasToken: !!eenAuthStore.token,
     hasUserProfile: !!eenAuthStore.userProfile,
-    userProfile: eenAuthStore.userProfile
+    userProfile: eenAuthStore.userProfile,
+    baseUrl: eenAuthStore.baseUrl
   });
   
   if (eenAuthStore.isAuthenticated) {
@@ -1026,14 +1289,23 @@ window.addEventListener('focus', async () => {
   const storedUserProfile = localStorage.getItem('eenUserProfile');
 
   if (storedBaseUrl && !eenAuthStore.baseUrl) {
-    eenAuthStore.baseUrl = storedBaseUrl;
+    // Parse the baseUrl to extract hostname and port for the auth store
+    try {
+      const url = new URL(storedBaseUrl);
+      eenAuthStore.setBaseUrl({
+        hostname: url.hostname,
+        port: url.port ? parseInt(url.port) : (url.protocol === 'https:' ? 443 : 80)
+      });
+    } catch (err) {
+      console.error('[Capture.vue] Failed to parse stored baseUrl:', err);
+    }
   }
   if (storedToken && !eenAuthStore.token) {
-    eenAuthStore.token = storedToken;
+    eenAuthStore.setToken(storedToken, 3600); // Default 1 hour expiration
   }
   if (storedUserProfile && !eenAuthStore.userProfile) {
     try {
-      eenAuthStore.userProfile = JSON.parse(storedUserProfile);
+      eenAuthStore.setUserProfile(JSON.parse(storedUserProfile));
     } catch (err) {
       console.error('[Capture.vue] Failed to parse stored userProfile:', err);
     }
@@ -1052,33 +1324,14 @@ window.addEventListener('focus', async () => {
 // Persist auth state to localStorage when it changes
 watch(() => eenAuthStore.baseUrl, (val) => {
   if (val) localStorage.setItem('eenBaseUrl', val);
+  else localStorage.removeItem('eenBaseUrl');
 });
 watch(() => eenAuthStore.token, (val) => {
   if (val) localStorage.setItem('eenToken', val);
+  else localStorage.removeItem('eenToken');
 });
 watch(() => eenAuthStore.userProfile, (val) => {
   if (val) localStorage.setItem('eenUserProfile', JSON.stringify(val));
+  else localStorage.removeItem('eenUserProfile');
 });
-
-// Add a function to clear persistent auth data
-function clearPersistentAuthData() {
-  localStorage.removeItem('eenBaseUrl');
-  localStorage.removeItem('eenToken');
-  localStorage.removeItem('eenUserProfile');
-}
-
-// Find the logout logic and add clearPersistentAuthData
-// If you have a logout button handler, add:
-// clearPersistentAuthData();
-// ...and also clear the auth store values
-
-// Example: If you have a logout function
-async function logout() {
-  // ... your existing logout logic ...
-  clearPersistentAuthData();
-  eenAuthStore.baseUrl = null;
-  eenAuthStore.token = null;
-  eenAuthStore.userProfile = null;
-  // ... any other cleanup ...
-}
 </script> 
