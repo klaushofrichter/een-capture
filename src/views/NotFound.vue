@@ -29,6 +29,7 @@
 import { onMounted, ref, onBeforeMount, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { APP_NAME } from '../constants'
 
 const router = useRouter()
 const route = useRoute()
@@ -154,15 +155,15 @@ onBeforeMount(() => {
   }
 
   // Add debugging to console
-  console.log('NotFound page - canGoBack:', canGoBack.value)
-  console.log('NotFound page - previousPageName:', previousPageName.value)
-  console.log('NotFound page - history length:', window.history.length)
-  console.log('NotFound page - isAuthenticated:', authStore.isAuthenticated)
-  console.log('NotFound page - isPreviousPageExternalLogin:', isPreviousPageExternalLogin())
+  //console.log('NotFound page - canGoBack:', canGoBack.value)
+  //console.log('NotFound page - previousPageName:', previousPageName.value)
+  //console.log('NotFound page - history length:', window.history.length)
+  //console.log('NotFound page - isAuthenticated:', authStore.isAuthenticated)
+  //console.log('NotFound page - isPreviousPageExternalLogin:', isPreviousPageExternalLogin())
 })
 
 onMounted(() => {
   // Set the document title
-  document.title = 'Page Not Found'
+  document.title = `${APP_NAME} - Page Not Found`
 })
 </script>
