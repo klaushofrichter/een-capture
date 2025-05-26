@@ -208,10 +208,17 @@
               v-model="createForm.startDate"
               type="datetime-local"
               required
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              class="w-full px-3 py-2 border rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              :class="{
+                'border-red-500': timeRangeError,
+                'border-gray-300 dark:border-gray-600': !timeRangeError
+              }"
             />
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <p v-if="!timeRangeError" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
               When to start the capture
+            </p>
+            <p v-if="timeRangeError" class="mt-1 text-xs text-red-600 dark:text-red-400">
+              {{ timeRangeError }}
             </p>
           </div>
 
@@ -274,6 +281,54 @@
             </div>
           </div>
 
+          <!-- Image Count Display -->
+          <div v-if="calculatedImageCount > 0" class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+            <div class="flex items-center justify-between">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Estimated Images
+                </label>
+                <div class="flex items-center space-x-2">
+                  <span 
+                    class="text-2xl font-bold"
+                    :class="{
+                      'text-green-600 dark:text-green-400': calculatedImageCount <= 1000,
+                      'text-orange-600 dark:text-orange-400': calculatedImageCount > 1000 && calculatedImageCount <= 3000,
+                      'text-red-600 dark:text-red-400': calculatedImageCount > 3000
+                    }"
+                  >
+                    {{ calculatedImageCount.toLocaleString() }}
+                  </span>
+                  <span class="text-sm text-gray-500 dark:text-gray-400">images</span>
+                </div>
+              </div>
+              <div v-if="calculatedImageCount > 1000" class="text-right">
+                <div 
+                  class="text-xs px-2 py-1 rounded"
+                  :class="{
+                    'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400': calculatedImageCount <= 3000,
+                    'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400': calculatedImageCount > 3000
+                  }"
+                >
+                  {{ calculatedImageCount > 3000 ? 'EXCEEDS LIMIT' : 'LARGE SEQUENCE' }}
+                </div>
+              </div>
+            </div>
+            
+            <!-- Warning message -->
+            <div v-if="imageCountWarning" class="mt-2">
+              <p 
+                class="text-xs"
+                :class="{
+                  'text-orange-600 dark:text-orange-400': calculatedImageCount <= 3000,
+                  'text-red-600 dark:text-red-400': calculatedImageCount > 3000
+                }"
+              >
+                {{ imageCountWarning }}
+              </p>
+            </div>
+          </div>
+
           <!-- Modal Footer -->
           <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-600">
             <button 
@@ -285,8 +340,12 @@
             </button>
             <button 
               type="submit"
-              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-              :disabled="!createForm.name.trim() || !createForm.cameraId.trim() || !createForm.startDate.trim()"
+              class="px-4 py-2 rounded focus:outline-none focus:ring-2 transition-colors"
+              :class="{
+                'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500': !createForm.name.trim() || !createForm.cameraId.trim() || !createForm.startDate.trim() || calculatedImageCount > 3000 || timeRangeError ? false : true,
+                'bg-gray-400 text-gray-200 cursor-not-allowed': !createForm.name.trim() || !createForm.cameraId.trim() || !createForm.startDate.trim() || calculatedImageCount > 3000 || timeRangeError
+              }"
+              :disabled="!createForm.name.trim() || !createForm.cameraId.trim() || !createForm.startDate.trim() || calculatedImageCount > 3000 || timeRangeError"
             >
               Create
             </button>
@@ -747,6 +806,106 @@
       </div>
     </div>
   </div>
+
+  <!-- Re-process Confirmation Modal -->
+  <div 
+    v-if="showReprocessModal" 
+    class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+    @click="closeReprocessModal"
+  >
+    <div 
+      class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white dark:bg-gray-800"
+      @click.stop
+    >
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-600">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          Re-process Capture
+        </h3>
+        <button 
+          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+          @click="closeReprocessModal"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Content -->
+      <div class="pt-4">
+        <div class="mb-4">
+          <div class="flex items-center mb-3">
+            <div class="flex-shrink-0">
+              <svg class="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+              </svg>
+            </div>
+            <div class="ml-3">
+              <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                Existing Images Found
+              </h4>
+            </div>
+          </div>
+          
+          <p class="text-sm text-gray-700 dark:text-gray-300 mb-4">
+            This capture already has <strong>{{ reprocessCapture?.images?.length || 0 }} stored images</strong>. 
+            Re-processing will permanently delete all existing images and capture new ones.
+          </p>
+          
+          <div v-if="reprocessCapture" class="bg-gray-50 dark:bg-gray-700 p-3 rounded mb-4">
+            <p class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
+              {{ reprocessCapture.name || 'Unnamed Capture' }}
+            </p>
+            <div class="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+              <p>Camera: {{ reprocessCapture.cameraId }}</p>
+              <p>Duration: {{ reprocessCapture.duration?.value }} {{ reprocessCapture.duration?.unit }}</p>
+              <p>Interval: {{ reprocessCapture.interval?.value }} {{ reprocessCapture.interval?.unit }}</p>
+              <p v-if="reprocessCapture.processedAt" class="text-green-600 dark:text-green-400">
+                Last processed: {{ new Date(reprocessCapture.processedAt).toLocaleString() }}
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded p-3">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <svg class="w-5 h-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                </svg>
+              </div>
+              <div class="ml-3">
+                <h5 class="text-sm font-medium text-red-800 dark:text-red-400">
+                  Warning: This action cannot be undone
+                </h5>
+                <p class="text-sm text-red-700 dark:text-red-300 mt-1">
+                  All {{ reprocessCapture?.images?.length || 0 }} existing images will be permanently deleted from Firebase Storage.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-600">
+          <button 
+            type="button"
+            class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
+            @click="closeReprocessModal"
+          >
+            Cancel
+          </button>
+          <button 
+            type="button"
+            class="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-colors"
+            @click="confirmReprocess"
+          >
+            Delete & Re-process
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -792,6 +951,11 @@ const liveImageLoading = ref(false);
 const liveImageError = ref(null);
 const liveImageThumbnail = ref(null);
 
+// Image count calculation for create modal
+const calculatedImageCount = ref(0);
+const imageCountWarning = ref('');
+const timeRangeError = ref('');
+
 // Delete modal state
 const showDeleteModal = ref(false);
 const captureToDelete = ref(null);
@@ -799,6 +963,10 @@ const captureToDelete = ref(null);
 // Add modal state for process modal
 const showProcessModal = ref(false);
 const processCapture = ref(null);
+
+// Re-process confirmation modal state
+const showReprocessModal = ref(false);
+const reprocessCapture = ref(null);
 
 // Process modal state
 const processImageCount = ref(0);
@@ -973,6 +1141,18 @@ const createCapture = async () => {
     console.error("[Capture.vue] Start date is required");
     return;
   }
+  
+  // Validate image count
+  if (calculatedImageCount.value > 3000) {
+    console.error("[Capture.vue] Image count exceeds maximum of 3000");
+    return;
+  }
+  
+  // Validate time range
+  if (timeRangeError.value) {
+    console.error("[Capture.vue] Time range validation failed:", timeRangeError.value);
+    return;
+  }
 
   try {
     const db = getFirestore(app);
@@ -1058,6 +1238,10 @@ const closeCreateModal = () => {
       unit: 'seconds'
     }
   };
+  // Reset image count calculation and time validation
+  calculatedImageCount.value = 0;
+  imageCountWarning.value = '';
+  timeRangeError.value = '';
 };
 
 // Open delete confirmation modal
@@ -1113,6 +1297,8 @@ const handleEscapeKey = (event) => {
     // Close whichever modal is currently open (but not if processing)
     if (showDeleteModal.value) {
       closeDeleteModal();
+    } else if (showReprocessModal.value) {
+      closeReprocessModal();
     } else if (showCreateModal.value) {
       closeCreateModal();
     } else if (showModal.value) {
@@ -1124,8 +1310,8 @@ const handleEscapeKey = (event) => {
 };
 
 // Watch for modal state changes to add/remove ESC key listener
-watch([showModal, showCreateModal, showDeleteModal, showProcessModal], ([modal, createModal, deleteModal, processModal]) => {
-  const anyModalOpen = modal || createModal || deleteModal || processModal;
+watch([showModal, showCreateModal, showDeleteModal, showProcessModal, showReprocessModal], ([modal, createModal, deleteModal, processModal, reprocessModal]) => {
+  const anyModalOpen = modal || createModal || deleteModal || processModal || reprocessModal;
   
   if (anyModalOpen) {
     // Add ESC key listener when any modal opens
@@ -1184,6 +1370,22 @@ watch(() => createForm.value.cameraId, async (newCameraId) => {
   }
 }, { debounce: 500 });
 
+// Watch for duration and interval changes to recalculate image count
+watch([
+  () => createForm.value.duration.value,
+  () => createForm.value.duration.unit,
+  () => createForm.value.interval.value,
+  () => createForm.value.interval.unit
+], () => {
+  calculateImageCount();
+  validateTimeRange();
+}, { immediate: true });
+
+// Watch for start date changes to validate time range
+watch(() => createForm.value.startDate, () => {
+  validateTimeRange();
+});
+
 // Helper function to convert duration to milliseconds
 function durationToMilliseconds(duration) {
   const { value, unit } = duration;
@@ -1209,6 +1411,60 @@ function intervalToMilliseconds(interval) {
       return value * 60 * 1000;
     default:
       return value * 1000; // default to seconds
+  }
+}
+
+// Calculate image count for create form
+function calculateImageCount() {
+  if (!createForm.value.duration.value || !createForm.value.interval.value) {
+    calculatedImageCount.value = 0;
+    imageCountWarning.value = '';
+    return;
+  }
+  
+  const durationMs = durationToMilliseconds(createForm.value.duration);
+  const intervalMs = intervalToMilliseconds(createForm.value.interval);
+  
+  if (intervalMs <= 0) {
+    calculatedImageCount.value = 0;
+    imageCountWarning.value = '';
+    return;
+  }
+  
+  const count = Math.floor(durationMs / intervalMs) + 1; // +1 for the first image
+  calculatedImageCount.value = count;
+  
+  // Set warnings based on image count
+  if (count > 3000) {
+    imageCountWarning.value = 'Maximum 3000 images allowed. Please adjust duration or interval.';
+  } else if (count > 1000) {
+    imageCountWarning.value = 'Large sequence detected. This may take significant time to process.';
+  } else {
+    imageCountWarning.value = '';
+  }
+}
+
+// Validate time range (start time + duration should not be in the future)
+function validateTimeRange() {
+  timeRangeError.value = '';
+  
+  if (!createForm.value.startDate || !createForm.value.duration.value) {
+    return;
+  }
+  
+  try {
+    const startTime = new Date(createForm.value.startDate);
+    const durationMs = durationToMilliseconds(createForm.value.duration);
+    const endTime = new Date(startTime.getTime() + durationMs);
+    const now = new Date();
+    
+    if (endTime > now) {
+      const timeDiff = endTime.getTime() - now.getTime();
+      const hoursInFuture = Math.ceil(timeDiff / (1000 * 60 * 60));
+      timeRangeError.value = `Capture end time is ${hoursInFuture} hour(s) in the future. Please adjust start time or duration.`;
+    }
+  } catch (error) {
+    console.warn('[Create Modal] Error validating time range:', error);
   }
 }
 
@@ -1488,6 +1744,19 @@ async function updateCaptureWithImages(captureId, uploadResults) {
 }
 
 function openProcessModal(capture) {
+  // Check if capture already has stored images
+  if (capture.images && capture.images.length > 0) {
+    // Show re-process confirmation modal instead
+    reprocessCapture.value = capture;
+    showReprocessModal.value = true;
+    return;
+  }
+  
+  // No existing images, proceed with normal processing
+  startProcessModal(capture);
+}
+
+function startProcessModal(capture) {
   processCapture.value = capture;
   
   // Calculate timestamps and image count
@@ -1525,6 +1794,50 @@ function closeProcessModal() {
   // Clean up any temporary storage
   if (window.fullImageSequence) {
     delete window.fullImageSequence;
+  }
+}
+
+// Close re-process confirmation modal
+function closeReprocessModal() {
+  showReprocessModal.value = false;
+  reprocessCapture.value = null;
+}
+
+// Confirm re-processing (delete existing images and start new capture)
+async function confirmReprocess() {
+  if (!reprocessCapture.value) return;
+  
+  const capture = reprocessCapture.value;
+  console.log(`[Process] Re-processing capture ${capture.id}, deleting ${capture.images?.length || 0} existing images`);
+  
+  try {
+    // Delete existing images from Firebase Storage
+    await storageService.deleteCapture(capture.id);
+    console.log("[Process] Existing images deleted successfully");
+    
+    // Update Firestore to remove image metadata
+    const db = getFirestore(app);
+    const captureRef = doc(db, "captures", capture.id);
+    await updateDoc(captureRef, {
+      images: [],
+      imageCount: 0,
+      processedAt: null,
+      status: null
+    });
+    console.log("[Process] Capture metadata cleared");
+    
+    // Refresh captures list to reflect changes
+    await fetchCaptures();
+    
+    // Close re-process modal and start normal processing
+    closeReprocessModal();
+    startProcessModal(capture);
+    
+  } catch (error) {
+    console.error("[Process] Error during re-process cleanup:", error);
+    // Still proceed with processing even if cleanup fails
+    closeReprocessModal();
+    startProcessModal(capture);
   }
 }
 
