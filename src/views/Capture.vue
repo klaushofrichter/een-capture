@@ -59,10 +59,16 @@
                         Created: {{ new Date(capture.createdAt).toLocaleString() }}
                       </p>
                     </div>
-                    <!-- Delete button -->
-                    <div class="mt-2 flex justify-end">
+                    <!-- Action buttons: Process and Delete -->
+                    <div class="flex items-center gap-2 ml-2">
                       <button 
-                        class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+                        class="px-4 py-2 text-xs font-medium bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
+                        @click.stop="openProcessModal(capture)"
+                      >
+                        Process
+                      </button>
+                      <button 
+                        class="px-4 py-2 text-xs font-medium bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
                         @click.stop="openDeleteModal(capture)"
                       >
                         Delete
@@ -329,24 +335,24 @@
             </p>
           </div>
 
-          <!-- Camera ID -->
-          <div v-if="selectedCapture.cameraId">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Camera ID
-            </label>
-            <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded font-mono">
-              {{ selectedCapture.cameraId }}
-            </p>
-          </div>
-
-          <!-- Start Date -->
-          <div v-if="selectedCapture.startDate">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Start Date & Time
-            </label>
-            <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded">
-              {{ selectedCapture.startDate }}
-            </p>
+          <!-- Start Date & Camera ID in one row -->
+          <div v-if="selectedCapture.startDate || selectedCapture.cameraId" class="grid grid-cols-2 gap-4">
+            <div v-if="selectedCapture.startDate">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Start Date & Time
+              </label>
+              <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded">
+                {{ selectedCapture.startDate }}
+              </p>
+            </div>
+            <div v-if="selectedCapture.cameraId">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Camera ID
+              </label>
+              <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded font-mono">
+                {{ selectedCapture.cameraId }}
+              </p>
+            </div>
           </div>
 
           <!-- Duration and Interval in one row -->
@@ -498,6 +504,56 @@
       </div>
     </div>
   </div>
+
+  <!-- Process Modal -->
+  <div 
+    v-if="showProcessModal" 
+    class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+    @click="closeProcessModal"
+  >
+    <div 
+      class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 lg:w-1/3 shadow-lg rounded-md bg-white dark:bg-gray-800"
+      @click.stop
+    >
+      <div class="pb-4 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Process Capture</h3>
+        <button 
+          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+          @click="closeProcessModal"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="pt-4 space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title</label>
+          <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded">{{ processCapture?.name || 'Unnamed Capture' }}</p>
+        </div>
+        <div v-if="processCapture?.thumbnail" class="flex justify-center">
+          <img :src="processCapture.thumbnail" alt="Thumbnail" class="rounded border border-gray-300 dark:border-gray-600 max-w-xs max-h-48" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+          <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded">{{ processCapture?.startDate }}</p>
+        </div>
+      </div>
+      <div class="flex justify-end pt-6 border-t border-gray-200 dark:border-gray-600 mt-6 space-x-3">
+        <button 
+          class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
+          @click="closeProcessModal"
+        >
+          Cancel
+        </button>
+        <button 
+          class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
+        >
+          Start
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -545,6 +601,10 @@ const liveImageThumbnail = ref(null);
 // Delete modal state
 const showDeleteModal = ref(false);
 const captureToDelete = ref(null);
+
+// Add modal state for process modal
+const showProcessModal = ref(false);
+const processCapture = ref(null);
 
 // Helper: Downsample image to 320px width and return base64
 async function downsampleImage(base64Image, width = 320) {
@@ -900,6 +960,15 @@ watch(() => createForm.value.cameraId, async (newCameraId) => {
   }
 }, { debounce: 500 });
 
+function openProcessModal(capture) {
+  processCapture.value = capture;
+  showProcessModal.value = true;
+}
+function closeProcessModal() {
+  showProcessModal.value = false;
+  processCapture.value = null;
+}
+
 onMounted(() => {
   document.title = `${APP_NAME} - Capture`;
   console.log('[Capture.vue] Component mounted - EEN Auth State:', {
@@ -948,4 +1017,68 @@ onUnmounted(async () => {
   // Firebase Auth Service handles cleanup automatically through auth state listeners
   console.log("[Capture.vue] Component unmounted");
 });
+
+// Rehydrate auth store and re-check authentication on window focus
+window.addEventListener('focus', async () => {
+  // Try to rehydrate from localStorage/sessionStorage if needed
+  const storedBaseUrl = localStorage.getItem('eenBaseUrl');
+  const storedToken = localStorage.getItem('eenToken');
+  const storedUserProfile = localStorage.getItem('eenUserProfile');
+
+  if (storedBaseUrl && !eenAuthStore.baseUrl) {
+    eenAuthStore.baseUrl = storedBaseUrl;
+  }
+  if (storedToken && !eenAuthStore.token) {
+    eenAuthStore.token = storedToken;
+  }
+  if (storedUserProfile && !eenAuthStore.userProfile) {
+    try {
+      eenAuthStore.userProfile = JSON.parse(storedUserProfile);
+    } catch (err) {
+      console.error('[Capture.vue] Failed to parse stored userProfile:', err);
+    }
+  }
+
+  // If any critical value is missing, or not authenticated, re-sign in
+  if (!eenAuthStore.isAuthenticated || !eenAuthStore.baseUrl || !eenAuthStore.token || !eenAuthStore.userProfile) {
+    try {
+      await signInAndFetchData();
+    } catch (e) {
+      console.error('[Capture.vue] Error re-authenticating on focus:', e);
+    }
+  }
+});
+
+// Persist auth state to localStorage when it changes
+watch(() => eenAuthStore.baseUrl, (val) => {
+  if (val) localStorage.setItem('eenBaseUrl', val);
+});
+watch(() => eenAuthStore.token, (val) => {
+  if (val) localStorage.setItem('eenToken', val);
+});
+watch(() => eenAuthStore.userProfile, (val) => {
+  if (val) localStorage.setItem('eenUserProfile', JSON.stringify(val));
+});
+
+// Add a function to clear persistent auth data
+function clearPersistentAuthData() {
+  localStorage.removeItem('eenBaseUrl');
+  localStorage.removeItem('eenToken');
+  localStorage.removeItem('eenUserProfile');
+}
+
+// Find the logout logic and add clearPersistentAuthData
+// If you have a logout button handler, add:
+// clearPersistentAuthData();
+// ...and also clear the auth store values
+
+// Example: If you have a logout function
+async function logout() {
+  // ... your existing logout logic ...
+  clearPersistentAuthData();
+  eenAuthStore.baseUrl = null;
+  eenAuthStore.token = null;
+  eenAuthStore.userProfile = null;
+  // ... any other cleanup ...
+}
 </script> 
