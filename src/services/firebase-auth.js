@@ -94,6 +94,7 @@ class FirebaseAuthService {
         eenUserId: String(eenUserId),
         eenUserEmail,
         eenAccessToken,
+        eenBaseUrl: eenAuthStore.baseUrl,
         additionalClaims: {
           // Add any additional claims you want in the token
           eenUserName: eenAuthStore.userProfile.name || 
