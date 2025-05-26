@@ -69,7 +69,7 @@
                   </li>
                 </ul>
                 <p v-if="!loading && !error && captures.length === 0" class="mt-4 text-sm text-gray-600 dark:text-gray-300">
-                  No captures found.
+                  No captures available.
                 </p>
               </div>
             </div>
@@ -90,18 +90,32 @@
       @click.stop
     >
       <!-- Modal Header -->
-      <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-600">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-          Create New Capture
-        </h3>
-        <button 
-          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
-          @click="closeCreateModal"
-        >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
+      <div class="pb-4 border-b border-gray-200 dark:border-gray-600">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            Create New Capture
+          </h3>
+          <button 
+            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+            @click="closeCreateModal"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+        
+        <!-- User Email and Create Date in header row -->
+        <div class="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
+          <div class="text-left">
+            <span class="text-gray-500 dark:text-gray-400">User: </span>
+            <span class="text-blue-600 dark:text-blue-400 font-medium">{{ eenAuthStore.userProfile?.email || 'No email available' }}</span>
+          </div>
+          <div></div> <!-- Empty div for spacing -->
+          <div class="text-right">
+            {{ new Date().toLocaleString() }}
+          </div>
+        </div>
       </div>
 
       <!-- Modal Content -->
@@ -136,24 +150,98 @@
             ></textarea>
           </div>
 
-          <!-- User Email (Read-only) -->
+          <!-- Camera ID -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              User Email
+            <label for="camera-id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Camera ID <span class="text-red-500">*</span>
             </label>
-            <p class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-gray-900 dark:text-gray-100">
-              {{ eenAuthStore.userProfile?.email || 'No email available' }}
+            <input
+              id="camera-id"
+              v-model="createForm.cameraId"
+              type="text"
+              required
+              maxlength="15"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Enter camera ID (e.g., 100e93d0)"
+            />
+          </div>
+
+          <!-- Start Date -->
+          <div>
+            <label for="start-date-picker" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Start Date & Time <span class="text-red-500">*</span>
+            </label>
+            
+            <!-- Date/time picker -->
+            <input
+              id="start-date-picker"
+              v-model="createForm.startDate"
+              type="datetime-local"
+              required
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              When to start the capture
             </p>
           </div>
 
-          <!-- Create Date (Read-only) -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Create Date
-            </label>
-            <p class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-gray-900 dark:text-gray-100">
-              {{ new Date().toLocaleString() }}
-            </p>
+          <!-- Duration and Interval in one row -->
+          <div class="grid grid-cols-2 gap-4">
+            <!-- Duration -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Duration <span class="text-red-500">*</span>
+              </label>
+              <div class="flex space-x-2">
+                <input
+                  v-model.number="createForm.duration.value"
+                  type="number"
+                  min="1"
+                  required
+                  class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  style="min-width: 60px;"
+                  placeholder="60"
+                />
+                <select
+                  v-model="createForm.duration.unit"
+                  class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="minutes">Min</option>
+                  <option value="hours">Hr</option>
+                </select>
+              </div>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                How long to capture
+              </p>
+            </div>
+
+            <!-- Interval -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Interval <span class="text-red-500">*</span>
+              </label>
+              <div class="flex space-x-2">
+                <input
+                  v-model.number="createForm.interval.value"
+                  type="number"
+                  min="1"
+                  required
+                  class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  style="min-width: 60px;"
+                  placeholder="30"
+                />
+                <select
+                  v-model="createForm.interval.unit"
+                  class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="seconds">Sec</option>
+                  <option value="minutes">Min</option>
+                </select>
+              </div>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                How often to capture
+              </p>
+            </div>
           </div>
 
           <!-- Modal Footer -->
@@ -168,7 +256,7 @@
             <button 
               type="submit"
               class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-              :disabled="!createForm.name.trim()"
+              :disabled="!createForm.name.trim() || !createForm.cameraId.trim() || !createForm.startDate.trim()"
             >
               Create
             </button>
@@ -216,6 +304,51 @@
             </p>
           </div>
 
+          <!-- Camera ID -->
+          <div v-if="selectedCapture.cameraId">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Camera ID
+            </label>
+            <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded font-mono">
+              {{ selectedCapture.cameraId }}
+            </p>
+          </div>
+
+          <!-- Start Date -->
+          <div v-if="selectedCapture.startDate">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Start Date & Time
+            </label>
+            <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded">
+              {{ selectedCapture.startDate }}
+            </p>
+          </div>
+
+          <!-- Duration and Interval in one row -->
+          <div v-if="selectedCapture.duration || selectedCapture.interval" class="grid grid-cols-2 gap-4">
+            <!-- Duration -->
+            <div v-if="selectedCapture.duration">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Duration
+              </label>
+              <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded">
+                {{ selectedCapture.duration.value }} {{ selectedCapture.duration.unit }}
+              </p>
+            </div>
+            <div v-else></div>
+
+            <!-- Interval -->
+            <div v-if="selectedCapture.interval">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Capture Interval
+              </label>
+              <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded">
+                {{ selectedCapture.interval.value }} {{ selectedCapture.interval.unit }}
+              </p>
+            </div>
+            <div v-else></div>
+          </div>
+
           <!-- Email -->
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -243,16 +376,6 @@
             </label>
             <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded">
               {{ selectedCapture.description }}
-            </p>
-          </div>
-
-          <!-- Capture ID -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Capture ID
-            </label>
-            <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded font-mono">
-              {{ selectedCapture.id }}
             </p>
           </div>
 
@@ -373,7 +496,17 @@ const selectedCapture = ref(null);
 const showCreateModal = ref(false);
 const createForm = ref({
   name: '',
-  description: ''
+  description: '',
+  cameraId: '',
+  startDate: '',
+  duration: {
+    value: 60,
+    unit: 'minutes'
+  },
+  interval: {
+    value: 30,
+    unit: 'seconds'
+  }
 });
 
 // Delete modal state
@@ -500,12 +633,32 @@ const createCapture = async () => {
     console.error("[Capture.vue] Capture name is required");
     return;
   }
+  
+  if (!createForm.value.cameraId.trim()) {
+    console.error("[Capture.vue] Camera ID is required");
+    return;
+  }
+  
+  if (!createForm.value.startDate.trim()) {
+    console.error("[Capture.vue] Start date is required");
+    return;
+  }
 
   try {
     const db = getFirestore(app);
     const newCapture = {
       name: createForm.value.name.trim(),
       description: createForm.value.description.trim(),
+      cameraId: createForm.value.cameraId.trim(),
+      startDate: createForm.value.startDate.trim(),
+      duration: {
+        value: createForm.value.duration.value,
+        unit: createForm.value.duration.unit
+      },
+      interval: {
+        value: createForm.value.interval.value,
+        unit: createForm.value.interval.unit
+      },
       eenUserEmailField: eenUserEmail,
       createdAt: new Date().toISOString()
     };
@@ -541,7 +694,17 @@ const openCreateModal = () => {
   console.log("[Capture.vue] Opening create capture modal");
   createForm.value = {
     name: '',
-    description: ''
+    description: '',
+    cameraId: '',
+    startDate: '',
+    duration: {
+      value: 60,
+      unit: 'minutes'
+    },
+    interval: {
+      value: 30,
+      unit: 'seconds'
+    }
   };
   showCreateModal.value = true;
 };
@@ -552,7 +715,17 @@ const closeCreateModal = () => {
   showCreateModal.value = false;
   createForm.value = {
     name: '',
-    description: ''
+    description: '',
+    cameraId: '',
+    startDate: '',
+    duration: {
+      value: 60,
+      unit: 'minutes'
+    },
+    interval: {
+      value: 30,
+      unit: 'seconds'
+    }
   };
 };
 
