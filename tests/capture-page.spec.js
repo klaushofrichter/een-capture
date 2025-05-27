@@ -241,7 +241,7 @@ test.describe('Capture Page Registration Flow', () => {
     console.log('✅ Delete confirmation modal visible')
 
     // Cancel the deletion
-    console.log('❌ Cancelling deletion')
+    console.log('✅ Cancelling deletion')
     const cancelButton = page.locator('button:has-text("Cancel")').last()
     await cancelButton.click()
     await expect(deleteModal).toBeHidden()
