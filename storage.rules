@@ -1,0 +1,22 @@
+rules_version = '2';
+
+// Firebase Storage Security Rules for EEN Capture Application
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow authenticated users to manage their capture images
+    match /captures/{captureId}/{allPaths=**} {
+      // Allow read access to authenticated users
+      allow read: if request.auth != null;
+      
+      // Allow write/delete access to authenticated users
+      // Simplified for now to avoid CORS issues with Firestore cross-references
+      allow write, delete: if request.auth != null && 
+        request.auth.token.eenUserEmail != null;
+    }
+    
+    // Deny all other access
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+} 
