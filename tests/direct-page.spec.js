@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
-import { getLastPartOfUrl } from './utils.js'
+import { getLastPartOfUrl, MAX_TEST_TIMEOUT } from './utils.js'
 import pkg from '../package.json' with { type: 'json' }
 import { APP_NAME } from '../src/constants.js'
 
@@ -33,6 +33,7 @@ test.describe('Direct Page', () => {
   test('direct page should have correct elements and consistent styling', async ({ page }) => {
     console.log(`\n▶️ Running Test: ${test.info().title}\n`)
     console.log('🔍 Starting direct page elements test')
+    test.setTimeout(MAX_TEST_TIMEOUT) // max 40 seconds overall
 
     // Continue with the test for local environment
     const directUrl = basePath + '/direct'
