@@ -3,6 +3,29 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
+// Security: Validate that we're running on an authorized domain
+function validateDomain() {
+  const allowedDomains = [
+    'localhost',
+    '127.0.0.1',
+    'klaushofrichter.github.io'
+  ];
+  
+  const currentDomain = window.location.hostname;
+  const isAuthorized = allowedDomains.includes(currentDomain);
+  
+  if (!isAuthorized) {
+    console.error(`🚫 Unauthorized domain: ${currentDomain}. Firebase services disabled.`);
+    throw new Error(`Access denied: Unauthorized domain ${currentDomain}`);
+  }
+  
+  console.log(`✅ Authorized domain verified: ${currentDomain}`);
+  return true;
+}
+
+// Validate domain before initializing Firebase
+validateDomain();
+
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
