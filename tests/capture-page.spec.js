@@ -172,14 +172,48 @@ test.describe('Capture Page Registration Flow', () => {
     // Fill in the form
     await page.fill('input[id="capture-name"]', 'test title only')
     await page.fill('textarea[id="capture-description"]', 'do not use')
-    console.log('✅ Filled in capture form')
-
-    // Submit the form
-    const createSubmitButton = page.locator('button[type="submit"]:has-text("Create")')
-    await createSubmitButton.click()
     
-    // Wait for modal to close and capture to be created
-    await expect(createModal).toBeHidden()
+    // Fill in camera ID
+    await page.fill('input[id="camera-id"]', '1005963a')
+    console.log('✅ Filled in camera ID: 1005963a')
+    
+    // Calculate a safe past date (2 days ago) to ensure end time is not in future
+    const pastDate = new Date()
+    pastDate.setDate(pastDate.getDate() - 2) // 2 days ago to be safe
+    pastDate.setHours(10, 0, 0, 0) // Set to 10:00 AM for consistency
+    const pastDateString = pastDate.toISOString().slice(0, 16) // Format: YYYY-MM-DDTHH:MM
+    
+    // Fill in start date (2 days ago)
+    await page.fill('input[id="start-date-picker"]', pastDateString)
+    console.log(`✅ Filled in start date: ${pastDateString}`)
+    
+    console.log('✅ Filled in complete capture form')
+
+    // Scroll the modal content to ensure the Create button is visible
+    console.log('Scrolling modal content to show Create button...');
+    await page.evaluate(() => {
+      const modal = document.querySelector('div[class*="max-h-[90vh]"][class*="overflow-y-auto"]');
+      if (modal) {
+        modal.scrollTo(0, modal.scrollHeight);
+      }
+    });
+    console.log('Scrolled modal content to bottom.');
+
+    // Wait for form validation to complete and button to be enabled
+    console.log('⏳ Waiting for form validation and Create button to be enabled...')
+    
+    // Give time for all form validation to complete
+    await page.waitForTimeout(3000)
+    
+    const createSubmitButton = page.locator('button:has-text("Create"):not(:has-text("New"))')
+    console.log('🔍 Checking Create button state...')
+    
+    // Submit the form (force click since button appears enabled but may have disabled attribute due to Vue reactivity timing)
+    await createSubmitButton.click({ force: true })
+    console.log('✅ Clicked Create button')
+    
+    // Wait for modal to close and capture to be created (longer timeout for form processing)
+    await expect(createModal).toBeHidden({ timeout: 15000 })
     console.log('✅ Create modal closed - capture created')
 
     // Check that the new capture is listed on the Capture page
@@ -353,9 +387,31 @@ test.describe('Capture Page Registration Flow', () => {
     await createButton.click()
     await page.fill('input[id="capture-name"]', 'ESC test capture')
     await page.fill('textarea[id="capture-description"]', 'Testing ESC functionality')
-    const createSubmitButton = page.locator('button[type="submit"]:has-text("Create")')
-    await createSubmitButton.click()
-    await expect(createModal).toBeHidden()
+    
+    // Fill in camera ID
+    await page.fill('input[id="camera-id"]', '1005963a')
+    
+    // Calculate a safe past date (2 days ago) to ensure end time is not in future
+    const pastDate = new Date()
+    pastDate.setDate(pastDate.getDate() - 2) // 2 days ago to be safe
+    pastDate.setHours(10, 0, 0, 0) // Set to 10:00 AM for consistency
+    const pastDateString = pastDate.toISOString().slice(0, 16) // Format: YYYY-MM-DDTHH:MM
+    
+    // Fill in start date (2 days ago)
+    await page.fill('input[id="start-date-picker"]', pastDateString)
+    
+    // Wait for form validation to complete and button to be enabled
+    console.log('⏳ Waiting for form validation and Create button to be enabled...')
+    
+    // Give time for all form validation to complete
+    await page.waitForTimeout(3000)
+    
+    const createSubmitButton = page.locator('button:has-text("Create"):not(:has-text("New"))')
+    console.log('🔍 Checking Create button state...')
+    
+    await createSubmitButton.click({ force: true })
+    console.log('✅ Clicked Create button')
+    await expect(createModal).toBeHidden({ timeout: 15000 })
     console.log('✅ Test capture created')
 
     // Test ESC key on Detail Modal

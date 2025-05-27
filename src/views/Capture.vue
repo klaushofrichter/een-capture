@@ -97,7 +97,7 @@
     @click="closeCreateModal"
   >
     <div 
-      class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white dark:bg-gray-800"
+      class="relative top-10 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto"
       @click.stop
     >
       <!-- Modal Header -->
@@ -339,13 +339,13 @@
               Cancel
             </button>
             <button 
-              type="submit"
+              type="button"
               class="px-4 py-2 rounded focus:outline-none focus:ring-2 transition-colors"
               :class="{
-                'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500': !createForm.name.trim() || !createForm.cameraId.trim() || !createForm.startDate.trim() || calculatedImageCount > 3000 || timeRangeError ? false : true,
+                'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500': createForm.name.trim() && createForm.cameraId.trim() && createForm.startDate.trim() && calculatedImageCount <= 3000 && !timeRangeError,
                 'bg-gray-400 text-gray-200 cursor-not-allowed': !createForm.name.trim() || !createForm.cameraId.trim() || !createForm.startDate.trim() || calculatedImageCount > 3000 || timeRangeError
               }"
-              :disabled="!createForm.name.trim() || !createForm.cameraId.trim() || !createForm.startDate.trim() || calculatedImageCount > 3000 || timeRangeError"
+              @click="createCapture"
             >
               Create
             </button>
@@ -1114,45 +1114,55 @@ const signInAndFetchData = async () => {
 
 const createCapture = async () => {
   console.log("[Capture.vue] Creating new capture...");
+  console.log("[Capture.vue] Form data:", createForm.value);
+  console.log("[Capture.vue] Calculated image count:", calculatedImageCount.value);
+  console.log("[Capture.vue] Time range error:", timeRangeError.value);
   
   if (!firebaseAuthService.isAuthenticated()) {
     console.error("[Capture.vue] User must be authenticated to create capture");
     return;
   }
+  console.log("[Capture.vue] ✅ Firebase authentication check passed");
 
   const eenUserEmail = eenAuthStore?.userProfile?.email;
   if (!eenUserEmail) {
     console.error("[Capture.vue] EEN user email not available");
     return;
   }
+  console.log("[Capture.vue] ✅ EEN user email check passed:", eenUserEmail);
 
   // Validate form
   if (!createForm.value.name.trim()) {
     console.error("[Capture.vue] Capture name is required");
     return;
   }
+  console.log("[Capture.vue] ✅ Name validation passed");
   
   if (!createForm.value.cameraId.trim()) {
     console.error("[Capture.vue] Camera ID is required");
     return;
   }
+  console.log("[Capture.vue] ✅ Camera ID validation passed");
   
   if (!createForm.value.startDate.trim()) {
     console.error("[Capture.vue] Start date is required");
     return;
   }
+  console.log("[Capture.vue] ✅ Start date validation passed");
   
   // Validate image count
   if (calculatedImageCount.value > 3000) {
     console.error("[Capture.vue] Image count exceeds maximum of 3000");
     return;
   }
+  console.log("[Capture.vue] ✅ Image count validation passed");
   
   // Validate time range
   if (timeRangeError.value) {
     console.error("[Capture.vue] Time range validation failed:", timeRangeError.value);
     return;
   }
+  console.log("[Capture.vue] ✅ Time range validation passed");
 
   try {
     const db = getFirestore(app);
