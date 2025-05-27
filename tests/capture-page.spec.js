@@ -254,7 +254,7 @@ test.describe('Capture Page Registration Flow', () => {
 
     // Open the modal detail window of the test capture
     console.log('📖 Opening capture detail modal')
-    const captureContent = newCaptureCard.locator('div').first()
+    const captureContent = newCaptureCard.locator('div.cursor-pointer')
     await captureContent.click()
     
     const detailModal = page.locator('h3:has-text("Capture Details")')
@@ -419,7 +419,7 @@ test.describe('Capture Page Registration Flow', () => {
     const testCaptureCard = page.locator('li:has-text("ESC test capture")')
     await expect(testCaptureCard).toBeVisible()
     
-    const captureContent = testCaptureCard.locator('div').first()
+    const captureContent = testCaptureCard.locator('div.cursor-pointer')
     await captureContent.click()
     
     const detailModal = page.locator('h3:has-text("Capture Details")')
