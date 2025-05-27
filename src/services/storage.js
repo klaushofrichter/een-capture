@@ -1,5 +1,6 @@
 import { storage } from '../firebase'
 import { ref, uploadBytes, getDownloadURL, deleteObject, listAll } from 'firebase/storage'
+import securityService from './security'
 
 /**
  * Storage Service for managing image uploads to Firebase Cloud Storage
@@ -42,6 +43,14 @@ class StorageService {
    */
   async uploadImage(captureId, imageIndex, base64Image, timestamp, attempt = 1) {
     try {
+      // Security validation
+      securityService.validateFirebaseOperation('upload')
+      securityService.checkRateLimit('upload', 1000, 60000) // Max 1000 uploads per minute
+      
+      // Validate the base64 image data
+      if (!base64Image || !base64Image.startsWith('data:image/')) {
+        throw new Error('Invalid image data format')
+      }
       // Create a blob from the base64 image
       const blob = this.dataUrlToBlob(base64Image)
       
