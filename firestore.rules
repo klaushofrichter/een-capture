@@ -1,20 +1,10 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper function to check if request comes from authorized domains
-    function isAuthorizedDomain() {
-      return request.headers.origin in [
-        'http://localhost:3333',
-        'http://127.0.0.1:3333', 
-        'https://klaushofrichter.github.io'
-      ] || request.headers.origin == null; // Allow server-side requests
-    }
-    
-    // Helper function to check if user is properly authenticated
+    // Simplified helper function for debugging
     function isAuthenticated() {
       return request.auth != null && 
-             request.auth.token.eenUserEmail != null &&
-             isAuthorizedDomain();
+             request.auth.token.eenUserEmail != null;
     }
     
     // Helper function to check if user owns the resource
@@ -41,10 +31,10 @@ service cloud.firestore {
          isOwner(resource.data));
     }
 
-    // Rules for the 'captures' collection
+    // Rules for the 'captures' collection  
     match /captures/{captureId} {
-      // Allow authenticated users to read only their own captures
-      allow read, list: if isAuthenticated() && isOwner(resource.data);
+      // Temporarily allow all authenticated users to read (for debugging)
+      allow read, list: if isAuthenticated();
 
       // Allow authenticated EEN users to create captures
       allow create: if isAuthenticated() && 
