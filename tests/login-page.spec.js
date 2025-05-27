@@ -1,7 +1,7 @@
  
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
-import { navigateToLogin, getLastPartOfUrl } from './utils.js'
+import { navigateToLogin, getLastPartOfUrl, MAX_TEST_TIMEOUT } from './utils.js'
 import pkg from '../package.json' with { type: 'json' }
 import { APP_NAME } from '../src/constants.js'
 
@@ -38,6 +38,7 @@ test.describe('Login Page', () => {
     console.log(
       '🔍 This test checks the login page for the correct elements and consistent styling'
     )
+    test.setTimeout(MAX_TEST_TIMEOUT) 
 
     // Check if we're on the login page
     await navigateToLogin(page, basePath)

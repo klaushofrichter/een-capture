@@ -3,7 +3,8 @@ import {
   navigateToLogin,
   loginToApplication,
   clickNavButton,
-  logoutFromApplication
+  logoutFromApplication,
+  MAX_TEST_TIMEOUT
 } from './utils'
 import dotenv from 'dotenv'; // Import dotenv
 import fs from 'fs'; // Import fs for file operations
@@ -66,6 +67,7 @@ test.describe('Capture Page Registration Flow', () => {
   test('login, navigate the capture page, check email, logout', async ({ page }) => {
     console.log(`\n▶️ Running Test: ${test.info().title}\n`)
     console.log('🔍 Starting capture page test')
+    test.setTimeout(MAX_TEST_TIMEOUT) // max 40 seconds overall
 
     // Navigate to Capture page
     await clickNavButton(page, 'Capture')
