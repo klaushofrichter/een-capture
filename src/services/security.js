@@ -108,19 +108,83 @@ class SecurityService {
 
   /**
    * Sanitize user input to prevent injection attacks
+   * Uses global flag and iterative approach to handle overlapping patterns
    */
   sanitizeInput(input) {
     if (typeof input !== 'string') return input;
     
-    return input
-      .replace(/[<>]/g, '') // Remove potential HTML tags
-      .replace(/javascript:/gi, '') // Remove javascript: protocols
-      .replace(/data:/gi, '') // Remove data: protocols
-      .replace(/vbscript:/gi, '') // Remove vbscript: protocols
-      .replace(/file:/gi, '') // Remove file: protocols
-      .replace(/about:/gi, '') // Remove about: protocols
-      .replace(/on\w+=/gi, '') // Remove event handlers
-      .trim();
+    let sanitized = input;
+    let previousLength;
+    
+    // Keep sanitizing until no more changes occur (handles overlapping patterns)
+    do {
+      previousLength = sanitized.length;
+      
+      sanitized = sanitized
+        .replace(/[<>]/g, '') // Remove potential HTML tags
+        .replace(/javascript:/gi, '') // Remove javascript: protocols (global)
+        .replace(/data:/gi, '') // Remove data: protocols (global)
+        .replace(/vbscript:/gi, '') // Remove vbscript: protocols (global)
+        .replace(/file:/gi, '') // Remove file: protocols (global)
+        .replace(/about:/gi, '') // Remove about: protocols (global)
+        .replace(/on\w+=/gi, '') // Remove event handlers (global)
+        .replace(/&[#\w]+;/g, '') // Remove HTML entities that could be used for encoding
+        .replace(/[\x00-\x1f\x7f-\x9f]/g, '') // Remove control characters
+        .trim();
+        
+    } while (sanitized.length !== previousLength && sanitized.length > 0);
+    
+    return sanitized;
+  }
+
+  /**
+   * Validate and sanitize input for specific contexts
+   */
+  validateInput(input, type = 'general') {
+    if (typeof input !== 'string') return { isValid: false, sanitized: '', error: 'Input must be a string' };
+    
+    // First apply general sanitization
+    const sanitized = this.sanitizeInput(input);
+    
+    // Apply context-specific validation
+    switch (type) {
+      case 'email':
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        return {
+          isValid: emailRegex.test(sanitized),
+          sanitized,
+          error: emailRegex.test(sanitized) ? null : 'Invalid email format'
+        };
+        
+      case 'url':
+        try {
+          const url = new URL(sanitized);
+          const isValid = this.validateUrlScheme(sanitized);
+          return {
+            isValid,
+            sanitized,
+            error: isValid ? null : 'Invalid or unsafe URL'
+          };
+        } catch {
+          return { isValid: false, sanitized, error: 'Invalid URL format' };
+        }
+        
+      case 'alphanumeric':
+        const alphanumericRegex = /^[a-zA-Z0-9\s-_]+$/;
+        return {
+          isValid: alphanumericRegex.test(sanitized),
+          sanitized,
+          error: alphanumericRegex.test(sanitized) ? null : 'Only alphanumeric characters, spaces, hyphens, and underscores allowed'
+        };
+        
+      case 'general':
+      default:
+        return {
+          isValid: sanitized.length > 0,
+          sanitized,
+          error: sanitized.length > 0 ? null : 'Input cannot be empty after sanitization'
+        };
+    }
   }
 
   /**
