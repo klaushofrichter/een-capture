@@ -50,6 +50,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { getAuthUrl, handleAuthCallback } from '../services/auth'
 import packageJson from '../../package.json'
 import { APP_NAME } from '../constants'
+import securityService from '../services/security'
 
 const router = useRouter()
 const route = useRoute()
@@ -65,6 +66,13 @@ const isProcessingCallback = ref(false)
 
 const handleLogin = () => {
   const url = getAuthUrl()
+  
+  // Validate URL scheme before redirecting
+  if (!securityService.validateUrlScheme(url)) {
+    console.error('🚫 Security: Blocked redirect to unsafe URL:', url)
+    return
+  }
+  
   // this will go to the to the EEN login page, and after login, the user will be redirected to the callback URL
   window.location.href = url
 }

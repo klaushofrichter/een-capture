@@ -1,4 +1,5 @@
 import { useAuthStore } from '../stores/auth'
+import securityService from './security'
 
 /**
  * Media Service for interacting with EEN Media APIs
@@ -39,6 +40,12 @@ class MediaService {
 
     try {
       const url = `${authStore.baseUrl}/api/v3.0/media/liveImage.${previewType}?deviceId=${encodeURIComponent(deviceId)}&type=preview`
+      
+      // Validate URL scheme
+      if (!securityService.validateUrlScheme(url)) {
+        throw new Error('Invalid request URL scheme')
+      }
+      
       const response = await fetch(url, {
         method: 'GET',
         headers: {
@@ -89,6 +96,12 @@ class MediaService {
 
     try {
       const url = `${authStore.baseUrl}/api/v3.0/media/recordedImage.jpeg?deviceId=${encodeURIComponent(deviceId)}&timestamp__gte=${encodeURIComponent(timestamp)}&type=${encodeURIComponent(type)}`
+      
+      // Validate URL scheme
+      if (!securityService.validateUrlScheme(url)) {
+        throw new Error('Invalid request URL scheme')
+      }
+      
       const response = await fetch(url, {
         method: 'GET',
         headers: {

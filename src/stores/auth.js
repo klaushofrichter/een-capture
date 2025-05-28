@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import router from '@/router' // Import the router instance
+import securityService from '@/services/security'
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(null)
@@ -128,6 +129,12 @@ export const useAuthStore = defineStore('auth', () => {
     const relativePath = '/proxy/revoke'
     const requestUrl = `${AUTH_PROXY_URL}${relativePath}`
     //console.log(`[auth.js] Fetching: ${requestUrl}`)
+
+    // Validate request URL scheme
+    if (!securityService.validateUrlScheme(requestUrl)) {
+      console.error('Invalid request URL scheme for token revocation')
+      return
+    }
 
     try {
       const response = await fetch(requestUrl, {
