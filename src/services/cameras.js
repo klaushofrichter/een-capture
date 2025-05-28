@@ -1,4 +1,5 @@
 import { useAuthStore } from '../stores/auth'
+import securityService from './security'
 
 /**
  * Camera Service for interacting with EEN Camera APIs
@@ -26,7 +27,14 @@ class CameraService {
     }
 
     try {
-      const response = await fetch(`${authStore.baseUrl}/api/v3.0/cameras/${cameraId}`, {
+      const requestUrl = `${authStore.baseUrl}/api/v3.0/cameras/${cameraId}`
+      
+      // Validate URL scheme
+      if (!securityService.validateUrlScheme(requestUrl)) {
+        throw new Error('Invalid request URL scheme')
+      }
+      
+      const response = await fetch(requestUrl, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',

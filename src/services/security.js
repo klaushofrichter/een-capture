@@ -84,6 +84,29 @@ class SecurityService {
   }
 
   /**
+   * Validate URL scheme to prevent dangerous protocols
+   */
+  validateUrlScheme(url) {
+    if (typeof url !== 'string') return false;
+    
+    try {
+      const urlObj = new URL(url);
+      const allowedSchemes = ['http:', 'https:'];
+      
+      if (!allowedSchemes.includes(urlObj.protocol)) {
+        console.warn(`🚫 Security: Blocked dangerous URL scheme: ${urlObj.protocol}`);
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      // Invalid URL format
+      console.warn(`🚫 Security: Invalid URL format: ${url}`);
+      return false;
+    }
+  }
+
+  /**
    * Sanitize user input to prevent injection attacks
    */
   sanitizeInput(input) {
@@ -92,6 +115,10 @@ class SecurityService {
     return input
       .replace(/[<>]/g, '') // Remove potential HTML tags
       .replace(/javascript:/gi, '') // Remove javascript: protocols
+      .replace(/data:/gi, '') // Remove data: protocols
+      .replace(/vbscript:/gi, '') // Remove vbscript: protocols
+      .replace(/file:/gi, '') // Remove file: protocols
+      .replace(/about:/gi, '') // Remove about: protocols
       .replace(/on\w+=/gi, '') // Remove event handlers
       .trim();
   }

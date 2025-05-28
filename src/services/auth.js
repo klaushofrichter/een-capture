@@ -1,4 +1,5 @@
 import { useAuthStore } from '../stores/auth'
+import securityService from './security'
 // Remove createAuthApi import if no longer used elsewhere in this file
 // import { createAuthApi } from './api'
 
@@ -14,6 +15,16 @@ const AUTH_PROXY_URL = import.meta.env.VITE_AUTH_PROXY_URL || 'http://127.0.0.1:
 
 export const getAuthUrl = () => {
   //console.log(`[auth.js] Using ${REDIRECT_URI} for the redirect URI`)
+  
+  // Validate base URL scheme
+  if (!securityService.validateUrlScheme(EEN_AUTH_URL)) {
+    throw new Error('Invalid EEN auth URL scheme')
+  }
+  
+  if (!securityService.validateUrlScheme(REDIRECT_URI)) {
+    throw new Error('Invalid redirect URI scheme')
+  }
+  
   const params = new URLSearchParams({
     client_id: CLIENT_ID,
     redirect_uri: REDIRECT_URI,
@@ -33,6 +44,11 @@ async function getAccessToken(code) {
   // Construct path based on whether we target the local proxy or remote
   const relativePath = '/proxy/getAccessToken'
   const requestUrl = `${AUTH_PROXY_URL}${relativePath}?${tokenParams.toString()}`
+
+  // Validate request URL scheme
+  if (!securityService.validateUrlScheme(requestUrl)) {
+    throw new Error('Invalid request URL scheme')
+  }
 
   try {
     const response = await fetch(requestUrl, {
@@ -90,6 +106,11 @@ export const refreshToken = async () => {
   const relativePath = '/proxy/refreshAccessToken'
   const requestUrl = `${AUTH_PROXY_URL}${relativePath}`
   //console.log(`[auth.js] Fetching: ${requestUrl}`)
+
+  // Validate request URL scheme
+  if (!securityService.validateUrlScheme(requestUrl)) {
+    throw new Error('Invalid request URL scheme')
+  }
 
   try {
     const response = await fetch(requestUrl, {
