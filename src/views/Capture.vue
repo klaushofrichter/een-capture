@@ -909,17 +909,17 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue'
-import { useAuthStore } from '../stores/auth'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useAuthStore as useEenAuthStore } from '../stores/auth'
 import { APP_NAME } from '../constants'
 import { getFirestore, collection, getDocs, query, where, addDoc, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { firebaseAuthService } from '../services/firebase-auth'
-import { app } from '../firebase'
+import app from '../firebase'
 import { cameraService } from '../services/cameras'
 import { mediaService } from '../services/media'
-import { storageService } from '../services/storage'
+import securityService from '@/services/security'
 
-const eenAuthStore = useAuthStore()
+const eenAuthStore = useEenAuthStore()
 const captures = ref([]);
 const loading = ref(true);
 const error = ref(null);
