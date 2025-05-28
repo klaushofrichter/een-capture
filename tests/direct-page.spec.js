@@ -1,8 +1,11 @@
 import { test, expect } from '@playwright/test'
 import dotenv from 'dotenv'
 import { getLastPartOfUrl, MAX_TEST_TIMEOUT } from './utils.js'
-import pkg from '../package.json' with { type: 'json' }
+import { createRequire } from 'module'
 import { APP_NAME } from '../src/constants.js'
+
+const require = createRequire(import.meta.url)
+const pkg = require('../package.json')
 
 // Load environment variables from .env file
 dotenv.config()

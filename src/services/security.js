@@ -129,7 +129,7 @@ class SecurityService {
         .replace(/about:/gi, '') // Remove about: protocols (global)
         .replace(/on\w+=/gi, '') // Remove event handlers (global)
         .replace(/&[#\w]+;/g, '') // Remove HTML entities that could be used for encoding
-        .replace(/[\x00-\x1f\x7f-\x9f]/g, '') // Remove control characters
+        .replace(/[\p{Cc}]/gu, '') // Remove control characters using Unicode property
         .trim();
         
     } while (sanitized.length !== previousLength && sanitized.length > 0);
@@ -148,17 +148,18 @@ class SecurityService {
     
     // Apply context-specific validation
     switch (type) {
-      case 'email':
+      case 'email': {
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         return {
           isValid: emailRegex.test(sanitized),
           sanitized,
           error: emailRegex.test(sanitized) ? null : 'Invalid email format'
         };
+      }
         
-      case 'url':
+      case 'url': {
         try {
-          const url = new URL(sanitized);
+          new URL(sanitized);
           const isValid = this.validateUrlScheme(sanitized);
           return {
             isValid,
@@ -168,14 +169,16 @@ class SecurityService {
         } catch {
           return { isValid: false, sanitized, error: 'Invalid URL format' };
         }
+      }
         
-      case 'alphanumeric':
+      case 'alphanumeric': {
         const alphanumericRegex = /^[a-zA-Z0-9\s-_]+$/;
         return {
           isValid: alphanumericRegex.test(sanitized),
           sanitized,
           error: alphanumericRegex.test(sanitized) ? null : 'Only alphanumeric characters, spaces, hyphens, and underscores allowed'
         };
+      }
         
       case 'general':
       default:

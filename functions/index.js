@@ -54,7 +54,7 @@ function sanitizeInput(input) {
       .replace(/about:/gi, '') // Remove about: protocols (global)
       .replace(/on\w+=/gi, '') // Remove event handlers (global)
       .replace(/&[#\w]+;/g, '') // Remove HTML entities that could be used for encoding
-      .replace(/[\x00-\x1f\x7f-\x9f]/g, '') // Remove control characters
+      .replace(/[\p{Cc}]/gu, '') // Remove control characters using Unicode property
       .trim();
       
   } while (sanitized.length !== previousLength && sanitized.length > 0);
@@ -78,7 +78,7 @@ function validateUrlScheme(url) {
     }
     
     return true;
-  } catch (error) {
+  } catch {
     // Invalid URL format
     logger.warn(`Invalid URL format: ${url}`);
     return false;
@@ -87,7 +87,7 @@ function validateUrlScheme(url) {
 
 // This function fetches all documents from the 'documents' collection.
 // Changed from onRequest to onCall for compatibility with httpsCallable.
-exports.getAllDocuments = onCall(async (request) => {
+exports.getAllDocuments = onCall(async () => {
   try {
     // Optional: Check authentication if needed
     // if (!request.auth) {
