@@ -56,7 +56,10 @@ class SecurityService {
       ...headers,
       'X-Requested-With': 'XMLHttpRequest',
       'X-Domain-Validation': window.location.hostname,
-      'Origin': window.location.origin
+      'Origin': window.location.origin,
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'Referrer-Policy': 'strict-origin-when-cross-origin'
     };
   }
 
@@ -234,6 +237,67 @@ class SecurityService {
   }
 
   /**
+   * Constant time string comparison to prevent timing attacks
+   */
+  constantTimeEquals(a, b) {
+    if (a.length !== b.length) return false;
+    
+    let result = 0;
+    for (let i = 0; i < a.length; i++) {
+      result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+    }
+    
+    return result === 0;
+  }
+
+  /**
+   * Generate cryptographically secure random values
+   */
+  generateSecureRandom(length = 32) {
+    const array = new Uint8Array(length);
+    crypto.getRandomValues(array);
+    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+  }
+
+  /**
+   * Validate session integrity
+   */
+  validateSession() {
+    const authStore = window.authStore || { isAuthenticated: false };
+    
+    // Check if session has been tampered with
+    const sessionStart = localStorage.getItem('sessionStart');
+    const sessionExpiry = localStorage.getItem('token_expiration');
+    
+    if (!sessionStart || !sessionExpiry || !authStore.isAuthenticated) {
+      return false;
+    }
+    
+    const now = Date.now();
+    if (now > parseInt(sessionExpiry)) {
+      this.logSecurityEvent('session_expired', { sessionStart, sessionExpiry, now });
+      return false;
+    }
+    
+    return true;
+  }
+
+  /**
+   * Clean sensitive data from memory
+   */
+  cleanSensitiveData() {
+    // Clear any sensitive data from memory
+    if (window.temp_credentials) {
+      window.temp_credentials = null;
+    }
+    
+    // Clear clipboard if it contains sensitive data
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText('');
+    }
+  }
+
+  /**
    * Log security events
    */
   logSecurityEvent(event, details = {}) {
@@ -243,6 +307,7 @@ class SecurityService {
       domain: window.location.hostname,
       origin: window.location.origin,
       userAgent: navigator.userAgent,
+      sessionId: this.generateSecureRandom(16),
       ...details
     };
     

@@ -255,6 +255,89 @@ class StorageService {
       return { fileCount: 0, totalSize: 0 }
     }
   }
+
+  /**
+   * Upload a file to Firebase Storage
+   * @param {File} file - The file to upload
+   * @param {string} path - The storage path
+   * @returns {Promise<string>} Download URL
+   */
+  async uploadFile(file, path) {
+    // Security validation
+    securityService.validateFirebaseOperation('upload');
+    securityService.validateFileUpload(file);
+    
+    try {
+      const storageRef = ref(storage, path);
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      
+      securityService.logSecurityEvent('file_uploaded', { 
+        path, 
+        fileSize: file.size, 
+        fileType: file.type 
+      });
+      
+      return downloadURL;
+    } catch (error) {
+      securityService.logSecurityEvent('file_upload_failed', { 
+        path, 
+        error: error.message 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a file from Firebase Storage
+   * @param {string} path - The storage path
+   * @returns {Promise<void>}
+   */
+  async deleteFile(path) {
+    // Security validation
+    securityService.validateFirebaseOperation('delete');
+    
+    try {
+      const storageRef = ref(storage, path);
+      await deleteObject(storageRef);
+      
+      securityService.logSecurityEvent('file_deleted', { path });
+    } catch (error) {
+      securityService.logSecurityEvent('file_delete_failed', { 
+        path, 
+        error: error.message 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * List files in a storage path
+   * @param {string} path - The storage path
+   * @returns {Promise<Array>} List of file references
+   */
+  async listFiles(path) {
+    // Security validation
+    securityService.validateFirebaseOperation('read');
+    
+    try {
+      const storageRef = ref(storage, path);
+      const result = await listAll(storageRef);
+      
+      securityService.logSecurityEvent('files_listed', { 
+        path, 
+        count: result.items.length 
+      });
+      
+      return result.items;
+    } catch (error) {
+      securityService.logSecurityEvent('files_list_failed', { 
+        path, 
+        error: error.message 
+      });
+      throw error;
+    }
+  }
 }
 
 // Create and export a singleton instance
