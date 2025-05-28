@@ -52,7 +52,9 @@ function sanitizeInput(input) {
       .replace(/vbscript:/gi, '') // Remove vbscript: protocols (global)
       .replace(/file:/gi, '') // Remove file: protocols (global)
       .replace(/about:/gi, '') // Remove about: protocols (global)
-      .replace(/on\w+=/gi, '') // Remove event handlers (global)
+      .replace(/on\s*\w*\s*=/gi, '') // Remove event handlers with optional spaces (global)
+      .replace(/\bon[a-z]*\b/gi, '') // Remove any on* patterns at word boundaries
+      .replace(/\s+on\s+/gi, ' ') // Remove standalone 'on' with spaces
       .replace(/&[#\w]+;/g, '') // Remove HTML entities that could be used for encoding
       .replace(/[\p{Cc}]/gu, '') // Remove control characters using Unicode property
       .trim();
