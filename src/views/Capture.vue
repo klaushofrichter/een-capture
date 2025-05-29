@@ -372,7 +372,7 @@
     @click="closeCaptureModal"
   >
     <div 
-      class="relative top-20 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/5 xl:w-1/2 2xl:w-2/5 shadow-lg rounded-md bg-white dark:bg-gray-800"
+      class="relative top-20 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/5 xl:w-1/2 2xl:w-2/5 shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto"
       @click.stop
     >
       <!-- Modal Header -->
