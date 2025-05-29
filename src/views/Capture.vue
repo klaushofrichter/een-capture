@@ -1,6 +1,10 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-6 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-3xl mx-auto">
+    <!-- Main content with conditional blur -->
+    <div 
+      class="max-w-3xl mx-auto transition-all duration-300"
+      :class="{ 'blur-sm pointer-events-none': isAnyModalOpen }"
+    >
       <div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
         <div class="px-4 py-5 sm:px-6">
           <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">
@@ -58,8 +62,11 @@
                       <p v-if="capture.createdAt" class="text-xs text-gray-500 dark:text-gray-400">
                         Created: {{ new Date(capture.createdAt).toLocaleString() }}
                       </p>
-                      <p v-if="capture.images && capture.images.length > 0" class="text-xs text-green-600 dark:text-green-400">
-                        📁 {{ capture.images.length }} images stored
+                      <p v-if="capture.imageCount && capture.imageCount > 0" class="text-xs text-green-600 dark:text-green-400">
+                        📁 {{ capture.imageCount }} images stored
+                      </p>
+                      <p v-else class="text-xs text-gray-600 dark:text-gray-400 italic">
+                        📷 No images captured yet
                       </p>
                     </div>
                     <!-- Action buttons: Process and Delete -->
@@ -93,22 +100,23 @@
   <!-- Create New Capture Modal -->
   <div 
     v-if="showCreateModal" 
-    class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
-    @click="closeCreateModal"
+    class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
+    @click="handleModalBackdropClick($event, 'create')"
   >
     <div 
-      class="relative top-10 mx-auto p-5 border w-11/12 md:w-5/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto"
+      class="relative border w-full max-w-4xl shadow-2xl rounded-lg bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-100"
       @click.stop
     >
       <!-- Modal Header -->
-      <div class="pb-4 border-b border-gray-200 dark:border-gray-600">
+      <div class="pb-4 border-b border-gray-200 dark:border-gray-600 p-6">
         <div class="flex items-center justify-between mb-2">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Create New Capture
           </h3>
           <button 
-            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
             @click="closeCreateModal"
+            aria-label="Close modal"
           >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -130,7 +138,7 @@
       </div>
 
       <!-- Modal Content -->
-      <div class="pt-4">
+      <div class="p-6">
         <form class="space-y-4" @submit.prevent="createCapture">
           <!-- Capture Name (Editable) -->
           <div>
@@ -172,9 +180,12 @@
                   href="https://webapp.eagleeyenetworks.com/#/dashboard" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors"
+                  class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors flex items-center gap-1"
                 >
-                  Find Cameras
+                  <span>Find Cameras</span>
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                  </svg>
                 </a>
               </div>
               <input
@@ -368,21 +379,22 @@
   <!-- Capture Details Modal -->
   <div 
     v-if="showModal" 
-    class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
-    @click="closeCaptureModal"
+    class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
+    @click="handleModalBackdropClick($event, 'details')"
   >
     <div 
-      class="relative top-20 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/5 xl:w-1/2 2xl:w-2/5 shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto"
+      class="relative border w-full max-w-2xl shadow-2xl rounded-lg bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-100"
       @click.stop
     >
       <!-- Modal Header -->
-      <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-600">
+      <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-600 p-6">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
           Capture Details
         </h3>
         <button 
-          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
           @click="closeCaptureModal"
+          aria-label="Close modal"
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -391,7 +403,7 @@
       </div>
 
       <!-- Modal Content -->
-      <div v-if="selectedCapture" class="pt-4">
+      <div v-if="selectedCapture" class="p-6">
         <div class="space-y-4">
           <!-- Thumbnail Preview -->
           <div v-if="selectedCapture.thumbnail" class="flex justify-center">
@@ -482,31 +494,24 @@
             </p>
           </div>
 
-          <!-- Stored Images -->
-          <div v-if="selectedCapture.images && selectedCapture.images.length > 0">
+          <!-- Stored Images Summary -->
+          <div v-if="selectedCapture.imageCount && selectedCapture.imageCount > 0">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Stored Images ({{ selectedCapture.images.length }})
+              Stored Images
             </label>
             <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded">
-              <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 max-h-40 overflow-y-auto">
-                <div 
-                  v-for="(image, index) in selectedCapture.images" 
-                  :key="index"
-                  class="relative group"
-                >
-                  <img 
-                    :src="image.downloadUrl" 
-                    :alt="`Stored image ${image.index}`"
-                    class="w-full h-12 object-cover rounded border border-gray-300 dark:border-gray-600"
-                    @error="$event.target.style.display='none'"
-                  />
-                  <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded flex items-center justify-center">
-                    <span class="text-white text-xs font-bold">{{ image.index }}</span>
-                  </div>
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-lg font-bold text-green-600 dark:text-green-400">{{ selectedCapture.imageCount }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">images stored</p>
+                </div>
+                <div v-if="selectedCapture.processedAt" class="text-right">
+                  <p class="text-xs text-gray-500 dark:text-gray-400">Processed:</p>
+                  <p class="text-xs text-gray-600 dark:text-gray-300">{{ new Date(selectedCapture.processedAt).toLocaleString() }}</p>
                 </div>
               </div>
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                Images stored in Firebase Cloud Storage
+                Images stored in optimized database structure
               </p>
             </div>
           </div>
@@ -524,12 +529,20 @@
 
         <!-- Modal Footer -->
         <div class="flex justify-between pt-6 border-t border-gray-200 dark:border-gray-600 mt-6">
-          <button 
-            class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
-            @click="openDeleteModal(selectedCapture); closeCaptureModal()"
-          >
-            Delete Capture
-          </button>
+          <div class="flex space-x-3">
+            <button 
+              class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
+              @click="openProcessModal(selectedCapture); closeCaptureModal()"
+            >
+              Process
+            </button>
+            <button 
+              class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+              @click="openDeleteModal(selectedCapture); closeCaptureModal()"
+            >
+              Delete Capture
+            </button>
+          </div>
           <button 
             class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
             @click="closeCaptureModal"
@@ -544,21 +557,22 @@
   <!-- Delete Confirmation Modal -->
   <div 
     v-if="showDeleteModal" 
-    class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
-    @click="closeDeleteModal"
+    class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
+    @click="handleModalBackdropClick($event, 'delete')"
   >
     <div 
-      class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/5 lg:w-2/5 xl:w-1/3 2xl:w-1/4 shadow-lg rounded-md bg-white dark:bg-gray-800"
+      class="relative border w-full max-w-md shadow-2xl rounded-lg bg-white dark:bg-gray-800 transform transition-all duration-300 scale-100"
       @click.stop
     >
       <!-- Modal Header -->
-      <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-600">
+      <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-600 p-6">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
           Delete Capture
         </h3>
         <button 
-          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
           @click="closeDeleteModal"
+          aria-label="Close modal"
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -567,7 +581,7 @@
       </div>
 
       <!-- Modal Content -->
-      <div class="pt-4">
+      <div class="p-6">
         <p class="text-sm text-gray-700 dark:text-gray-300 mb-4">
           Are you sure you want to delete this capture?
         </p>
@@ -609,19 +623,20 @@
   <!-- Process Modal -->
   <div 
     v-if="showProcessModal" 
-    class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
-    @click="closeProcessModal"
+    class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
+    @click="handleModalBackdropClick($event, 'process')"
   >
     <div 
-      class="relative top-10 mx-auto p-5 border w-11/12 md:w-5/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto"
+      class="relative border w-full max-w-4xl shadow-2xl rounded-lg bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-100"
       @click.stop
     >
-      <div class="pb-4 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between">
+      <div class="pb-4 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between p-6">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Process Capture</h3>
         <button 
-          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
           :disabled="isProcessing"
           @click="closeProcessModal"
+          aria-label="Close modal"
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -629,7 +644,7 @@
         </button>
       </div>
       
-      <div class="pt-4 space-y-4">
+      <div class="p-6 space-y-4">
         <!-- Title (full width) -->
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title</label>
@@ -788,7 +803,7 @@
       </div>
 
       <!-- Modal Footer -->
-      <div class="flex justify-end pt-6 border-t border-gray-200 dark:border-gray-600 mt-6 space-x-3">
+      <div class="flex justify-end pt-6 px-6 pb-6 border-t border-gray-200 dark:border-gray-600 mt-6 space-x-3">
         <button 
           class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
           :disabled="isProcessing || isUploading"
@@ -820,21 +835,22 @@
   <!-- Re-process Confirmation Modal -->
   <div 
     v-if="showReprocessModal" 
-    class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
-    @click="closeReprocessModal"
+    class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
+    @click="handleModalBackdropClick($event, 'reprocess')"
   >
     <div 
-      class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/5 lg:w-2/5 xl:w-1/3 2xl:w-1/4 shadow-lg rounded-md bg-white dark:bg-gray-800"
+      class="relative border w-full max-w-lg shadow-2xl rounded-lg bg-white dark:bg-gray-800 transform transition-all duration-300 scale-100"
       @click.stop
     >
       <!-- Modal Header -->
-      <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-600">
+      <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-600 p-6">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
           Re-process Capture
         </h3>
         <button 
-          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
           @click="closeReprocessModal"
+          aria-label="Close modal"
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -843,7 +859,7 @@
       </div>
 
       <!-- Modal Content -->
-      <div class="pt-4">
+      <div class="p-6">
         <div class="mb-4">
           <div class="flex items-center mb-3">
             <div class="flex-shrink-0">
@@ -859,7 +875,7 @@
           </div>
           
           <p class="text-sm text-gray-700 dark:text-gray-300 mb-4">
-            This capture already has <strong>{{ reprocessCapture?.images?.length || 0 }} stored images</strong>. 
+            This capture already has <strong>{{ reprocessCapture?.imageCount || 0 }} stored images</strong>. 
             Re-processing will permanently delete all existing images and capture new ones.
           </p>
           
@@ -889,7 +905,7 @@
                   Warning: This action cannot be undone
                 </h5>
                 <p class="text-sm text-red-700 dark:text-red-300 mt-1">
-                  All {{ reprocessCapture?.images?.length || 0 }} existing images will be permanently deleted from Firebase Storage.
+                  All {{ reprocessCapture?.imageCount || 0 }} existing images will be permanently deleted from Firebase Storage.
                 </p>
               </div>
             </div>
@@ -922,12 +938,11 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useAuthStore as useEenAuthStore } from '../stores/auth'
 import { APP_NAME } from '../constants'
-import { getFirestore, collection, getDocs, query, where, addDoc, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { firebaseAuthService } from '../services/firebase-auth'
-import app from '../firebase'
 import { cameraService } from '../services/cameras'
 import { mediaService } from '../services/media'
 import { storageService } from '../services/storage'
+import { databaseService } from '../services/database'
 import securityService from '@/services/security'
 
 const eenAuthStore = useEenAuthStore()
@@ -996,6 +1011,15 @@ const showUploadSection = ref(false);
 const streamingResults = ref([]);
 const uploadStats = ref({ success: 0, failed: 0, total: 0 });
 
+// Modal state management
+const isAnyModalOpen = computed(() => {
+  return showModal.value || 
+         showCreateModal.value || 
+         showDeleteModal.value || 
+         showProcessModal.value || 
+         showReprocessModal.value;
+});
+
 // Helper: Downsample image to 320px width and return base64
 async function downsampleImage(base64Image, width = 320) {
   return new Promise((resolve, reject) => {
@@ -1014,49 +1038,87 @@ async function downsampleImage(base64Image, width = 320) {
   });
 }
 
-const fetchCaptures = async () => {
-  loading.value = true;
-  error.value = null;
+// Handle backdrop clicks for modals
+function handleModalBackdropClick(event, modalType) {
+  // Only close if clicking the backdrop, not the modal content
+  if (event.target === event.currentTarget) {
+    switch (modalType) {
+      case 'create':
+        closeCreateModal();
+        break;
+      case 'details':
+        closeCaptureModal();
+        break;
+      case 'delete':
+        closeDeleteModal();
+        break;
+      case 'process':
+        // Don't allow closing process modal if currently processing
+        if (!isProcessing.value && !isUploading.value) {
+          closeProcessModal();
+        }
+        break;
+      case 'reprocess':
+        closeReprocessModal();
+        break;
+    }
+  }
+}
+
+// Prevent body scroll when modals are open
+watch(isAnyModalOpen, (isOpen) => {
+  if (isOpen) {
+    // Prevent scrolling
+    document.body.style.overflow = 'hidden';
+    document.body.style.paddingRight = getScrollbarWidth() + 'px';
+  } else {
+    // Restore scrolling
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+  }
+});
+
+// Get scrollbar width to prevent layout shift when hiding scrollbar
+function getScrollbarWidth() {
+  const outer = document.createElement('div');
+  outer.style.visibility = 'hidden';
+  outer.style.overflow = 'scroll';
+  outer.style.msOverflowStyle = 'scrollbar';
+  document.body.appendChild(outer);
   
-  const eenUserIdentifier = eenAuthStore?.userProfile?.email;
-  if (!eenUserIdentifier) {
-    error.value = "EEN user details not available.";
+  const inner = document.createElement('div');
+  outer.appendChild(inner);
+  
+  const scrollbarWidth = outer.offsetWidth - inner.offsetWidth;
+  outer.parentNode.removeChild(outer);
+  
+  return scrollbarWidth;
+}
+
+// Fetch captures from the optimized database service
+const fetchCaptures = async () => {
+  if (!eenAuthStore.userProfile?.email) {
+    console.error("[Capture.vue] No user email available for fetching captures");
+    error.value = "User profile not available";
     loading.value = false;
     return;
   }
 
-  // Ensure Firebase auth is ready
-  if (!firebaseAuthService.isAuthenticated()) {
-    error.value = "Firebase authentication required.";
-    loading.value = false;
-    return;
-  }
+  const eenUserIdentifier = eenAuthStore.userProfile.email;
+  console.log("[Capture.vue] Fetching captures for EEN user:", eenUserIdentifier);
 
   try {
-    const db = getFirestore(app);
-    console.log("[Capture.vue] Firestore instance:", db);
-    console.log("[Capture.vue] EEN User Identifier:", eenUserIdentifier);
-       
-    // query for the specific user 
-    console.log("[Capture.vue] Trying specific query with eenUserEmailField ==", eenUserIdentifier);
-    const q = query(collection(db, "captures"), where("eenUserEmailField", "==", eenUserIdentifier));
-    const querySnapshot = await getDocs(q);
+    // Use the optimized database service
+    const capturesList = await databaseService.getCaptures(eenUserIdentifier);
+    captures.value = capturesList;
     
-    console.log("[Capture.vue] Specific query returned:", querySnapshot.size, "documents");
-    captures.value = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    console.log(`[Capture.vue] Successfully fetched ${capturesList.length} captures`);
     
-    console.log("Captures fetched successfully:", captures.value);
-    if (captures.value.length === 0) {
-      console.log("No captures matched for this EEN user.", eenUserIdentifier);
-      // For debugging, let's also try to show all captures
-      //const allCaptures = allCapturesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      //console.log("All captures in collection (for debugging):", allCaptures);
-      
-      // Temporarily show all captures in UI for debugging
-      //captures.value = allCaptures;
+    if (capturesList.length === 0) {
+      console.log("[Capture.vue] No captures found for this user");
     }
   } catch (e) {
-    console.error("Error fetching captures: ", e);
+    console.error("[Capture.vue] Error fetching captures:", e);
     error.value = e.message;
   } finally {
     loading.value = false;
@@ -1123,61 +1185,19 @@ const signInAndFetchData = async () => {
   }
 };
 
+// Create a new capture using the optimized database service
 const createCapture = async () => {
-  console.log("[Capture.vue] Creating new capture...");
-  console.log("[Capture.vue] Form data:", createForm.value);
-  console.log("[Capture.vue] Calculated image count:", calculatedImageCount.value);
-  console.log("[Capture.vue] Time range error:", timeRangeError.value);
+  console.log("[Capture.vue] Creating new capture");
   
-  if (!firebaseAuthService.isAuthenticated()) {
-    console.error("[Capture.vue] User must be authenticated to create capture");
+  if (!eenAuthStore.userProfile?.email) {
+    console.error("[Capture.vue] No user email available for creating capture");
     return;
   }
-  console.log("[Capture.vue] ✅ Firebase authentication check passed");
 
-  const eenUserEmail = eenAuthStore?.userProfile?.email;
-  if (!eenUserEmail) {
-    console.error("[Capture.vue] EEN user email not available");
-    return;
-  }
-  console.log("[Capture.vue] ✅ EEN user email check passed:", eenUserEmail);
-
-  // Validate form
-  if (!createForm.value.name.trim()) {
-    console.error("[Capture.vue] Capture name is required");
-    return;
-  }
-  console.log("[Capture.vue] ✅ Name validation passed");
-  
-  if (!createForm.value.cameraId.trim()) {
-    console.error("[Capture.vue] Camera ID is required");
-    return;
-  }
-  console.log("[Capture.vue] ✅ Camera ID validation passed");
-  
-  if (!createForm.value.startDate.trim()) {
-    console.error("[Capture.vue] Start date is required");
-    return;
-  }
-  console.log("[Capture.vue] ✅ Start date validation passed");
-  
-  // Validate image count
-  if (calculatedImageCount.value > 3000) {
-    console.error("[Capture.vue] Image count exceeds maximum of 3000");
-    return;
-  }
-  console.log("[Capture.vue] ✅ Image count validation passed");
-  
-  // Validate time range
-  if (timeRangeError.value) {
-    console.error("[Capture.vue] Time range validation failed:", timeRangeError.value);
-    return;
-  }
-  console.log("[Capture.vue] ✅ Time range validation passed");
+  const eenUserEmail = eenAuthStore.userProfile.email;
 
   try {
-    const db = getFirestore(app);
-    const newCapture = {
+    const captureData = {
       name: createForm.value.name.trim(),
       description: createForm.value.description.trim(),
       cameraId: createForm.value.cameraId.trim(),
@@ -1191,13 +1211,15 @@ const createCapture = async () => {
         unit: createForm.value.interval.unit
       },
       eenUserEmailField: eenUserEmail,
-      createdAt: new Date().toISOString(),
       thumbnail: liveImageThumbnail.value || null
     };
 
-    console.log("[Capture.vue] Creating capture:", newCapture);
-    const docRef = await addDoc(collection(db, "captures"), newCapture);
-    console.log("[Capture.vue] Capture created with ID:", docRef.id);
+    console.log("[Capture.vue] Creating capture with data:", captureData);
+    
+    // Use the optimized database service
+    const captureId = await databaseService.createCapture(captureData);
+    
+    console.log("[Capture.vue] Capture created successfully with ID:", captureId);
     
     // Close modal and refresh the captures list
     closeCreateModal();
@@ -1279,7 +1301,7 @@ const closeDeleteModal = () => {
   captureToDelete.value = null;
 };
 
-// Delete capture
+// Delete capture using optimized database service
 const deleteCapture = async () => {
   console.log("[Capture.vue] Deleting capture:", captureToDelete.value);
   
@@ -1291,31 +1313,89 @@ const deleteCapture = async () => {
   try {
     const captureId = captureToDelete.value.id;
     
+    // Debug Firebase authentication state
+    const firebaseUser = firebaseAuthService.getCurrentUser();
+    console.log("[Capture.vue] Firebase authentication state:", {
+      isAuthenticated: firebaseAuthService.isAuthenticated(),
+      currentUser: firebaseUser ? {
+        uid: firebaseUser.uid,
+        email: firebaseUser.email,
+        displayName: firebaseUser.displayName
+      } : null
+    });
+    
+    if (firebaseUser) {
+      try {
+        const idTokenResult = await firebaseUser.getIdTokenResult();
+        console.log("[Capture.vue] Firebase ID token claims:", {
+          email: idTokenResult.claims.email,
+          eenUserEmail: idTokenResult.claims.eenUserEmail,
+          eenUserId: idTokenResult.claims.eenUserId,
+          provider: idTokenResult.claims.provider,
+          authProvider: idTokenResult.claims.authProvider,
+          expirationTime: idTokenResult.expirationTime,
+          allClaims: idTokenResult.claims
+        });
+      } catch (tokenError) {
+        console.error("[Capture.vue] Error getting ID token:", tokenError);
+      }
+    } else {
+      console.warn("[Capture.vue] No Firebase user found, attempting re-authentication...");
+      try {
+        await firebaseAuthService.signInWithEEN();
+        console.log("[Capture.vue] Re-authentication successful");
+      } catch (authError) {
+        console.error("[Capture.vue] Re-authentication failed:", authError);
+        throw new Error(`Firebase authentication required: ${authError.message}`);
+      }
+    }
+    
     // Delete images from Firebase Storage first
     try {
       await storageService.deleteCapture(captureId);
       console.log("[Capture.vue] Storage images deleted successfully");
     } catch (storageError) {
-      console.warn("[Capture.vue] Error deleting storage images (continuing with Firestore deletion):", storageError);
+      console.warn("[Capture.vue] Error deleting storage images (continuing with database deletion):", storageError);
     }
     
-    // Delete the capture document from Firestore
-    const db = getFirestore(app);
-    await deleteDoc(doc(db, "captures", captureId));
-    console.log("[Capture.vue] Capture deleted successfully");
+    // Delete the capture and all associated image documents using optimized database service
+    await databaseService.deleteCapture(captureId);
+    console.log("[Capture.vue] Capture and image documents deleted successfully");
     
     // Close delete modal and refresh the captures list
     closeDeleteModal();
     await fetchCaptures();
   } catch (error) {
     console.error("[Capture.vue] Error deleting capture:", error);
+    
+    // If it's a permissions error, try re-authenticating and retrying once
+    if (error.message && error.message.includes('permission') || error.message.includes('unauthenticated')) {
+      console.log("[Capture.vue] Permission error detected, attempting re-authentication and retry...");
+      try {
+        await firebaseAuthService.signInWithEEN();
+        console.log("[Capture.vue] Re-authentication successful, retrying delete...");
+        
+        // Retry the delete operation
+        const captureId = captureToDelete.value.id;
+        await databaseService.deleteCapture(captureId);
+        console.log("[Capture.vue] Retry: Capture deleted successfully");
+        
+        closeDeleteModal();
+        await fetchCaptures();
+      } catch (retryError) {
+        console.error("[Capture.vue] Retry failed:", retryError);
+        alert(`Failed to delete capture: ${retryError.message}`);
+      }
+    } else {
+      alert(`Failed to delete capture: ${error.message}`);
+    }
   }
 };
 
 // ESC key handler for closing modals
 const handleEscapeKey = (event) => {
   if (event.key === 'Escape') {
-    // Close whichever modal is currently open (but not if processing)
+    // Close whichever modal is currently open (respecting processing state)
     if (showDeleteModal.value) {
       closeDeleteModal();
     } else if (showReprocessModal.value) {
@@ -1325,6 +1405,7 @@ const handleEscapeKey = (event) => {
     } else if (showModal.value) {
       closeCaptureModal();
     } else if (showProcessModal.value && !isProcessing.value && !isUploading.value) {
+      // Only allow closing process modal if not actively processing
       closeProcessModal();
     }
   }
@@ -1698,62 +1779,46 @@ async function startImageCapture() {
 
 // Note: uploadImagesToStorage function removed - now integrated into startImageCapture
 
-// Update capture document with image metadata (batch-friendly for large sequences)
+// Update capture with image metadata using optimized database structure (batch-friendly)
 async function updateCaptureWithImagesBatch(captureId, uploadResults) {
   try {
-    const db = getFirestore(app);
-    const captureRef = doc(db, "captures", captureId);
+    if (!eenAuthStore.userProfile?.email) {
+      console.error('[Upload] No user email available for batch update');
+      return;
+    }
+
+    const userEmail = eenAuthStore.userProfile.email;
+    const successfulUploads = uploadResults.filter(result => result.success);
     
-    const imageMetadata = uploadResults
-      .filter(result => result.success)
-      .map(result => ({
-        index: result.index,
-        timestamp: result.timestamp,
-        downloadUrl: result.downloadUrl,
-        storagePath: result.storagePath,
-        size: result.size,
-        uploadedAt: new Date().toISOString()
-      }));
+    // Add images to the separate collection in batches
+    if (successfulUploads.length > 0) {
+      await databaseService.addImages(captureId, successfulUploads, userEmail);
+    }
     
-    // For large sequences, only update progress stats during streaming
-    await updateDoc(captureRef, {
-      imageCount: imageMetadata.length,
-      processedAt: new Date().toISOString(),
-      status: uploadResults.length === uploadStats.value.total ? 'completed' : 'processing'
-    });
-    
-    console.log(`[Upload] Batch updated capture ${captureId} progress: ${imageMetadata.length} images`);
+    console.log(`[Upload] Batch processed: ${successfulUploads.length} images added to capture ${captureId}`);
     
   } catch (error) {
     console.warn('[Upload] Error during batch update (continuing):', error);
   }
 }
 
-// Update capture document with image metadata (final update)
+// Update capture with final image metadata using optimized database structure
 async function updateCaptureWithImages(captureId, uploadResults) {
   try {
-    const db = getFirestore(app);
-    const captureRef = doc(db, "captures", captureId);
+    if (!eenAuthStore.userProfile?.email) {
+      console.error('[Upload] No user email available for final update');
+      throw new Error('User email not available');
+    }
+
+    const userEmail = eenAuthStore.userProfile.email;
+    const successfulUploads = uploadResults.filter(result => result.success);
     
-    const imageMetadata = uploadResults
-      .filter(result => result.success)
-      .map(result => ({
-        index: result.index,
-        timestamp: result.timestamp,
-        downloadUrl: result.downloadUrl,
-        storagePath: result.storagePath,
-        size: result.size,
-        uploadedAt: new Date().toISOString()
-      }));
+    // Add all successful images to the separate collection
+    if (successfulUploads.length > 0) {
+      await databaseService.addImages(captureId, successfulUploads, userEmail);
+    }
     
-    await updateDoc(captureRef, {
-      images: imageMetadata,
-      imageCount: imageMetadata.length,
-      processedAt: new Date().toISOString(),
-      status: 'completed'
-    });
-    
-    console.log(`[Upload] Final update: capture ${captureId} with ${imageMetadata.length} image records`);
+    console.log(`[Upload] Final update: capture ${captureId} completed with ${successfulUploads.length} images`);
     
     // Refresh the captures list to show updated data
     await fetchCaptures();
@@ -1765,8 +1830,8 @@ async function updateCaptureWithImages(captureId, uploadResults) {
 }
 
 function openProcessModal(capture) {
-  // Check if capture already has stored images
-  if (capture.images && capture.images.length > 0) {
+  // Check if capture has images using the new structure
+  if (capture.imageCount && capture.imageCount > 0) {
     // Show re-process confirmation modal instead
     reprocessCapture.value = capture;
     showReprocessModal.value = true;
@@ -1829,21 +1894,19 @@ async function confirmReprocess() {
   if (!reprocessCapture.value) return;
   
   const capture = reprocessCapture.value;
-  console.log(`[Process] Re-processing capture ${capture.id}, deleting ${capture.images?.length || 0} existing images`);
+  console.log(`[Process] Re-processing capture ${capture.id}, deleting ${capture.imageCount || 0} existing images`);
   
   try {
     // Delete existing images from Firebase Storage
     await storageService.deleteCapture(capture.id);
-    console.log("[Process] Existing images deleted successfully");
+    console.log("[Process] Existing images deleted from storage");
     
-    // Update Firestore to remove image metadata
-    const db = getFirestore(app);
-    const captureRef = doc(db, "captures", capture.id);
-    await updateDoc(captureRef, {
-      images: [],
+    // Delete image documents and reset capture metadata using optimized database service
+    await databaseService.deleteAllImages(capture.id);
+    await databaseService.updateCapture(capture.id, {
       imageCount: 0,
       processedAt: null,
-      status: null
+      status: 'created'
     });
     console.log("[Process] Capture metadata cleared");
     
@@ -1929,6 +1992,10 @@ onMounted(() => {
 onUnmounted(async () => {
   // Clean up event listener on component unmount
   document.removeEventListener('keydown', handleEscapeKey);
+  
+  // Restore body styles
+  document.body.style.overflow = '';
+  document.body.style.paddingRight = '';
   
   // Clear token refresh interval
   if (tokenRefreshInterval) {
