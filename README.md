@@ -105,17 +105,20 @@ If tests fail in GitHub Actions but work locally:
 
 ## Security Implementation
 
-This application implements a comprehensive multi-layered security architecture that protects Firebase and Firestore databases from unauthorized access. The security implementation includes domain restrictions, authentication enforcement, data ownership validation, and comprehensive input validation.
+This application implements a comprehensive multi-layered security architecture that protects against various attack vectors including XSS, injection attacks, and unauthorized access. The security implementation includes domain restrictions, authentication enforcement, data ownership validation, comprehensive input validation, and Content Security Policy.
 
-### 🔒 **For detailed security documentation, see [SECURITY.md](./SECURITY.md)**
+### 🔒 Security Architecture Overview
 
-### Quick Security Overview
+The application employs **defense-in-depth** security with multiple layers:
 
-**Domain Restrictions**: Only `localhost:3333`, `127.0.0.1:3333`, and `klaushofrichter.github.io` can access Firebase services.
+1. **Content Security Policy (CSP)** - Browser-level XSS protection
+2. **Input Sanitization** - Multi-pass sanitization against injection attacks  
+3. **Domain Restrictions** - Firebase access limited to authorized domains
+4. **Authentication Flow** - EEN OAuth + Firebase custom tokens with email verification
+5. **Firebase Security Rules** - Database and storage access controls
+6. **Rate Limiting** - Protection against abuse and DoS attacks
 
-**Authentication Flow**: Combines EEN OAuth authentication with Firebase custom tokens, including email verification to prevent token hijacking.
-
-### Architecture Overview
+### Authentication Flow
 
 ```
 ┌─────────────┐    ┌──────────────┐    ┌─────────────────┐    ┌──────────────┐
@@ -150,18 +153,96 @@ This application implements a comprehensive multi-layered security architecture 
 
 ### Security Features
 
-#### 1. **Email Verification Against Source of Truth**
+#### 1. **Content Security Policy (CSP)**
 
-**Problem Solved**: Prevents attackers from creating Firebase tokens using stolen user information without valid EEN access.
+**Location**: `index.html`
+**Protection**: Browser-level XSS prevention
 
-**Implementation**: 
+```html
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https: wss:; font-src 'self' data:;">
+```
+
+**Benefits**:
+- Prevents execution of malicious inline scripts
+- Restricts resource loading to trusted sources
+- Blocks unauthorized external connections
+
+#### 2. **Comprehensive Input Sanitization**
+
+**Location**: `src/services/security.js`, `functions/index.js`
+**Protection**: Multi-pass sanitization against injection attacks
+
+**Key Features**:
+- **Iterative Multi-Pass Sanitization**: Uses do-while loops to handle overlapping attack patterns
+- **Global Regex Flags**: Ensures all occurrences are sanitized, not just the first
+- **Enhanced Event Handler Detection**: Improved pattern matching for HTML event attributes
+
+```javascript
+// Enhanced event handler sanitization
+function sanitizeEventHandlers(input) {
+  let result = input;
+  let previousResult;
+  
+  do {
+    previousResult = result;
+    // Enhanced pattern with positive lookahead instead of restrictive word boundaries
+    result = result.replace(/\bon[a-z0-9_]*(?=\W|$)/gi, '');
+    result = result.replace(/\bon[a-z0-9_]*=/gi, '');
+  } while (result !== previousResult);
+  
+  return result;
+}
+```
+
+**Protected Patterns**:
+- JavaScript protocols (`javascript:`, `vbscript:`, `data:`)
+- HTML event handlers (`onclick`, `onload`, `onerror`, etc.)
+- Script tags and dangerous HTML elements
+- SQL injection patterns
+- Control characters and HTML entities
+
+**Bypass Prevention**:
+- Handles overlapping patterns like `javjavascript:ascript:alert(1)`
+- Removes event handlers with numbers/underscores: `on123=alert(1)`, `on_click=alert(1)`
+- Processes standalone dangerous patterns: `on=alert(1)`
+
+#### 3. **Domain Restrictions**
+
+**Firebase Configuration**: `src/firebase.js`
+**Storage Rules**: `storage.rules`
+**Firestore Rules**: `firestore.rules`
+
+**Authorized Domains**:
+- `http://localhost:3333` (development)
+- `http://127.0.0.1:3333` (development)
+- `https://klaushofrichter.github.io` (production)
+
+```javascript
+// Firebase configuration with domain validation
+const allowedAuthDomains = [
+  'klaus-hofrichter-simple.firebaseapp.com',
+  'klaushofrichter.github.io'
+];
+
+// Validate auth domain
+if (!allowedAuthDomains.includes(authDomain)) {
+  throw new Error(`Invalid auth domain: ${authDomain}`);
+}
+```
+
+#### 4. **Email Verification Against Source of Truth**
+
+**Location**: `functions/index.js`
+**Problem Solved**: Prevents token hijacking using stolen user information
+
+**Implementation**:
 - Client provides: `eenUserId`, `eenUserEmail`, `eenAccessToken`, `eenBaseUrl`
 - Firebase function calls EEN API: `GET ${eenBaseUrl}/api/v3.0/users/self`
 - Compares API response email with provided email
 - Only creates Firebase token if emails match exactly (case-insensitive)
 
 ```javascript
-// Firebase Function - Email Verification
+// Email verification with EEN API
 const eenApiResponse = await axios.get(`${eenBaseUrl}/api/v3.0/users/self`, {
   headers: {
     "Accept": "application/json",
@@ -180,99 +261,405 @@ if (eenApiEmail.toLowerCase() !== eenUserEmail.toLowerCase()) {
 }
 ```
 
-#### 2. **Token Validation Through Active API Calls**
+#### 5. **Firebase Security Rules**
 
-**Problem Solved**: Ensures the EEN access token is valid and not expired/revoked.
-
-**Implementation**:
-- Every Firebase token request requires a live EEN API call
-- Invalid/expired tokens result in 401/403 responses
-- Network failures are handled gracefully with appropriate error codes
-
+**Firestore Rules** (`firestore.rules`):
 ```javascript
-// Error Handling for Different Scenarios
-if (error.response.status === 401) {
-  throw new HttpsError(
-    "unauthenticated",
-    "EEN access token is invalid or expired"
-  );
-} else if (error.response.status === 403) {
-  throw new HttpsError(
-    "permission-denied", 
-    "EEN access token does not have permission to access user profile"
-  );
+// User data ownership validation
+function isValidUser(userId) {
+  return request.auth != null && 
+         request.auth.uid == userId && 
+         request.auth.token.eenUserEmail != null;
+}
+
+// Users can only access their own data
+match /users/{userId} {
+  allow read, write: if isValidUser(userId);
 }
 ```
 
-#### 3. **Comprehensive Error Handling**
+**Storage Rules** (`storage.rules`):
+```javascript
+// Authenticated users can manage their capture images
+match /captures/{captureId}/{allPaths=**} {
+  allow read: if isAuthenticated();
+  allow write: if isAuthenticated() && isValidImageFile();
+  allow delete: if isAuthenticated();
+}
 
-**Security Benefit**: Prevents information leakage while providing useful debugging information.
+function isValidImageFile() {
+  return request.resource.contentType.matches('image/.*') &&
+         request.resource.size < 10 * 1024 * 1024; // Max 10MB per image
+}
+```
 
-**Implementation Categories**:
-- **Authentication Errors**: Invalid/expired tokens
-- **Authorization Errors**: Insufficient permissions
-- **Network Errors**: API unavailability
-- **Validation Errors**: Email mismatches, missing parameters
-- **Internal Errors**: Unexpected failures
+#### 6. **Rate Limiting and Timing Attack Protection**
 
-#### 4. **Secure Parameter Validation**
-
-**Problem Solved**: Prevents injection attacks and ensures all required security parameters are present.
+**Location**: `src/services/security.js`
 
 ```javascript
-// Required Parameter Validation
-if (!eenUserId || !eenUserEmail || !eenAccessToken || !eenBaseUrl) {
-  throw new HttpsError(
-    "invalid-argument",
-    "Missing required parameters: eenUserId, eenUserEmail, eenAccessToken, or eenBaseUrl"
-  );
+// Rate limiting for different operations
+checkRateLimit(operation, maxRequests = 100, windowMs = 60000) {
+  // Implements sliding window rate limiting
+}
+
+// Timing attack protection
+async hashCompare(provided, stored) {
+  // Constant-time comparison to prevent timing attacks
+}
+```
+
+#### 7. **Secure Parameter Validation**
+
+**Problem Solved**: Prevents injection attacks and ensures required security parameters
+
+```javascript
+// Required parameter validation with sanitization
+function validateAndSanitizeInput(params) {
+  const sanitized = {};
+  for (const [key, value] of Object.entries(params)) {
+    if (typeof value === 'string') {
+      sanitized[key] = sanitizeInput(value);
+    } else {
+      sanitized[key] = value;
+    }
+  }
+  return sanitized;
+}
+```
+
+#### 8. **Session and Environment Validation**
+
+**Environment Variables**: Enhanced validation with domain checks
+**Session Management**: Secure token handling with automatic cleanup
+
+```javascript
+// Environment validation with domain restrictions
+function validateEnvironment() {
+  const requiredVars = ['VITE_FIREBASE_API_KEY', 'VITE_FIREBASE_AUTH_DOMAIN'];
+  for (const varName of requiredVars) {
+    if (!process.env[varName]) {
+      throw new Error(`Missing required environment variable: ${varName}`);
+    }
+  }
 }
 ```
 
 ### Security Benefits
 
-1. **Prevents Token Hijacking**: Even if someone obtains user profile information, they cannot create Firebase tokens without a valid EEN access token.
+1. **XSS Prevention**: CSP and input sanitization prevent script injection
+2. **Token Hijacking Protection**: Email verification ensures legitimate access
+3. **Real-time Validation**: EEN token validation ensures current access rights
+4. **Injection Attack Prevention**: Multi-pass sanitization handles complex attack patterns
+5. **Domain Isolation**: Access restricted to authorized domains only
+6. **Data Ownership**: Users can only access their own data
+7. **Rate Limiting**: Protection against abuse and DoS attacks
+8. **Audit Trail**: Comprehensive logging for security monitoring
 
-2. **Real-time Validation**: Every authentication request validates the EEN token is currently active.
+### Security Incident Response
 
-3. **Email Integrity**: Ensures the Firebase user corresponds to the actual EEN user by verifying email addresses.
-
-4. **Audit Trail**: Comprehensive logging enables security monitoring and incident response.
-
-5. **Defense in Depth**: Multiple validation layers (parameter validation, token validation, email verification).
-
-### Implementation Files
-
-- **Client Integration**: `src/services/firebase-auth.js` - Calls Firebase function with EEN credentials
-- **Security Logic**: `functions/index.js` - `createCustomToken` function with email verification
-- **Error Handling**: Comprehensive error codes and logging throughout the flow
-
-### Monitoring and Debugging
-
-View authentication logs to verify security measures:
-
+**Monitoring Commands**:
 ```bash
 # View Firebase function logs
 firebase functions:log --only createCustomToken
 
-# Look for these security events:
-# - "Verifying EEN user email with EEN API"
-# - "EEN email verification successful" 
-# - "Email verification failed" (security incidents)
+# View security events
+grep "SECURITY" firebase-debug.log
+
+# Monitor authentication failures
+grep "authentication.*failed" application.log
 ```
 
-### Security Considerations for Other Implementations
+**Key Security Events to Monitor**:
+- Email verification failures (potential attack attempts)
+- Multiple failed authentication attempts
+- Unusual access patterns from unauthorized domains
+- Input sanitization triggers (potential injection attempts)
 
-When adapting this pattern for other OAuth providers:
+### Implementation Files
 
-1. **Always verify against the source API**: Don't trust client-provided user information
-2. **Validate tokens through active API calls**: Ensure tokens are currently valid
-3. **Implement comprehensive error handling**: Prevent information leakage
-4. **Log security events**: Enable monitoring and incident response
-5. **Use timeouts**: Prevent hanging requests from affecting availability
-6. **Validate all parameters**: Prevent injection and ensure required data is present
+- **Security Service**: `src/services/security.js` - Core security functions
+- **Firebase Auth**: `src/services/firebase-auth.js` - Client-side authentication
+- **Firebase Functions**: `functions/index.js` - Server-side token creation with email verification
+- **Firebase Rules**: `firestore.rules`, `storage.rules` - Database access controls
+- **CSP Policy**: `index.html` - Browser security headers
 
-This implementation demonstrates how to securely bridge OAuth authentication with Firebase custom tokens while maintaining strong security guarantees.
+### Compliance and Standards
+
+This implementation follows security best practices:
+- **OWASP Top 10** protection against common vulnerabilities
+- **Defense in Depth** with multiple security layers
+- **Principle of Least Privilege** in access controls
+- **Input Validation** at all entry points
+- **Secure by Default** configuration
+
+## EEN API Services
+
+This application provides a comprehensive set of service classes for interacting with Eagle Eye Networks (EEN) APIs. All services implement security validation, authentication checks, and error handling.
+
+### 🎥 Camera Service (`src/services/cameras.js`)
+
+**Purpose**: Manages camera information and device details through EEN Camera APIs.
+
+**Key Features**:
+- Camera details retrieval by ID
+- Automatic authentication validation
+- URL scheme security validation
+- Comprehensive error handling
+
+**Methods**:
+
+```javascript
+// Get camera details by ID
+const camera = await cameraService.getCameraById('camera-123')
+```
+
+**Example Response**:
+```javascript
+{
+  id: "camera-123",
+  name: "Front Door Camera",
+  status: "online",
+  // ... additional camera properties
+}
+```
+
+**Error Handling**:
+- Authentication validation (requires valid EEN login)
+- Camera not found (404) errors
+- Network and API failure handling
+
+### 📷 Media Service (`src/services/media.js`)
+
+**Purpose**: Handles live and recorded image retrieval from EEN cameras with optimized image processing.
+
+**Key Features**:
+- Live image capture from cameras
+- Historical image retrieval with timestamps
+- Base64 image conversion for web display
+- Automatic retry and error recovery
+- EEN timestamp and token handling
+
+**Methods**:
+
+#### Live Image Capture
+```javascript
+// Get live image from camera
+const result = await mediaService.getLiveImage('device-123', 'jpeg')
+// Returns: { image: "data:image/jpeg;base64,...", timestamp: "...", prevToken: "..." }
+```
+
+#### Historical Image Retrieval
+```javascript
+// Get recorded image at specific timestamp
+const result = await mediaService.getRecordedImage(
+  'device-123', 
+  '2024-01-15T10:30:00Z', 
+  'preview'
+)
+```
+
+**Image Processing**:
+- Automatic ArrayBuffer to Base64 conversion
+- Data URL generation for direct browser display
+- Optimized memory handling for large image sequences
+
+**Headers Handled**:
+- `X-Een-Timestamp`: EEN server timestamp for synchronization
+- `X-Een-PrevToken`: Token for efficient image sequencing
+
+### 👤 User Service (`src/services/user.js`)
+
+**Purpose**: Manages user profile information and account details from EEN APIs.
+
+**Key Features**:
+- User profile retrieval
+- Automatic authentication and base URL configuration
+- Axios-based HTTP client with security headers
+
+**Methods**:
+
+```javascript
+// Get current user profile
+const profile = await userService.getUserProfile()
+```
+
+**Example Response**:
+```javascript
+{
+  id: "user-123",
+  email: "user@example.com",
+  name: "John Doe",
+  // ... additional user properties
+}
+```
+
+### 🔧 API Utilities (`src/services/api.js`)
+
+**Purpose**: Provides foundational HTTP client creation and configuration for EEN API interactions.
+
+**Key Features**:
+- Authenticated API instance creation
+- OAuth proxy configuration for authentication flow
+- Centralized header and base URL management
+
+**Methods**:
+
+#### Authentication API Client
+```javascript
+// Create client for OAuth authentication
+const authApi = createAuthApi()
+```
+
+#### Authenticated API Client
+```javascript
+// Create client for EEN API calls
+const api = createApiInstance()
+const response = await api.get('/api/v3.0/cameras')
+```
+
+### 🏗️ Service Architecture
+
+All EEN API services follow a consistent architecture pattern:
+
+#### 1. **Singleton Pattern**
+```javascript
+// Each service exports both class and singleton instance
+export const cameraService = new CameraService()
+export { CameraService } // For testing/multiple instances
+```
+
+#### 2. **Security Integration**
+```javascript
+// URL validation on all requests
+if (!securityService.validateUrlScheme(requestUrl)) {
+  throw new Error('Invalid request URL scheme')
+}
+```
+
+#### 3. **Authentication Checks**
+```javascript
+// Consistent auth validation
+if (!authStore.isAuthenticated) {
+  throw new Error('Authentication required')
+}
+```
+
+#### 4. **Error Handling**
+```javascript
+// Standardized error handling with logging
+try {
+  // API call
+} catch (error) {
+  console.error('[ServiceName] Error:', error)
+  throw error
+}
+```
+
+### 📊 Usage Patterns
+
+#### Typical Camera Capture Flow
+```javascript
+// 1. Get camera details
+const camera = await cameraService.getCameraById(cameraId)
+
+// 2. Capture live image
+const liveImage = await mediaService.getLiveImage(cameraId)
+
+// 3. Get historical images for sequence
+const images = []
+for (const timestamp of timestamps) {
+  const image = await mediaService.getRecordedImage(cameraId, timestamp)
+  if (image.image) images.push(image)
+}
+```
+
+#### User Profile Integration
+```javascript
+// Get user profile for display
+const profile = await userService.getUserProfile()
+console.log(`Logged in as: ${profile.name} (${profile.email})`)
+```
+
+### 🔗 EEN API Endpoints Used
+
+The services interact with these EEN API endpoints:
+
+- **Cameras**: `GET /api/v3.0/cameras/{id}` - Camera details
+- **Live Images**: `GET /api/v3.0/media/liveImage.jpeg` - Real-time camera images
+- **Recorded Images**: `GET /api/v3.0/media/recordedImage.jpeg` - Historical images
+- **User Profile**: `GET /api/v3.0/users/self` - Current user information
+
+### 🛡️ Security Features
+
+All EEN API services include:
+
+- **Authentication Validation**: Ensures valid EEN OAuth tokens
+- **URL Scheme Validation**: Prevents protocol injection attacks
+- **Input Sanitization**: Protects against injection vulnerabilities
+- **Rate Limiting**: Built-in protection against API abuse
+- **Error Logging**: Security incident tracking and debugging
+
+### 🚀 Performance Optimizations
+
+- **Singleton Pattern**: Reduces memory overhead and initialization costs
+- **Base64 Conversion**: Optimized ArrayBuffer processing for images
+- **Automatic Retry Logic**: Built-in resilience for network failures
+- **Memory Management**: Efficient handling of large image sequences
+- **Async/Await**: Non-blocking operations for better user experience
+
+### 🧪 Testing Support
+
+All services are designed for easy testing:
+
+```javascript
+// Import class for unit testing
+import { CameraService } from '@/services/cameras'
+
+// Create test instance with mocked dependencies
+const testService = new CameraService()
+```
+
+**Mock-Friendly Design**:
+- Dependency injection support
+- Separated business logic from HTTP concerns
+- Comprehensive error scenarios for test coverage
+
+### 📝 Adding New EEN API Services
+
+When adding new EEN API functionality:
+
+1. **Follow the established pattern**: Use the existing services as templates
+2. **Include security validation**: All requests must validate URLs and authentication
+3. **Implement error handling**: Provide meaningful error messages and logging
+4. **Export both class and singleton**: Support both direct usage and testing
+5. **Document methods**: Include JSDoc comments for all public methods
+
+**Example New Service**:
+```javascript
+class DeviceService {
+  async getDeviceList() {
+    const authStore = useAuthStore()
+    
+    if (!authStore.isAuthenticated) {
+      throw new Error('Authentication required')
+    }
+    
+    const url = `${authStore.baseUrl}/api/v3.0/devices`
+    
+    if (!securityService.validateUrlScheme(url)) {
+      throw new Error('Invalid request URL scheme')
+    }
+    
+    // ... implementation
+  }
+}
+
+export const deviceService = new DeviceService()
+export { DeviceService }
+```
+
+This service architecture provides a robust, secure, and maintainable foundation for all EEN API interactions while ensuring consistency across the application.
 
 ## License
 
