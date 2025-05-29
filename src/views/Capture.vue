@@ -922,12 +922,11 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useAuthStore as useEenAuthStore } from '../stores/auth'
 import { APP_NAME } from '../constants'
-import { getFirestore, collection, getDocs, query, where, addDoc, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { firebaseAuthService } from '../services/firebase-auth'
-import app from '../firebase'
 import { cameraService } from '../services/cameras'
 import { mediaService } from '../services/media'
 import { storageService } from '../services/storage'
+import { databaseService } from '../services/database'
 import securityService from '@/services/security'
 
 const eenAuthStore = useEenAuthStore()
@@ -1014,49 +1013,30 @@ async function downsampleImage(base64Image, width = 320) {
   });
 }
 
+// Fetch captures from the optimized database service
 const fetchCaptures = async () => {
-  loading.value = true;
-  error.value = null;
-  
-  const eenUserIdentifier = eenAuthStore?.userProfile?.email;
-  if (!eenUserIdentifier) {
-    error.value = "EEN user details not available.";
+  if (!eenAuthStore.userProfile?.email) {
+    console.error("[Capture.vue] No user email available for fetching captures");
+    error.value = "User profile not available";
     loading.value = false;
     return;
   }
 
-  // Ensure Firebase auth is ready
-  if (!firebaseAuthService.isAuthenticated()) {
-    error.value = "Firebase authentication required.";
-    loading.value = false;
-    return;
-  }
+  const eenUserIdentifier = eenAuthStore.userProfile.email;
+  console.log("[Capture.vue] Fetching captures for EEN user:", eenUserIdentifier);
 
   try {
-    const db = getFirestore(app);
-    console.log("[Capture.vue] Firestore instance:", db);
-    console.log("[Capture.vue] EEN User Identifier:", eenUserIdentifier);
-       
-    // query for the specific user 
-    console.log("[Capture.vue] Trying specific query with eenUserEmailField ==", eenUserIdentifier);
-    const q = query(collection(db, "captures"), where("eenUserEmailField", "==", eenUserIdentifier));
-    const querySnapshot = await getDocs(q);
+    // Use the optimized database service
+    const capturesList = await databaseService.getCaptures(eenUserIdentifier);
+    captures.value = capturesList;
     
-    console.log("[Capture.vue] Specific query returned:", querySnapshot.size, "documents");
-    captures.value = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    console.log(`[Capture.vue] Successfully fetched ${capturesList.length} captures`);
     
-    console.log("Captures fetched successfully:", captures.value);
-    if (captures.value.length === 0) {
-      console.log("No captures matched for this EEN user.", eenUserIdentifier);
-      // For debugging, let's also try to show all captures
-      //const allCaptures = allCapturesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      //console.log("All captures in collection (for debugging):", allCaptures);
-      
-      // Temporarily show all captures in UI for debugging
-      //captures.value = allCaptures;
+    if (capturesList.length === 0) {
+      console.log("[Capture.vue] No captures found for this user");
     }
   } catch (e) {
-    console.error("Error fetching captures: ", e);
+    console.error("[Capture.vue] Error fetching captures:", e);
     error.value = e.message;
   } finally {
     loading.value = false;
@@ -1123,61 +1103,19 @@ const signInAndFetchData = async () => {
   }
 };
 
+// Create a new capture using the optimized database service
 const createCapture = async () => {
-  console.log("[Capture.vue] Creating new capture...");
-  console.log("[Capture.vue] Form data:", createForm.value);
-  console.log("[Capture.vue] Calculated image count:", calculatedImageCount.value);
-  console.log("[Capture.vue] Time range error:", timeRangeError.value);
+  console.log("[Capture.vue] Creating new capture");
   
-  if (!firebaseAuthService.isAuthenticated()) {
-    console.error("[Capture.vue] User must be authenticated to create capture");
+  if (!eenAuthStore.userProfile?.email) {
+    console.error("[Capture.vue] No user email available for creating capture");
     return;
   }
-  console.log("[Capture.vue] ✅ Firebase authentication check passed");
 
-  const eenUserEmail = eenAuthStore?.userProfile?.email;
-  if (!eenUserEmail) {
-    console.error("[Capture.vue] EEN user email not available");
-    return;
-  }
-  console.log("[Capture.vue] ✅ EEN user email check passed:", eenUserEmail);
-
-  // Validate form
-  if (!createForm.value.name.trim()) {
-    console.error("[Capture.vue] Capture name is required");
-    return;
-  }
-  console.log("[Capture.vue] ✅ Name validation passed");
-  
-  if (!createForm.value.cameraId.trim()) {
-    console.error("[Capture.vue] Camera ID is required");
-    return;
-  }
-  console.log("[Capture.vue] ✅ Camera ID validation passed");
-  
-  if (!createForm.value.startDate.trim()) {
-    console.error("[Capture.vue] Start date is required");
-    return;
-  }
-  console.log("[Capture.vue] ✅ Start date validation passed");
-  
-  // Validate image count
-  if (calculatedImageCount.value > 3000) {
-    console.error("[Capture.vue] Image count exceeds maximum of 3000");
-    return;
-  }
-  console.log("[Capture.vue] ✅ Image count validation passed");
-  
-  // Validate time range
-  if (timeRangeError.value) {
-    console.error("[Capture.vue] Time range validation failed:", timeRangeError.value);
-    return;
-  }
-  console.log("[Capture.vue] ✅ Time range validation passed");
+  const eenUserEmail = eenAuthStore.userProfile.email;
 
   try {
-    const db = getFirestore(app);
-    const newCapture = {
+    const captureData = {
       name: createForm.value.name.trim(),
       description: createForm.value.description.trim(),
       cameraId: createForm.value.cameraId.trim(),
@@ -1191,13 +1129,15 @@ const createCapture = async () => {
         unit: createForm.value.interval.unit
       },
       eenUserEmailField: eenUserEmail,
-      createdAt: new Date().toISOString(),
       thumbnail: liveImageThumbnail.value || null
     };
 
-    console.log("[Capture.vue] Creating capture:", newCapture);
-    const docRef = await addDoc(collection(db, "captures"), newCapture);
-    console.log("[Capture.vue] Capture created with ID:", docRef.id);
+    console.log("[Capture.vue] Creating capture with data:", captureData);
+    
+    // Use the optimized database service
+    const captureId = await databaseService.createCapture(captureData);
+    
+    console.log("[Capture.vue] Capture created successfully with ID:", captureId);
     
     // Close modal and refresh the captures list
     closeCreateModal();
@@ -1279,7 +1219,7 @@ const closeDeleteModal = () => {
   captureToDelete.value = null;
 };
 
-// Delete capture
+// Delete capture using optimized database service
 const deleteCapture = async () => {
   console.log("[Capture.vue] Deleting capture:", captureToDelete.value);
   
@@ -1296,13 +1236,12 @@ const deleteCapture = async () => {
       await storageService.deleteCapture(captureId);
       console.log("[Capture.vue] Storage images deleted successfully");
     } catch (storageError) {
-      console.warn("[Capture.vue] Error deleting storage images (continuing with Firestore deletion):", storageError);
+      console.warn("[Capture.vue] Error deleting storage images (continuing with database deletion):", storageError);
     }
     
-    // Delete the capture document from Firestore
-    const db = getFirestore(app);
-    await deleteDoc(doc(db, "captures", captureId));
-    console.log("[Capture.vue] Capture deleted successfully");
+    // Delete the capture and all associated image documents using optimized database service
+    await databaseService.deleteCapture(captureId);
+    console.log("[Capture.vue] Capture and image documents deleted successfully");
     
     // Close delete modal and refresh the captures list
     closeDeleteModal();
@@ -1698,62 +1637,46 @@ async function startImageCapture() {
 
 // Note: uploadImagesToStorage function removed - now integrated into startImageCapture
 
-// Update capture document with image metadata (batch-friendly for large sequences)
+// Update capture with image metadata using optimized database structure (batch-friendly)
 async function updateCaptureWithImagesBatch(captureId, uploadResults) {
   try {
-    const db = getFirestore(app);
-    const captureRef = doc(db, "captures", captureId);
+    if (!eenAuthStore.userProfile?.email) {
+      console.error('[Upload] No user email available for batch update');
+      return;
+    }
+
+    const userEmail = eenAuthStore.userProfile.email;
+    const successfulUploads = uploadResults.filter(result => result.success);
     
-    const imageMetadata = uploadResults
-      .filter(result => result.success)
-      .map(result => ({
-        index: result.index,
-        timestamp: result.timestamp,
-        downloadUrl: result.downloadUrl,
-        storagePath: result.storagePath,
-        size: result.size,
-        uploadedAt: new Date().toISOString()
-      }));
+    // Add images to the separate collection in batches
+    if (successfulUploads.length > 0) {
+      await databaseService.addImages(captureId, successfulUploads, userEmail);
+    }
     
-    // For large sequences, only update progress stats during streaming
-    await updateDoc(captureRef, {
-      imageCount: imageMetadata.length,
-      processedAt: new Date().toISOString(),
-      status: uploadResults.length === uploadStats.value.total ? 'completed' : 'processing'
-    });
-    
-    console.log(`[Upload] Batch updated capture ${captureId} progress: ${imageMetadata.length} images`);
+    console.log(`[Upload] Batch processed: ${successfulUploads.length} images added to capture ${captureId}`);
     
   } catch (error) {
     console.warn('[Upload] Error during batch update (continuing):', error);
   }
 }
 
-// Update capture document with image metadata (final update)
+// Update capture with final image metadata using optimized database structure
 async function updateCaptureWithImages(captureId, uploadResults) {
   try {
-    const db = getFirestore(app);
-    const captureRef = doc(db, "captures", captureId);
+    if (!eenAuthStore.userProfile?.email) {
+      console.error('[Upload] No user email available for final update');
+      throw new Error('User email not available');
+    }
+
+    const userEmail = eenAuthStore.userProfile.email;
+    const successfulUploads = uploadResults.filter(result => result.success);
     
-    const imageMetadata = uploadResults
-      .filter(result => result.success)
-      .map(result => ({
-        index: result.index,
-        timestamp: result.timestamp,
-        downloadUrl: result.downloadUrl,
-        storagePath: result.storagePath,
-        size: result.size,
-        uploadedAt: new Date().toISOString()
-      }));
+    // Add all successful images to the separate collection
+    if (successfulUploads.length > 0) {
+      await databaseService.addImages(captureId, successfulUploads, userEmail);
+    }
     
-    await updateDoc(captureRef, {
-      images: imageMetadata,
-      imageCount: imageMetadata.length,
-      processedAt: new Date().toISOString(),
-      status: 'completed'
-    });
-    
-    console.log(`[Upload] Final update: capture ${captureId} with ${imageMetadata.length} image records`);
+    console.log(`[Upload] Final update: capture ${captureId} completed with ${successfulUploads.length} images`);
     
     // Refresh the captures list to show updated data
     await fetchCaptures();
@@ -1765,8 +1688,8 @@ async function updateCaptureWithImages(captureId, uploadResults) {
 }
 
 function openProcessModal(capture) {
-  // Check if capture already has stored images
-  if (capture.images && capture.images.length > 0) {
+  // Check if capture has images using the new structure
+  if (capture.imageCount && capture.imageCount > 0) {
     // Show re-process confirmation modal instead
     reprocessCapture.value = capture;
     showReprocessModal.value = true;
@@ -1829,21 +1752,19 @@ async function confirmReprocess() {
   if (!reprocessCapture.value) return;
   
   const capture = reprocessCapture.value;
-  console.log(`[Process] Re-processing capture ${capture.id}, deleting ${capture.images?.length || 0} existing images`);
+  console.log(`[Process] Re-processing capture ${capture.id}, deleting ${capture.imageCount || 0} existing images`);
   
   try {
     // Delete existing images from Firebase Storage
     await storageService.deleteCapture(capture.id);
-    console.log("[Process] Existing images deleted successfully");
+    console.log("[Process] Existing images deleted from storage");
     
-    // Update Firestore to remove image metadata
-    const db = getFirestore(app);
-    const captureRef = doc(db, "captures", capture.id);
-    await updateDoc(captureRef, {
-      images: [],
+    // Delete image documents and reset capture metadata using optimized database service
+    await databaseService.deleteAllImages(capture.id);
+    await databaseService.updateCapture(capture.id, {
       imageCount: 0,
       processedAt: null,
-      status: null
+      status: 'created'
     });
     console.log("[Process] Capture metadata cleared");
     
