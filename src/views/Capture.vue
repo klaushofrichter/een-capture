@@ -529,12 +529,20 @@
 
         <!-- Modal Footer -->
         <div class="flex justify-between pt-6 border-t border-gray-200 dark:border-gray-600 mt-6">
-          <button 
-            class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
-            @click="openDeleteModal(selectedCapture); closeCaptureModal()"
-          >
-            Delete Capture
-          </button>
+          <div class="flex space-x-3">
+            <button 
+              class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
+              @click="openProcessModal(selectedCapture); closeCaptureModal()"
+            >
+              Process
+            </button>
+            <button 
+              class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+              @click="openDeleteModal(selectedCapture); closeCaptureModal()"
+            >
+              Delete Capture
+            </button>
+          </div>
           <button 
             class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
             @click="closeCaptureModal"
@@ -1305,6 +1313,43 @@ const deleteCapture = async () => {
   try {
     const captureId = captureToDelete.value.id;
     
+    // Debug Firebase authentication state
+    const firebaseUser = firebaseAuthService.getCurrentUser();
+    console.log("[Capture.vue] Firebase authentication state:", {
+      isAuthenticated: firebaseAuthService.isAuthenticated(),
+      currentUser: firebaseUser ? {
+        uid: firebaseUser.uid,
+        email: firebaseUser.email,
+        displayName: firebaseUser.displayName
+      } : null
+    });
+    
+    if (firebaseUser) {
+      try {
+        const idTokenResult = await firebaseUser.getIdTokenResult();
+        console.log("[Capture.vue] Firebase ID token claims:", {
+          email: idTokenResult.claims.email,
+          eenUserEmail: idTokenResult.claims.eenUserEmail,
+          eenUserId: idTokenResult.claims.eenUserId,
+          provider: idTokenResult.claims.provider,
+          authProvider: idTokenResult.claims.authProvider,
+          expirationTime: idTokenResult.expirationTime,
+          allClaims: idTokenResult.claims
+        });
+      } catch (tokenError) {
+        console.error("[Capture.vue] Error getting ID token:", tokenError);
+      }
+    } else {
+      console.warn("[Capture.vue] No Firebase user found, attempting re-authentication...");
+      try {
+        await firebaseAuthService.signInWithEEN();
+        console.log("[Capture.vue] Re-authentication successful");
+      } catch (authError) {
+        console.error("[Capture.vue] Re-authentication failed:", authError);
+        throw new Error(`Firebase authentication required: ${authError.message}`);
+      }
+    }
+    
     // Delete images from Firebase Storage first
     try {
       await storageService.deleteCapture(captureId);
@@ -1322,6 +1367,28 @@ const deleteCapture = async () => {
     await fetchCaptures();
   } catch (error) {
     console.error("[Capture.vue] Error deleting capture:", error);
+    
+    // If it's a permissions error, try re-authenticating and retrying once
+    if (error.message && error.message.includes('permission') || error.message.includes('unauthenticated')) {
+      console.log("[Capture.vue] Permission error detected, attempting re-authentication and retry...");
+      try {
+        await firebaseAuthService.signInWithEEN();
+        console.log("[Capture.vue] Re-authentication successful, retrying delete...");
+        
+        // Retry the delete operation
+        const captureId = captureToDelete.value.id;
+        await databaseService.deleteCapture(captureId);
+        console.log("[Capture.vue] Retry: Capture deleted successfully");
+        
+        closeDeleteModal();
+        await fetchCaptures();
+      } catch (retryError) {
+        console.error("[Capture.vue] Retry failed:", retryError);
+        alert(`Failed to delete capture: ${retryError.message}`);
+      }
+    } else {
+      alert(`Failed to delete capture: ${error.message}`);
+    }
   }
 };
 
