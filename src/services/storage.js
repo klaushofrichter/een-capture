@@ -1,5 +1,6 @@
 import { storage } from '../firebase'
 import { ref, uploadBytes, getDownloadURL, deleteObject, listAll } from 'firebase/storage'
+import { getAuth } from 'firebase/auth'
 import securityService from './security'
 
 /**
@@ -43,8 +44,35 @@ class StorageService {
    */
   async uploadImage(captureId, imageIndex, base64Image, timestamp, attempt = 1) {
     try {
+      // Get current Firebase user for security validation
+      const auth = getAuth()
+      const currentUser = auth.currentUser
+      
+      // Debug: Log authentication details
+      if (currentUser) {
+        console.log('[StorageService] Current user:', {
+          uid: currentUser.uid,
+          email: currentUser.email,
+          emailVerified: currentUser.emailVerified
+        })
+        
+        try {
+          const idTokenResult = await currentUser.getIdTokenResult()
+          console.log('[StorageService] Token claims:', {
+            eenUserEmail: idTokenResult.claims.eenUserEmail,
+            eenUserId: idTokenResult.claims.eenUserId,
+            provider: idTokenResult.claims.provider,
+            allClaims: idTokenResult.claims
+          })
+        } catch (tokenError) {
+          console.error('[StorageService] Error getting token claims:', tokenError)
+        }
+      } else {
+        console.error('[StorageService] No current user found!')
+      }
+      
       // Security validation
-      securityService.validateFirebaseOperation('upload')
+      securityService.validateFirebaseOperation('upload', currentUser)
       securityService.checkRateLimit('upload', 1000, 60000) // Max 1000 uploads per minute
       
       // Validate the base64 image data
@@ -263,8 +291,12 @@ class StorageService {
    * @returns {Promise<string>} Download URL
    */
   async uploadFile(file, path) {
+    // Get current Firebase user for security validation
+    const auth = getAuth()
+    const currentUser = auth.currentUser
+    
     // Security validation
-    securityService.validateFirebaseOperation('upload');
+    securityService.validateFirebaseOperation('upload', currentUser);
     securityService.validateFileUpload(file);
     
     try {
@@ -294,8 +326,12 @@ class StorageService {
    * @returns {Promise<void>}
    */
   async deleteFile(path) {
+    // Get current Firebase user for security validation
+    const auth = getAuth()
+    const currentUser = auth.currentUser
+    
     // Security validation
-    securityService.validateFirebaseOperation('delete');
+    securityService.validateFirebaseOperation('delete', currentUser);
     
     try {
       const storageRef = ref(storage, path);
@@ -317,8 +353,12 @@ class StorageService {
    * @returns {Promise<Array>} List of file references
    */
   async listFiles(path) {
+    // Get current Firebase user for security validation
+    const auth = getAuth()
+    const currentUser = auth.currentUser
+    
     // Security validation
-    securityService.validateFirebaseOperation('read');
+    securityService.validateFirebaseOperation('read', currentUser);
     
     try {
       const storageRef = ref(storage, path);
