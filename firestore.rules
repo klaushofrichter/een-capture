@@ -31,7 +31,7 @@ service cloud.firestore {
          isOwner(resource.data));
     }
 
-    // Rules for the 'captures' collection  
+    // Rules for the 'captures' collection (lightweight capture metadata)
     match /captures/{captureId} {
       // Temporarily allow all authenticated users to read (for debugging)
       allow read, list: if isAuthenticated();
@@ -39,21 +39,55 @@ service cloud.firestore {
       // Allow authenticated EEN users to create captures
       allow create: if isAuthenticated() && 
         isOwner(request.resource.data) &&
-        // Validate required fields
+        // Validate required fields for optimized structure
         request.resource.data.keys().hasAll(['name', 'cameraId', 'startDate', 'eenUserEmailField']) &&
         // Validate data types and constraints
         request.resource.data.name is string &&
         request.resource.data.name.size() > 0 &&
         request.resource.data.cameraId is string &&
-        request.resource.data.cameraId.size() > 0;
+        request.resource.data.cameraId.size() > 0 &&
+        // Ensure no images array is stored (should be in separate collection)
+        !request.resource.data.keys().hasAny(['images']);
 
       // Allow authenticated EEN users to update their own captures
       allow update: if isAuthenticated() && 
         isOwner(resource.data) &&
         // Prevent changing ownership
-        request.resource.data.eenUserEmailField == resource.data.eenUserEmailField;
+        request.resource.data.eenUserEmailField == resource.data.eenUserEmailField &&
+        // Ensure no images array is added during update
+        !request.resource.data.keys().hasAny(['images']);
 
       // Allow authenticated EEN users to delete their own captures
+      allow delete: if isAuthenticated() && isOwner(resource.data);
+    }
+
+    // Rules for the 'capture_images' collection (individual image documents)
+    match /capture_images/{imageId} {
+      // Allow authenticated users to read their own image documents
+      allow read, list: if isAuthenticated() && isOwner(resource.data);
+
+      // Allow authenticated EEN users to create image documents
+      allow create: if isAuthenticated() && 
+        isOwner(request.resource.data) &&
+        // Validate required fields for image documents
+        request.resource.data.keys().hasAll(['captureId', 'index', 'timestamp', 'eenUserEmailField']) &&
+        // Validate data types
+        request.resource.data.captureId is string &&
+        request.resource.data.captureId.size() > 0 &&
+        request.resource.data.index is number &&
+        request.resource.data.index >= 0 &&
+        request.resource.data.timestamp is string &&
+        request.resource.data.timestamp.size() > 0;
+
+      // Allow authenticated EEN users to update their own image documents
+      allow update: if isAuthenticated() && 
+        isOwner(resource.data) &&
+        // Prevent changing ownership or core identifiers
+        request.resource.data.eenUserEmailField == resource.data.eenUserEmailField &&
+        request.resource.data.captureId == resource.data.captureId &&
+        request.resource.data.index == resource.data.index;
+
+      // Allow authenticated EEN users to delete their own image documents
       allow delete: if isAuthenticated() && isOwner(resource.data);
     }
     
