@@ -5,7 +5,7 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import { APP_NAME, APP_DESCRIPTION } from './constants'
-import { app, auth, db } from './firebase' // eslint-disable-line no-unused-vars
+import app, { auth, db } from './firebase' // eslint-disable-line no-unused-vars
 import { firebaseAuthService } from './services/firebase-auth'
 
 

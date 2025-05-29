@@ -32,9 +32,69 @@ initializeApp();
 const db = getFirestore();
 const adminAuth = getAuth();
 
+/**
+ * Sanitize input to prevent injection attacks
+ */
+function sanitizeInput(input) {
+  if (typeof input !== 'string') return input;
+  
+  let sanitized = input;
+  let previousLength;
+  
+  // Keep sanitizing until no more changes occur (handles overlapping patterns)
+  do {
+    previousLength = sanitized.length;
+    
+    sanitized = sanitized
+      .replace(/[<>]/g, '') // Remove potential HTML tags
+      .replace(/javascript:/gi, '') // Remove javascript: protocols (global)
+      .replace(/data:/gi, '') // Remove data: protocols (global)
+      .replace(/vbscript:/gi, '') // Remove vbscript: protocols (global)
+      .replace(/file:/gi, '') // Remove file: protocols (global)
+      .replace(/about:/gi, '') // Remove about: protocols (global)
+      .replace(/on\s*\w*\s*=/gi, '') // Remove event handlers with optional spaces (global)
+      .replace(/\bon[a-z0-9_]*(?=\W|$)/gi, '') // Remove on* patterns without restrictive word boundaries
+      .replace(/\s+on\s+/gi, ' ') // Remove standalone 'on' with spaces
+      .replace(/\bon\s/gi, ' ') // Remove 'on' followed by space at word boundary
+      .replace(/\s+on$/gi, ' ') // Remove 'on' at end of string with spaces
+      .replace(/^on\s/gi, '') // Remove 'on' at start of string followed by space
+      .replace(/\bon$/gi, '') // Remove standalone 'on' at word boundary and end
+      .replace(/^on$/gi, '') // Remove if string is exactly 'on'
+      .replace(/&[#\w]+;/g, '') // Remove HTML entities that could be used for encoding
+      .replace(/[\p{Cc}]/gu, '') // Remove control characters using Unicode property
+      .trim();
+      
+  } while (sanitized.length !== previousLength && sanitized.length > 0);
+  
+  return sanitized;
+}
+
+/**
+ * Validate URL scheme to prevent dangerous protocols
+ */
+function validateUrlScheme(url) {
+  if (typeof url !== 'string') return false;
+  
+  try {
+    const urlObj = new URL(url);
+    const allowedSchemes = ['http:', 'https:'];
+    
+    if (!allowedSchemes.includes(urlObj.protocol)) {
+      logger.warn(`Blocked dangerous URL scheme: ${urlObj.protocol}`);
+      return false;
+    }
+    
+    return true;
+  } catch {
+    // Invalid URL format
+    logger.warn(`Invalid URL format: ${url}`);
+    return false;
+  }
+}
+
 // This function fetches all documents from the 'documents' collection.
 // Changed from onRequest to onCall for compatibility with httpsCallable.
-exports.getAllDocuments = onCall(async (request) => {
+exports.getAllDocuments = onCall(async () => {
   try {
     // Optional: Check authentication if needed
     // if (!request.auth) {
@@ -86,11 +146,34 @@ exports.createCustomToken = onCall(async (request) => {
       );
     }
 
+    // Sanitize input parameters
+    const sanitizedEenUserId = sanitizeInput(eenUserId);
+    const sanitizedEenUserEmail = sanitizeInput(eenUserEmail);
+    const sanitizedEenAccessToken = sanitizeInput(eenAccessToken);
+    const sanitizedEenBaseUrl = sanitizeInput(eenBaseUrl);
+
+    // Validate URL scheme for base URL
+    if (!validateUrlScheme(sanitizedEenBaseUrl)) {
+      throw new HttpsError(
+          "invalid-argument",
+          "Invalid or unsafe EEN base URL",
+      );
+    }
+
+    // Validate email format
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(sanitizedEenUserEmail)) {
+      throw new HttpsError(
+          "invalid-argument",
+          "Invalid email format",
+      );
+    }
+
     // Verify the EEN access token and email by calling EEN API
     logger.info("Verifying EEN user email with EEN API:", {
-      eenUserId,
-      eenUserEmail,
-      eenBaseUrl,
+      eenUserId: sanitizedEenUserId,
+      eenUserEmail: sanitizedEenUserEmail,
+      eenBaseUrl: sanitizedEenBaseUrl,
     });
 
     try {
@@ -98,10 +181,10 @@ exports.createCustomToken = onCall(async (request) => {
       const axios = require("axios");
       
       // Call EEN API to get user profile
-      const eenApiResponse = await axios.get(`${eenBaseUrl}/api/v3.0/users/self`, {
+      const eenApiResponse = await axios.get(`${sanitizedEenBaseUrl}/api/v3.0/users/self`, {
         headers: {
           "Accept": "application/json",
-          "Authorization": `Bearer ${eenAccessToken}`,
+          "Authorization": `Bearer ${sanitizedEenAccessToken}`,
         },
         timeout: 10000, // 10 second timeout
       });
@@ -126,9 +209,9 @@ exports.createCustomToken = onCall(async (request) => {
       }
 
       // Verify that the email from EEN API matches the provided email
-      if (eenApiEmail.toLowerCase() !== eenUserEmail.toLowerCase()) {
+      if (eenApiEmail.toLowerCase() !== sanitizedEenUserEmail.toLowerCase()) {
         logger.error("Email mismatch:", {
-          providedEmail: eenUserEmail,
+          providedEmail: sanitizedEenUserEmail,
           eenApiEmail: eenApiEmail,
         });
         throw new HttpsError(
@@ -138,7 +221,7 @@ exports.createCustomToken = onCall(async (request) => {
       }
 
       logger.info("EEN email verification successful:", {
-        eenUserId,
+        eenUserId: sanitizedEenUserId,
         verifiedEmail: eenApiEmail,
       });
 
@@ -191,27 +274,27 @@ exports.createCustomToken = onCall(async (request) => {
     }
 
     logger.info("Creating custom token for EEN user:", {
-      eenUserId,
-      eenUserEmail,
+      eenUserId: sanitizedEenUserId,
+      eenUserEmail: sanitizedEenUserEmail,
     });
 
     // Create custom claims
     const customClaims = {
-      eenUserId,
-      eenUserEmail,
+      eenUserId: sanitizedEenUserId,
+      eenUserEmail: sanitizedEenUserEmail,
       provider: "een",
       ...additionalClaims,
     };
 
     // Use EEN user ID as the Firebase UID to ensure consistency
-    const firebaseUid = `een_${eenUserId}`;
+    const firebaseUid = `een_${sanitizedEenUserId}`;
 
     // Create or update user record in Firebase Auth
     try {
       await adminAuth.getUser(firebaseUid);
       // User exists, update the record
       await adminAuth.updateUser(firebaseUid, {
-        email: eenUserEmail,
+        email: sanitizedEenUserEmail,
         emailVerified: true,
         customClaims,
       });
@@ -221,7 +304,7 @@ exports.createCustomToken = onCall(async (request) => {
         // User doesn't exist, create new user
         await adminAuth.createUser({
           uid: firebaseUid,
-          email: eenUserEmail,
+          email: sanitizedEenUserEmail,
           emailVerified: true,
           customClaims,
         });

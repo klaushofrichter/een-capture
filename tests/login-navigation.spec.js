@@ -6,7 +6,8 @@ import {
   loginToApplication,
   clickNavButton,
   getLastPartOfUrl,
-  logoutFromApplication
+  logoutFromApplication,
+  MAX_TEST_TIMEOUT
 } from './utils'
 
 let loggedBaseURL = false // Flag to ensure baseURL is logged only once
@@ -38,7 +39,7 @@ test.describe('Login and Navigation', () => {
     console.log(`\n▶️ Running Test: ${test.info().title}\n`)
     console.log('🔍 Starting login and navigation test')
     console.log('🔍 This test performs a login, visits all pages, and logs out\n')
-    test.setTimeout(30000) // overall not more than 30 seconds
+    test.setTimeout(MAX_TEST_TIMEOUT)
 
     // Start from home page
     await navigateToLogin(page, basePath)

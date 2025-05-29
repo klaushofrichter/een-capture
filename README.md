@@ -105,7 +105,15 @@ If tests fail in GitHub Actions but work locally:
 
 ## Security Implementation
 
-This application implements a robust security architecture that combines EEN OAuth authentication with Firebase custom tokens, including email verification to prevent token hijacking. This section serves as an educational example for implementing secure authentication flows.
+This application implements a comprehensive multi-layered security architecture that protects Firebase and Firestore databases from unauthorized access. The security implementation includes domain restrictions, authentication enforcement, data ownership validation, and comprehensive input validation.
+
+### 🔒 **For detailed security documentation, see [SECURITY.md](./SECURITY.md)**
+
+### Quick Security Overview
+
+**Domain Restrictions**: Only `localhost:3333`, `127.0.0.1:3333`, and `klaushofrichter.github.io` can access Firebase services.
+
+**Authentication Flow**: Combines EEN OAuth authentication with Firebase custom tokens, including email verification to prevent token hijacking.
 
 ### Architecture Overview
 

@@ -1,5 +1,6 @@
 import { storage } from '../firebase'
 import { ref, uploadBytes, getDownloadURL, deleteObject, listAll } from 'firebase/storage'
+import securityService from './security'
 
 /**
  * Storage Service for managing image uploads to Firebase Cloud Storage
@@ -42,6 +43,14 @@ class StorageService {
    */
   async uploadImage(captureId, imageIndex, base64Image, timestamp, attempt = 1) {
     try {
+      // Security validation
+      securityService.validateFirebaseOperation('upload')
+      securityService.checkRateLimit('upload', 1000, 60000) // Max 1000 uploads per minute
+      
+      // Validate the base64 image data
+      if (!base64Image || !base64Image.startsWith('data:image/')) {
+        throw new Error('Invalid image data format')
+      }
       // Create a blob from the base64 image
       const blob = this.dataUrlToBlob(base64Image)
       
@@ -244,6 +253,89 @@ class StorageService {
     } catch (error) {
       console.error(`[StorageService] Error getting capture stats:`, error)
       return { fileCount: 0, totalSize: 0 }
+    }
+  }
+
+  /**
+   * Upload a file to Firebase Storage
+   * @param {File} file - The file to upload
+   * @param {string} path - The storage path
+   * @returns {Promise<string>} Download URL
+   */
+  async uploadFile(file, path) {
+    // Security validation
+    securityService.validateFirebaseOperation('upload');
+    securityService.validateFileUpload(file);
+    
+    try {
+      const storageRef = ref(storage, path);
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      
+      securityService.logSecurityEvent('file_uploaded', { 
+        path, 
+        fileSize: file.size, 
+        fileType: file.type 
+      });
+      
+      return downloadURL;
+    } catch (error) {
+      securityService.logSecurityEvent('file_upload_failed', { 
+        path, 
+        error: error.message 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a file from Firebase Storage
+   * @param {string} path - The storage path
+   * @returns {Promise<void>}
+   */
+  async deleteFile(path) {
+    // Security validation
+    securityService.validateFirebaseOperation('delete');
+    
+    try {
+      const storageRef = ref(storage, path);
+      await deleteObject(storageRef);
+      
+      securityService.logSecurityEvent('file_deleted', { path });
+    } catch (error) {
+      securityService.logSecurityEvent('file_delete_failed', { 
+        path, 
+        error: error.message 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * List files in a storage path
+   * @param {string} path - The storage path
+   * @returns {Promise<Array>} List of file references
+   */
+  async listFiles(path) {
+    // Security validation
+    securityService.validateFirebaseOperation('read');
+    
+    try {
+      const storageRef = ref(storage, path);
+      const result = await listAll(storageRef);
+      
+      securityService.logSecurityEvent('files_listed', { 
+        path, 
+        count: result.items.length 
+      });
+      
+      return result.items;
+    } catch (error) {
+      securityService.logSecurityEvent('files_list_failed', { 
+        path, 
+        error: error.message 
+      });
+      throw error;
     }
   }
 }
