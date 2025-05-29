@@ -97,7 +97,7 @@
     @click="closeCreateModal"
   >
     <div 
-      class="relative top-10 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto"
+      class="relative top-10 mx-auto p-5 border w-11/12 md:w-5/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto"
       @click.stop
     >
       <!-- Modal Header -->
@@ -372,7 +372,7 @@
     @click="closeCaptureModal"
   >
     <div 
-      class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white dark:bg-gray-800"
+      class="relative top-20 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/5 xl:w-1/2 2xl:w-2/5 shadow-lg rounded-md bg-white dark:bg-gray-800"
       @click.stop
     >
       <!-- Modal Header -->
@@ -548,7 +548,7 @@
     @click="closeDeleteModal"
   >
     <div 
-      class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white dark:bg-gray-800"
+      class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/5 lg:w-2/5 xl:w-1/3 2xl:w-1/4 shadow-lg rounded-md bg-white dark:bg-gray-800"
       @click.stop
     >
       <!-- Modal Header -->
@@ -613,7 +613,7 @@
     @click="closeProcessModal"
   >
     <div 
-      class="relative top-10 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto"
+      class="relative top-10 mx-auto p-5 border w-11/12 md:w-5/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto"
       @click.stop
     >
       <div class="pb-4 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between">
@@ -824,7 +824,7 @@
     @click="closeReprocessModal"
   >
     <div 
-      class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white dark:bg-gray-800"
+      class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/5 lg:w-2/5 xl:w-1/3 2xl:w-1/4 shadow-lg rounded-md bg-white dark:bg-gray-800"
       @click.stop
     >
       <!-- Modal Header -->
