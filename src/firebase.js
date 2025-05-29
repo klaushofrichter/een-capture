@@ -48,6 +48,7 @@ function validateFirebaseConfig(config) {
   // Validate domains in authDomain
   const allowedAuthDomains = [
     'een-capture.firebaseapp.com',
+    'klaus-hofrichter-simple.firebaseapp.com',
     'localhost'
   ];
   
