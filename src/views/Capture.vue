@@ -1,6 +1,10 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-6 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-3xl mx-auto">
+    <!-- Main content with conditional blur -->
+    <div 
+      class="max-w-3xl mx-auto transition-all duration-300"
+      :class="{ 'blur-sm pointer-events-none': isAnyModalOpen }"
+    >
       <div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
         <div class="px-4 py-5 sm:px-6">
           <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">
@@ -93,22 +97,23 @@
   <!-- Create New Capture Modal -->
   <div 
     v-if="showCreateModal" 
-    class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
-    @click="closeCreateModal"
+    class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
+    @click="handleModalBackdropClick($event, 'create')"
   >
     <div 
-      class="relative top-10 mx-auto p-5 border w-11/12 md:w-5/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto"
+      class="relative border w-full max-w-4xl shadow-2xl rounded-lg bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-100"
       @click.stop
     >
       <!-- Modal Header -->
-      <div class="pb-4 border-b border-gray-200 dark:border-gray-600">
+      <div class="pb-4 border-b border-gray-200 dark:border-gray-600 p-6">
         <div class="flex items-center justify-between mb-2">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Create New Capture
           </h3>
           <button 
-            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
             @click="closeCreateModal"
+            aria-label="Close modal"
           >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -130,7 +135,7 @@
       </div>
 
       <!-- Modal Content -->
-      <div class="pt-4">
+      <div class="p-6">
         <form class="space-y-4" @submit.prevent="createCapture">
           <!-- Capture Name (Editable) -->
           <div>
@@ -368,21 +373,22 @@
   <!-- Capture Details Modal -->
   <div 
     v-if="showModal" 
-    class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
-    @click="closeCaptureModal"
+    class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
+    @click="handleModalBackdropClick($event, 'details')"
   >
     <div 
-      class="relative top-20 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/5 xl:w-1/2 2xl:w-2/5 shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto"
+      class="relative border w-full max-w-2xl shadow-2xl rounded-lg bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-100"
       @click.stop
     >
       <!-- Modal Header -->
-      <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-600">
+      <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-600 p-6">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
           Capture Details
         </h3>
         <button 
-          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
           @click="closeCaptureModal"
+          aria-label="Close modal"
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -391,7 +397,7 @@
       </div>
 
       <!-- Modal Content -->
-      <div v-if="selectedCapture" class="pt-4">
+      <div v-if="selectedCapture" class="p-6">
         <div class="space-y-4">
           <!-- Thumbnail Preview -->
           <div v-if="selectedCapture.thumbnail" class="flex justify-center">
@@ -537,21 +543,22 @@
   <!-- Delete Confirmation Modal -->
   <div 
     v-if="showDeleteModal" 
-    class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
-    @click="closeDeleteModal"
+    class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
+    @click="handleModalBackdropClick($event, 'delete')"
   >
     <div 
-      class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/5 lg:w-2/5 xl:w-1/3 2xl:w-1/4 shadow-lg rounded-md bg-white dark:bg-gray-800"
+      class="relative border w-full max-w-md shadow-2xl rounded-lg bg-white dark:bg-gray-800 transform transition-all duration-300 scale-100"
       @click.stop
     >
       <!-- Modal Header -->
-      <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-600">
+      <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-600 p-6">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
           Delete Capture
         </h3>
         <button 
-          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
           @click="closeDeleteModal"
+          aria-label="Close modal"
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -560,7 +567,7 @@
       </div>
 
       <!-- Modal Content -->
-      <div class="pt-4">
+      <div class="p-6">
         <p class="text-sm text-gray-700 dark:text-gray-300 mb-4">
           Are you sure you want to delete this capture?
         </p>
@@ -602,19 +609,20 @@
   <!-- Process Modal -->
   <div 
     v-if="showProcessModal" 
-    class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
-    @click="closeProcessModal"
+    class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
+    @click="handleModalBackdropClick($event, 'process')"
   >
     <div 
-      class="relative top-10 mx-auto p-5 border w-11/12 md:w-5/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto"
+      class="relative border w-full max-w-4xl shadow-2xl rounded-lg bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-100"
       @click.stop
     >
-      <div class="pb-4 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between">
+      <div class="pb-4 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between p-6">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Process Capture</h3>
         <button 
-          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
           :disabled="isProcessing"
           @click="closeProcessModal"
+          aria-label="Close modal"
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -622,7 +630,7 @@
         </button>
       </div>
       
-      <div class="pt-4 space-y-4">
+      <div class="p-6 space-y-4">
         <!-- Title (full width) -->
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title</label>
@@ -813,21 +821,22 @@
   <!-- Re-process Confirmation Modal -->
   <div 
     v-if="showReprocessModal" 
-    class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
-    @click="closeReprocessModal"
+    class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
+    @click="handleModalBackdropClick($event, 'reprocess')"
   >
     <div 
-      class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/5 lg:w-2/5 xl:w-1/3 2xl:w-1/4 shadow-lg rounded-md bg-white dark:bg-gray-800"
+      class="relative border w-full max-w-lg shadow-2xl rounded-lg bg-white dark:bg-gray-800 transform transition-all duration-300 scale-100"
       @click.stop
     >
       <!-- Modal Header -->
-      <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-600">
+      <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-600 p-6">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
           Re-process Capture
         </h3>
         <button 
-          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
           @click="closeReprocessModal"
+          aria-label="Close modal"
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -836,7 +845,7 @@
       </div>
 
       <!-- Modal Content -->
-      <div class="pt-4">
+      <div class="p-6">
         <div class="mb-4">
           <div class="flex items-center mb-3">
             <div class="flex-shrink-0">
@@ -988,6 +997,15 @@ const showUploadSection = ref(false);
 const streamingResults = ref([]);
 const uploadStats = ref({ success: 0, failed: 0, total: 0 });
 
+// Modal state management
+const isAnyModalOpen = computed(() => {
+  return showModal.value || 
+         showCreateModal.value || 
+         showDeleteModal.value || 
+         showProcessModal.value || 
+         showReprocessModal.value;
+});
+
 // Helper: Downsample image to 320px width and return base64
 async function downsampleImage(base64Image, width = 320) {
   return new Promise((resolve, reject) => {
@@ -1004,6 +1022,63 @@ async function downsampleImage(base64Image, width = 320) {
     img.onerror = reject;
     img.src = base64Image;
   });
+}
+
+// Handle backdrop clicks for modals
+function handleModalBackdropClick(event, modalType) {
+  // Only close if clicking the backdrop, not the modal content
+  if (event.target === event.currentTarget) {
+    switch (modalType) {
+      case 'create':
+        closeCreateModal();
+        break;
+      case 'details':
+        closeCaptureModal();
+        break;
+      case 'delete':
+        closeDeleteModal();
+        break;
+      case 'process':
+        // Don't allow closing process modal if currently processing
+        if (!isProcessing.value && !isUploading.value) {
+          closeProcessModal();
+        }
+        break;
+      case 'reprocess':
+        closeReprocessModal();
+        break;
+    }
+  }
+}
+
+// Prevent body scroll when modals are open
+watch(isAnyModalOpen, (isOpen) => {
+  if (isOpen) {
+    // Prevent scrolling
+    document.body.style.overflow = 'hidden';
+    document.body.style.paddingRight = getScrollbarWidth() + 'px';
+  } else {
+    // Restore scrolling
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+  }
+});
+
+// Get scrollbar width to prevent layout shift when hiding scrollbar
+function getScrollbarWidth() {
+  const outer = document.createElement('div');
+  outer.style.visibility = 'hidden';
+  outer.style.overflow = 'scroll';
+  outer.style.msOverflowStyle = 'scrollbar';
+  document.body.appendChild(outer);
+  
+  const inner = document.createElement('div');
+  outer.appendChild(inner);
+  
+  const scrollbarWidth = outer.offsetWidth - inner.offsetWidth;
+  outer.parentNode.removeChild(outer);
+  
+  return scrollbarWidth;
 }
 
 // Fetch captures from the optimized database service
@@ -1247,7 +1322,7 @@ const deleteCapture = async () => {
 // ESC key handler for closing modals
 const handleEscapeKey = (event) => {
   if (event.key === 'Escape') {
-    // Close whichever modal is currently open (but not if processing)
+    // Close whichever modal is currently open (respecting processing state)
     if (showDeleteModal.value) {
       closeDeleteModal();
     } else if (showReprocessModal.value) {
@@ -1257,6 +1332,7 @@ const handleEscapeKey = (event) => {
     } else if (showModal.value) {
       closeCaptureModal();
     } else if (showProcessModal.value && !isProcessing.value && !isUploading.value) {
+      // Only allow closing process modal if not actively processing
       closeProcessModal();
     }
   }
@@ -1843,6 +1919,10 @@ onMounted(() => {
 onUnmounted(async () => {
   // Clean up event listener on component unmount
   document.removeEventListener('keydown', handleEscapeKey);
+  
+  // Restore body styles
+  document.body.style.overflow = '';
+  document.body.style.paddingRight = '';
   
   // Clear token refresh interval
   if (tokenRefreshInterval) {
