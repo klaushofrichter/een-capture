@@ -131,12 +131,14 @@ class SecurityService {
         .replace(/file:/gi, '') // Remove file: protocols (global)
         .replace(/about:/gi, '') // Remove about: protocols (global)
         .replace(/on\s*\w*\s*=/gi, '') // Remove event handlers with optional spaces (global)
-        .replace(/\bon[a-z0-9_]*(?=\W|$)/gi, '') // Remove on* patterns without restrictive word boundaries
+        // More precise event handler detection - only remove 'on' when followed by common event names
+        .replace(/\bon(click|load|error|focus|blur|change|submit|reset|mouseover|mouseout|keydown|keyup|keypress)(?=\W|$)/gi, '') 
         .replace(/\s+on\s+/gi, ' ') // Remove standalone 'on' with spaces
-        .replace(/\bon\s/gi, ' ') // Remove 'on' followed by space at word boundary
+        .replace(/\bon\s(?=\w)/gi, ' ') // Remove 'on' followed by space and word (but not at end)
         .replace(/\s+on$/gi, ' ') // Remove 'on' at end of string with spaces
         .replace(/^on\s/gi, '') // Remove 'on' at start of string followed by space
-        .replace(/\bon$/gi, '') // Remove standalone 'on' at word boundary and end
+        // Only remove exact 'on' word, not 'on' within other words
+        .replace(/\bon\b(?=\s|$)/gi, '') // Remove standalone 'on' word only when followed by space or end
         .replace(/^on$/gi, '') // Remove if string is exactly 'on'
         .replace(/&[#\w]+;/g, '') // Remove HTML entities that could be used for encoding
         .replace(/[\p{Cc}]/gu, '') // Remove control characters using Unicode property

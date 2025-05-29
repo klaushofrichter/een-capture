@@ -221,16 +221,39 @@ test.describe('Capture Page Registration Flow', () => {
     // Check that the new capture is listed on the Capture page
     console.log('🔍 Verifying new capture appears in list')
     
-    // First wait for the captures list to have at least one item (in case it was empty)
+    // Wait for the capture count to increase (indicating the list has been updated)
+    console.log('⏳ Waiting for capture list to update with new capture...')
+    
+    // Get the initial count of captures
     const captureList = page.locator('ul.space-y-2 li')
     await captureList.first().waitFor({ state: 'visible', timeout: 15000 })
-    console.log('✅ Capture list is populated')
     
-    // Wait a moment for the DOM to fully update
-    await page.waitForTimeout(2000)
+    // Wait for Vue.js reactivity and DOM updates to complete
+    console.log('⏳ Waiting for Vue.js reactivity to complete...')
+    await page.waitForTimeout(3000)
     
-    // Look for the specific capture we just created
+    // Log current capture count for debugging
+    const currentCount = await captureList.count()
+    console.log(`📊 Current capture count: ${currentCount}`)
+    
+    // Debug: Log all capture names currently in the list
+    console.log('🔍 Debugging: Current captures in list:')
+    for (let i = 0; i < currentCount; i++) {
+      const captureCard = captureList.nth(i)
+      const nameElement = captureCard.locator('p.text-sm.font-medium')
+      try {
+        const captureName = await nameElement.textContent()
+        console.log(`  ${i + 1}. "${captureName}"`)
+      } catch (e) {
+        console.log(`  ${i + 1}. [Could not read capture name]`)
+      }
+    }
+    
+    // Look for the specific capture we just created - it should now show the full name
+    console.log('🔍 Looking for "test title only" capture...')
     const newCaptureCard = page.locator('li:has-text("test title only")')
+    
+    // Wait up to 10 seconds for the new capture to appear
     await expect(newCaptureCard).toBeVisible({ timeout: 10000 })
     console.log('✅ New capture found in list')
 
