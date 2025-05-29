@@ -53,7 +53,7 @@ function sanitizeInput(input) {
       .replace(/file:/gi, '') // Remove file: protocols (global)
       .replace(/about:/gi, '') // Remove about: protocols (global)
       .replace(/on\s*\w*\s*=/gi, '') // Remove event handlers with optional spaces (global)
-      .replace(/\bon[a-z]*\b/gi, '') // Remove any on* patterns at word boundaries
+      .replace(/\bon[a-z0-9_]*(?=\W|$)/gi, '') // Remove on* patterns without restrictive word boundaries
       .replace(/\s+on\s+/gi, ' ') // Remove standalone 'on' with spaces
       .replace(/\bon\s/gi, ' ') // Remove 'on' followed by space at word boundary
       .replace(/\s+on$/gi, ' ') // Remove 'on' at end of string with spaces
