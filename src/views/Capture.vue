@@ -164,9 +164,19 @@
           <!-- Camera ID and Image Row -->
           <div class="flex flex-row items-start gap-4">
             <div class="flex-1">
-              <label for="camera-id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Camera ID <span class="text-red-500">*</span>
-              </label>
+              <div class="flex items-center justify-between mb-1">
+                <label for="camera-id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Camera ID <span class="text-red-500">*</span>
+                </label>
+                <a 
+                  href="https://webapp.eagleeyenetworks.com/#/dashboard" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors"
+                >
+                  Find Cameras
+                </a>
+              </div>
               <input
                 id="camera-id"
                 v-model="createForm.cameraId"
