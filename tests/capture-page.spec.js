@@ -220,6 +220,16 @@ test.describe('Capture Page Registration Flow', () => {
 
     // Check that the new capture is listed on the Capture page
     console.log('🔍 Verifying new capture appears in list')
+    
+    // First wait for the captures list to have at least one item (in case it was empty)
+    const captureList = page.locator('ul.space-y-2 li')
+    await captureList.first().waitFor({ state: 'visible', timeout: 15000 })
+    console.log('✅ Capture list is populated')
+    
+    // Wait a moment for the DOM to fully update
+    await page.waitForTimeout(2000)
+    
+    // Look for the specific capture we just created
     const newCaptureCard = page.locator('li:has-text("test title only")')
     await expect(newCaptureCard).toBeVisible({ timeout: 10000 })
     console.log('✅ New capture found in list')
