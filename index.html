@@ -2,13 +2,27 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!-- Favicon and Web App Icons -->
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.svg" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon.svg" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/favicon.svg" />
-    <link rel="manifest" href="/manifest.json" />
+    <!-- Favicon and Web App Icons - Will be set dynamically by script below -->
+    <link rel="icon" id="favicon-svg" type="image/svg+xml" href="" />
+    <link rel="icon" id="favicon-32" type="image/png" sizes="32x32" href="" />
+    <link rel="icon" id="favicon-16" type="image/png" sizes="16x16" href="" />
+    <link rel="apple-touch-icon" id="favicon-apple" sizes="180x180" href="" />
+    <link rel="manifest" id="manifest-link" href="" />
     <meta name="theme-color" content="#3b82f6" />
+    
+    <script>
+      // Set correct favicon paths based on environment
+      (function() {
+        const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const basePath = isDev ? '' : '/een-capture';
+        
+        document.getElementById('favicon-svg').href = basePath + '/favicon.svg';
+        document.getElementById('favicon-32').href = basePath + '/favicon.svg';
+        document.getElementById('favicon-16').href = basePath + '/favicon.svg';
+        document.getElementById('favicon-apple').href = basePath + '/favicon.svg';
+        document.getElementById('manifest-link').href = basePath + '/manifest.json';
+      })();
+    </script>
     
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="<%- APP_DESCRIPTION %>" />
