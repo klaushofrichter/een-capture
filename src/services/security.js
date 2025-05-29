@@ -133,6 +133,11 @@ class SecurityService {
         .replace(/on\s*\w*\s*=/gi, '') // Remove event handlers with optional spaces (global)
         .replace(/\bon[a-z]*\b/gi, '') // Remove any on* patterns at word boundaries
         .replace(/\s+on\s+/gi, ' ') // Remove standalone 'on' with spaces
+        .replace(/\bon\s/gi, ' ') // Remove 'on' followed by space at word boundary
+        .replace(/\s+on$/gi, ' ') // Remove 'on' at end of string with spaces
+        .replace(/^on\s/gi, '') // Remove 'on' at start of string followed by space
+        .replace(/\bon$/gi, '') // Remove standalone 'on' at word boundary and end
+        .replace(/^on$/gi, '') // Remove if string is exactly 'on'
         .replace(/&[#\w]+;/g, '') // Remove HTML entities that could be used for encoding
         .replace(/[\p{Cc}]/gu, '') // Remove control characters using Unicode property
         .trim();
