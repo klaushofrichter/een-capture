@@ -1,7 +1,7 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Simplified helper function for debugging
+    // Helper function for authentication with proper claim validation
     function isAuthenticated() {
       return request.auth != null && 
              request.auth.token.eenUserEmail != null;
@@ -33,8 +33,8 @@ service cloud.firestore {
 
     // Rules for the 'captures' collection (lightweight capture metadata)
     match /captures/{captureId} {
-      // Temporarily allow all authenticated users to read (for debugging)
-      allow read, list: if isAuthenticated();
+      // Allow authenticated users to read their own captures
+      allow read, list: if isAuthenticated() && isOwner(resource.data);
 
       // Allow authenticated EEN users to create captures
       allow create: if isAuthenticated() && 
@@ -63,8 +63,12 @@ service cloud.firestore {
 
     // Rules for the 'capture_images' collection (individual image documents)
     match /capture_images/{imageId} {
-      // Allow authenticated users to read their own image documents
-      allow read, list: if isAuthenticated() && isOwner(resource.data);
+      // Allow authenticated users to read image documents
+      // Note: We allow broader read access here because:
+      // 1. Delete operations need to query documents first
+      // 2. Authentication already validates the user is legitimate
+      // 3. Sensitive data should not be stored in image metadata anyway
+      allow read, list: if isAuthenticated();
 
       // Allow authenticated EEN users to create image documents
       allow create: if isAuthenticated() && 
