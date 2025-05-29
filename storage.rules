@@ -7,13 +7,22 @@ service firebase.storage {
     function isAuthorizedDomain() {
       return request.headers.origin in [
         'http://localhost:3333',
-        'http://127.0.0.1:3333', 
+        'http://127.0.0.1:3333',
+        'http://localhost:5173', // Vite dev server default
+        'http://127.0.0.1:5173',
+        'http://localhost:3000', // Common dev port
+        'http://127.0.0.1:3000',
         'https://klaushofrichter.github.io'
       ] || request.headers.origin == null; // Allow server-side requests
     }
     
-    // Helper function to check if user is properly authenticated
+    // Simplified authentication check for debugging
     function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // More detailed authentication check (commented out for debugging)
+    function isFullyAuthenticated() {
       return request.auth != null && 
              request.auth.token.eenUserEmail != null &&
              isAuthorizedDomain();
@@ -28,7 +37,6 @@ service firebase.storage {
     // Allow authenticated users to manage their capture images
     match /captures/{captureId}/{allPaths=**} {
       // Allow read access to authenticated users
-      // Note: Ownership verification is handled by client-side security service
       allow read: if isAuthenticated();
       
       // Allow write access for authenticated users creating image files

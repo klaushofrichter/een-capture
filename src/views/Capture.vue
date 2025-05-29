@@ -927,6 +927,7 @@ import { firebaseAuthService } from '../services/firebase-auth'
 import app from '../firebase'
 import { cameraService } from '../services/cameras'
 import { mediaService } from '../services/media'
+import { storageService } from '../services/storage'
 import securityService from '@/services/security'
 
 const eenAuthStore = useEenAuthStore()
