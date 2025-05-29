@@ -58,8 +58,8 @@
                       <p v-if="capture.createdAt" class="text-xs text-gray-500 dark:text-gray-400">
                         Created: {{ new Date(capture.createdAt).toLocaleString() }}
                       </p>
-                      <p v-if="capture.images && capture.images.length > 0" class="text-xs text-green-600 dark:text-green-400">
-                        📁 {{ capture.images.length }} images stored
+                      <p v-if="capture.imageCount && capture.imageCount > 0" class="text-xs text-green-600 dark:text-green-400">
+                        📁 {{ capture.imageCount }} images stored
                       </p>
                     </div>
                     <!-- Action buttons: Process and Delete -->
@@ -482,31 +482,24 @@
             </p>
           </div>
 
-          <!-- Stored Images -->
-          <div v-if="selectedCapture.images && selectedCapture.images.length > 0">
+          <!-- Stored Images Summary -->
+          <div v-if="selectedCapture.imageCount && selectedCapture.imageCount > 0">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Stored Images ({{ selectedCapture.images.length }})
+              Stored Images
             </label>
             <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded">
-              <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 max-h-40 overflow-y-auto">
-                <div 
-                  v-for="(image, index) in selectedCapture.images" 
-                  :key="index"
-                  class="relative group"
-                >
-                  <img 
-                    :src="image.downloadUrl" 
-                    :alt="`Stored image ${image.index}`"
-                    class="w-full h-12 object-cover rounded border border-gray-300 dark:border-gray-600"
-                    @error="$event.target.style.display='none'"
-                  />
-                  <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded flex items-center justify-center">
-                    <span class="text-white text-xs font-bold">{{ image.index }}</span>
-                  </div>
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-lg font-bold text-green-600 dark:text-green-400">{{ selectedCapture.imageCount }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">images stored</p>
+                </div>
+                <div v-if="selectedCapture.processedAt" class="text-right">
+                  <p class="text-xs text-gray-500 dark:text-gray-400">Processed:</p>
+                  <p class="text-xs text-gray-600 dark:text-gray-300">{{ new Date(selectedCapture.processedAt).toLocaleString() }}</p>
                 </div>
               </div>
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                Images stored in Firebase Cloud Storage
+                Images stored in optimized database structure
               </p>
             </div>
           </div>
@@ -859,7 +852,7 @@
           </div>
           
           <p class="text-sm text-gray-700 dark:text-gray-300 mb-4">
-            This capture already has <strong>{{ reprocessCapture?.images?.length || 0 }} stored images</strong>. 
+            This capture already has <strong>{{ reprocessCapture?.imageCount || 0 }} stored images</strong>. 
             Re-processing will permanently delete all existing images and capture new ones.
           </p>
           
@@ -889,7 +882,7 @@
                   Warning: This action cannot be undone
                 </h5>
                 <p class="text-sm text-red-700 dark:text-red-300 mt-1">
-                  All {{ reprocessCapture?.images?.length || 0 }} existing images will be permanently deleted from Firebase Storage.
+                  All {{ reprocessCapture?.imageCount || 0 }} existing images will be permanently deleted from Firebase Storage.
                 </p>
               </div>
             </div>
