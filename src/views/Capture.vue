@@ -97,7 +97,7 @@
     @click="closeCreateModal"
   >
     <div 
-      class="relative top-10 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto"
+      class="relative top-10 mx-auto p-5 border w-11/12 md:w-5/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto"
       @click.stop
     >
       <!-- Modal Header -->
@@ -164,9 +164,19 @@
           <!-- Camera ID and Image Row -->
           <div class="flex flex-row items-start gap-4">
             <div class="flex-1">
-              <label for="camera-id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Camera ID <span class="text-red-500">*</span>
-              </label>
+              <div class="flex items-center justify-between mb-1">
+                <label for="camera-id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Camera ID <span class="text-red-500">*</span>
+                </label>
+                <a 
+                  href="https://webapp.eagleeyenetworks.com/#/dashboard" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors"
+                >
+                  Find Cameras
+                </a>
+              </div>
               <input
                 id="camera-id"
                 v-model="createForm.cameraId"
@@ -362,7 +372,7 @@
     @click="closeCaptureModal"
   >
     <div 
-      class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white dark:bg-gray-800"
+      class="relative top-20 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/5 xl:w-1/2 2xl:w-2/5 shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto"
       @click.stop
     >
       <!-- Modal Header -->
@@ -538,7 +548,7 @@
     @click="closeDeleteModal"
   >
     <div 
-      class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white dark:bg-gray-800"
+      class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/5 lg:w-2/5 xl:w-1/3 2xl:w-1/4 shadow-lg rounded-md bg-white dark:bg-gray-800"
       @click.stop
     >
       <!-- Modal Header -->
@@ -603,7 +613,7 @@
     @click="closeProcessModal"
   >
     <div 
-      class="relative top-10 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto"
+      class="relative top-10 mx-auto p-5 border w-11/12 md:w-5/6 lg:w-4/5 xl:w-3/4 2xl:w-2/3 shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto"
       @click.stop
     >
       <div class="pb-4 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between">
@@ -814,7 +824,7 @@
     @click="closeReprocessModal"
   >
     <div 
-      class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white dark:bg-gray-800"
+      class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/5 lg:w-2/5 xl:w-1/3 2xl:w-1/4 shadow-lg rounded-md bg-white dark:bg-gray-800"
       @click.stop
     >
       <!-- Modal Header -->
@@ -917,6 +927,7 @@ import { firebaseAuthService } from '../services/firebase-auth'
 import app from '../firebase'
 import { cameraService } from '../services/cameras'
 import { mediaService } from '../services/media'
+import { storageService } from '../services/storage'
 import securityService from '@/services/security'
 
 const eenAuthStore = useEenAuthStore()
