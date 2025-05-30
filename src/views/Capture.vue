@@ -104,7 +104,7 @@
     @click="handleModalBackdropClick($event, 'create')"
   >
     <div 
-      class="relative border w-full max-w-4xl shadow-2xl rounded-lg bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-100"
+      class="relative border w-full max-w-4xl shadow-2xl rounded-lg bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-scroll transform transition-all duration-300 scale-100"
       @click.stop
     >
       <!-- Modal Header -->
@@ -377,248 +377,21 @@
   </div>
 
   <!-- Capture Details Modal -->
-  <div 
-    v-if="showModal" 
-    class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
-    @click="handleModalBackdropClick($event, 'details')"
-  >
-    <div 
-      class="relative border w-full max-w-2xl shadow-2xl rounded-lg bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-100"
-      @click.stop
-    >
-      <!-- Modal Header -->
-      <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-600 p-6">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-          Capture Details
-        </h3>
-        <button 
-          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
-          @click="closeCaptureModal"
-          aria-label="Close modal"
-        >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
-      </div>
-
-      <!-- Modal Content -->
-      <div v-if="selectedCapture" class="p-6">
-        <div class="space-y-4">
-          <!-- Thumbnail Preview -->
-          <div v-if="selectedCapture.thumbnail" class="flex justify-center">
-            <img :src="selectedCapture.thumbnail" alt="Thumbnail" class="rounded border border-gray-300 dark:border-gray-600 max-w-xs max-h-48" />
-          </div>
-          <!-- Capture Name -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Name
-            </label>
-            <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded">
-              {{ selectedCapture.name || 'Unnamed Capture' }}
-            </p>
-          </div>
-
-          <!-- Start Date & Camera ID in one row -->
-          <div v-if="selectedCapture.startDate || selectedCapture.cameraId" class="grid grid-cols-2 gap-4">
-            <div v-if="selectedCapture.startDate">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Start Date & Time
-              </label>
-              <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded">
-                {{ selectedCapture.startDate }}
-              </p>
-            </div>
-            <div v-if="selectedCapture.cameraId">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Camera ID
-              </label>
-              <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded font-mono">
-                {{ selectedCapture.cameraId }}
-              </p>
-            </div>
-          </div>
-
-          <!-- Duration and Interval in one row -->
-          <div v-if="selectedCapture.duration || selectedCapture.interval" class="grid grid-cols-2 gap-4">
-            <!-- Duration -->
-            <div v-if="selectedCapture.duration">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Duration
-              </label>
-              <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded">
-                {{ selectedCapture.duration.value }} {{ selectedCapture.duration.unit }}
-              </p>
-            </div>
-            <div v-else></div>
-
-            <!-- Interval -->
-            <div v-if="selectedCapture.interval">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Capture Interval
-              </label>
-              <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded">
-                {{ selectedCapture.interval.value }} {{ selectedCapture.interval.unit }}
-              </p>
-            </div>
-            <div v-else></div>
-          </div>
-
-          <!-- Email -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              User Email
-            </label>
-            <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded">
-              {{ selectedCapture.eenUserEmailField || 'No email' }}
-            </p>
-          </div>
-
-          <!-- Created Date -->
-          <div v-if="selectedCapture.createdAt">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Created
-            </label>
-            <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded">
-              {{ new Date(selectedCapture.createdAt).toLocaleString() }}
-            </p>
-          </div>
-
-          <!-- Description -->
-          <div v-if="selectedCapture.description">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Description
-            </label>
-            <p class="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 p-2 rounded">
-              {{ selectedCapture.description }}
-            </p>
-          </div>
-
-          <!-- Stored Images Summary -->
-          <div v-if="selectedCapture.imageCount && selectedCapture.imageCount > 0">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Stored Images
-            </label>
-            <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-lg font-bold text-green-600 dark:text-green-400">{{ selectedCapture.imageCount }}</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">images stored</p>
-                </div>
-                <div v-if="selectedCapture.processedAt" class="text-right">
-                  <p class="text-xs text-gray-500 dark:text-gray-400">Processed:</p>
-                  <p class="text-xs text-gray-600 dark:text-gray-300">{{ new Date(selectedCapture.processedAt).toLocaleString() }}</p>
-                </div>
-              </div>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                Images stored in optimized database structure
-              </p>
-            </div>
-          </div>
-
-          <!-- Raw Data (for debugging) -->
-          <div class="pt-2 border-t border-gray-200 dark:border-gray-600">
-            <details class="group">
-              <summary class="cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100">
-                Raw Data (Debug)
-              </summary>
-              <pre class="mt-2 text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 p-2 rounded overflow-auto max-h-40">{{ JSON.stringify(selectedCapture, null, 2) }}</pre>
-            </details>
-          </div>
-        </div>
-
-        <!-- Modal Footer -->
-        <div class="flex justify-between pt-6 border-t border-gray-200 dark:border-gray-600 mt-6">
-          <div class="flex space-x-3">
-            <button 
-              class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
-              @click="openProcessModal(selectedCapture); closeCaptureModal()"
-            >
-              Process
-            </button>
-            <button 
-              class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
-              @click="openDeleteModal(selectedCapture); closeCaptureModal()"
-            >
-              Delete Capture
-            </button>
-          </div>
-          <button 
-            class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
-            @click="closeCaptureModal"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <CaptureDetailsModal
+    :show="showModal"
+    :capture="selectedCapture"
+    @close="closeCaptureModal"
+    @process="handleProcessFromDetails"
+    @delete="handleDeleteFromDetails"
+  />
 
   <!-- Delete Confirmation Modal -->
-  <div 
-    v-if="showDeleteModal" 
-    class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
-    @click="handleModalBackdropClick($event, 'delete')"
-  >
-    <div 
-      class="relative border w-full max-w-md shadow-2xl rounded-lg bg-white dark:bg-gray-800 transform transition-all duration-300 scale-100"
-      @click.stop
-    >
-      <!-- Modal Header -->
-      <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-600 p-6">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-          Delete Capture
-        </h3>
-        <button 
-          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
-          @click="closeDeleteModal"
-          aria-label="Close modal"
-        >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
-      </div>
-
-      <!-- Modal Content -->
-      <div class="p-6">
-        <p class="text-sm text-gray-700 dark:text-gray-300 mb-4">
-          Are you sure you want to delete this capture?
-        </p>
-        
-        <div v-if="captureToDelete" class="bg-gray-50 dark:bg-gray-700 p-3 rounded mb-4">
-          <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
-            {{ captureToDelete.name || 'Unnamed Capture' }}
-          </p>
-          <p class="text-xs text-gray-500 dark:text-gray-400">
-            {{ captureToDelete.description || 'No description' }}
-          </p>
-        </div>
-
-        <p class="text-xs text-red-600 dark:text-red-400 mb-4">
-          This action cannot be undone.
-        </p>
-
-        <!-- Modal Footer -->
-        <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-600">
-          <button 
-            type="button"
-            class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
-            @click="closeDeleteModal"
-          >
-            Cancel
-          </button>
-          <button 
-            type="button"
-            class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
-            @click="deleteCapture"
-          >
-            Delete
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <CaptureDeleteModal
+    :show="showDeleteModal"
+    :capture="captureToDelete"
+    @close="closeDeleteModal"
+    @delete="deleteCapture"
+  />
 
   <!-- Process Modal -->
   <div 
@@ -627,7 +400,7 @@
     @click="handleModalBackdropClick($event, 'process')"
   >
     <div 
-      class="relative border w-full max-w-4xl shadow-2xl rounded-lg bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-100"
+      class="relative border w-full max-w-4xl shadow-2xl rounded-lg bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-scroll transform transition-all duration-300 scale-100"
       @click.stop
     >
       <div class="pb-4 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between p-6">
@@ -944,6 +717,8 @@ import { mediaService } from '../services/media'
 import { storageService } from '../services/storage'
 import { databaseService } from '../services/database'
 import securityService from '@/services/security'
+import CaptureDetailsModal from '../components/CaptureDetailsModal.vue'
+import CaptureDeleteModal from '../components/CaptureDeleteModal.vue'
 
 const eenAuthStore = useEenAuthStore()
 const captures = ref([]);
@@ -1048,9 +823,6 @@ function handleModalBackdropClick(event, modalType) {
         break;
       case 'details':
         closeCaptureModal();
-        break;
-      case 'delete':
-        closeDeleteModal();
         break;
       case 'process':
         // Don't allow closing process modal if currently processing
@@ -1302,16 +1074,19 @@ const closeDeleteModal = () => {
 };
 
 // Delete capture using optimized database service
-const deleteCapture = async () => {
-  console.log("[Capture.vue] Deleting capture:", captureToDelete.value);
+const deleteCapture = async (captureFromEvent = null) => {
+  // Use the capture from the event if provided, otherwise fall back to captureToDelete.value
+  const captureToDeleteRef = captureFromEvent || captureToDelete.value;
   
-  if (!captureToDelete.value) {
+  console.log("[Capture.vue] Deleting capture:", captureToDeleteRef);
+  
+  if (!captureToDeleteRef) {
     console.error("[Capture.vue] No capture selected for deletion");
     return;
   }
 
   try {
-    const captureId = captureToDelete.value.id;
+    const captureId = captureToDeleteRef.id;
     
     // Debug Firebase authentication state
     const firebaseUser = firebaseAuthService.getCurrentUser();
@@ -1376,7 +1151,7 @@ const deleteCapture = async () => {
         console.log("[Capture.vue] Re-authentication successful, retrying delete...");
         
         // Retry the delete operation
-        const captureId = captureToDelete.value.id;
+        const captureId = captureToDeleteRef.id;
         await databaseService.deleteCapture(captureId);
         console.log("[Capture.vue] Retry: Capture deleted successfully");
         
@@ -2060,4 +1835,16 @@ watch(() => eenAuthStore.userProfile, (val) => {
   if (val) localStorage.setItem('eenUserProfile', JSON.stringify(val));
   else localStorage.removeItem('eenUserProfile');
 });
+
+// Handle process from details modal
+function handleProcessFromDetails(capture) {
+  closeCaptureModal();
+  openProcessModal(capture);
+}
+
+// Handle delete from details modal
+function handleDeleteFromDetails(capture) {
+  closeCaptureModal();
+  openDeleteModal(capture);
+}
 </script> 
