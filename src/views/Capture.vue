@@ -386,70 +386,12 @@
   />
 
   <!-- Delete Confirmation Modal -->
-  <div 
-    v-if="showDeleteModal" 
-    class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
-    @click="handleModalBackdropClick($event, 'delete')"
-  >
-    <div 
-      class="relative border w-full max-w-md shadow-2xl rounded-lg bg-white dark:bg-gray-800 transform transition-all duration-300 scale-100"
-      @click.stop
-    >
-      <!-- Modal Header -->
-      <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-600 p-6">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-          Delete Capture
-        </h3>
-        <button 
-          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
-          @click="closeDeleteModal"
-          aria-label="Close modal"
-        >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
-      </div>
-
-      <!-- Modal Content -->
-      <div class="p-6">
-        <p class="text-sm text-gray-700 dark:text-gray-300 mb-4">
-          Are you sure you want to delete this capture?
-        </p>
-        
-        <div v-if="captureToDelete" class="bg-gray-50 dark:bg-gray-700 p-3 rounded mb-4">
-          <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
-            {{ captureToDelete.name || 'Unnamed Capture' }}
-          </p>
-          <p class="text-xs text-gray-500 dark:text-gray-400">
-            {{ captureToDelete.description || 'No description' }}
-          </p>
-        </div>
-
-        <p class="text-xs text-red-600 dark:text-red-400 mb-4">
-          This action cannot be undone.
-        </p>
-
-        <!-- Modal Footer -->
-        <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-600">
-          <button 
-            type="button"
-            class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
-            @click="closeDeleteModal"
-          >
-            Cancel
-          </button>
-          <button 
-            type="button"
-            class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
-            @click="deleteCapture"
-          >
-            Delete
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <CaptureDeleteModal
+    :show="showDeleteModal"
+    :capture="captureToDelete"
+    @close="closeDeleteModal"
+    @delete="deleteCapture"
+  />
 
   <!-- Process Modal -->
   <div 
@@ -776,6 +718,7 @@ import { storageService } from '../services/storage'
 import { databaseService } from '../services/database'
 import securityService from '@/services/security'
 import CaptureDetailsModal from '../components/CaptureDetailsModal.vue'
+import CaptureDeleteModal from '../components/CaptureDeleteModal.vue'
 
 const eenAuthStore = useEenAuthStore()
 const captures = ref([]);
@@ -880,9 +823,6 @@ function handleModalBackdropClick(event, modalType) {
         break;
       case 'details':
         closeCaptureModal();
-        break;
-      case 'delete':
-        closeDeleteModal();
         break;
       case 'process':
         // Don't allow closing process modal if currently processing
@@ -1134,16 +1074,19 @@ const closeDeleteModal = () => {
 };
 
 // Delete capture using optimized database service
-const deleteCapture = async () => {
-  console.log("[Capture.vue] Deleting capture:", captureToDelete.value);
+const deleteCapture = async (captureFromEvent = null) => {
+  // Use the capture from the event if provided, otherwise fall back to captureToDelete.value
+  const captureToDeleteRef = captureFromEvent || captureToDelete.value;
   
-  if (!captureToDelete.value) {
+  console.log("[Capture.vue] Deleting capture:", captureToDeleteRef);
+  
+  if (!captureToDeleteRef) {
     console.error("[Capture.vue] No capture selected for deletion");
     return;
   }
 
   try {
-    const captureId = captureToDelete.value.id;
+    const captureId = captureToDeleteRef.id;
     
     // Debug Firebase authentication state
     const firebaseUser = firebaseAuthService.getCurrentUser();
@@ -1208,7 +1151,7 @@ const deleteCapture = async () => {
         console.log("[Capture.vue] Re-authentication successful, retrying delete...");
         
         // Retry the delete operation
-        const captureId = captureToDelete.value.id;
+        const captureId = captureToDeleteRef.id;
         await databaseService.deleteCapture(captureId);
         console.log("[Capture.vue] Retry: Capture deleted successfully");
         

@@ -153,9 +153,9 @@ test.describe('Capture Details Modal Tests', () => {
     console.log('✅ User Email label is visible')
 
     // Check for action buttons in footer
-    const processButton = page.locator('button:has-text("Process")')
-    const deleteButton = page.locator('button:has-text("Delete Capture")')
-    const closeFooterButton = page.locator('button:has-text("Close")')
+    const processButton = page.locator('div.fixed.inset-0 button:has-text("Process")')
+    const deleteButton = page.locator('div.fixed.inset-0 button:has-text("Delete Capture")')
+    const closeFooterButton = page.locator('div.fixed.inset-0 button:has-text("Close")')
 
     await expect(processButton).toBeVisible()
     await expect(deleteButton).toBeVisible()
@@ -238,7 +238,7 @@ test.describe('Capture Details Modal Tests', () => {
 
     // Test footer Close button
     console.log('🔍 Testing footer Close button...')
-    const footerCloseButton = page.locator('button:has-text("Close")').last()
+    const footerCloseButton = page.locator('div.fixed.inset-0 button:has-text("Close")')
     await footerCloseButton.click()
     await expect(detailsModal).toBeHidden({ timeout: 5000 })
     console.log('✅ Modal closed successfully via footer Close button')
