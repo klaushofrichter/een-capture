@@ -1,3 +1,5 @@
+# THIS REPOSITORY IS NOT MAINTAINED. IT HAS MOVED TO [THIS PLACE](https://klaushofrichter.github.io/een-gng)
+
 # EEN Capture Application
 
 A modern Vue 3 application building on top of 
